@@ -1,0 +1,21 @@
+<!--BParkClientUI.fxml
+Describes GUI layout (table of orders, etc.)
+-->
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="10" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="client.BParkClientController">
+
+    <TableView fx:id="orderTable" prefHeight="400">
+        <columns>
+            <TableColumn fx:id="colOrderId" text="Order ID"/>
+            <TableColumn fx:id="colDate" text="Order Date"/>
+            <TableColumn fx:id="colSpot" text="Parking Spot"/>
+        </columns>
+    </TableView>
+
+</VBox>
