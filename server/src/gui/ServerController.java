@@ -20,7 +20,7 @@ public class ServerController {
 	@FXML
 	private Button exitButton;
 	@FXML
-    private TableView<List<String>> clientTable; // Use List<String> directly for the table data
+    private TableView<List<String>> clientTable; 
 
     @FXML
     private TableColumn<List<String>, String> clientIpColumn; // IP column
@@ -71,8 +71,8 @@ public class ServerController {
 
 	    // Add updated client information to the TableView
 	    for (List<String> string : clientInfo) {
-	        if (string.size() == 4) {  // Assuming each list contains IP, Hostname, Status, etc.
-	        	clientData.add(string);
+	        if (string.size() == 4) { 
+	        	clientData.add(0,string);
 	        }
 	    }
 	}

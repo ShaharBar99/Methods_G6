@@ -89,7 +89,7 @@ public class BparkServer extends AbstractServer {
 					clientInfo.add("Connected");
 					requiredList.add(clientInfo);
 					// serverController.recievedServerUpdate(requiredList);
-					Platform.runLater(() -> serverController.recievedServerUpdate(requiredList));
+					serverController.recievedServerUpdate(requiredList);
 					sendToSingleClient(con.getallordersfromDB(),client);
 					// Log the connection
 					System.out.println(String.format("Client:%s IP:%s HostName:%s %s", clientInfo.get(0),
@@ -135,8 +135,7 @@ public class BparkServer extends AbstractServer {
 				else {
 					throw new Exception();
 				}
-				Platform.runLater(() -> serverController.recievedServerUpdate(requiredList));
-				// serverController.recievedServerUpdate(requiredList);
+				serverController.recievedServerUpdate(requiredList);
 				// Log the disconnection
 				System.out.println(String.format("Client:%s IP:%s HostName:%s %s", string.get(0), string.get(1),
 						string.get(2), string.get(3)));
