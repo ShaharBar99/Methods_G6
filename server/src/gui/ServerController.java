@@ -15,6 +15,8 @@ import server.BparkServer;
 public class ServerController {
 	@FXML
 	private Button exitButton;
+	
+	
 	@FXML
 	private ListView<String> clientInfoList = new ListView<>();
 

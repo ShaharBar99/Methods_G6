@@ -32,16 +32,22 @@ public class BparkServer extends AbstractServer {
 	public BparkServer(int port, ServerController controller) {
 		super(port);
 		this.serverController = controller;
-		// TODO Auto-generated constructor stub
 	}
 
+	
+	
 	public void handleMessageFromClient(Object msg, ConnectionToClient client) {
-		if (msg instanceof Order) {
+		
+		System.out.println("Message received: " + msg + " from " + client);
+		int flag = 0;
+		
+		if (msg instanceof Order){
 			String[][] orders = getordersfromDB();
 			Order order = (Order) msg;
 			String spot, date;
-			spot = String.format("%s", order.get_ParkingSpot().getSpotId());
-			date = order.getorder_date().toString();
+			spot = String.format("%s", order.getParkingSpace().getSpotId());
+			date = order.getOrderDate().toString();
+			
 			int size = orders.length;
 			for (int i = 0; i < size; i++) {
 				if (orders[i][0].equals(spot) && orders[i][1].equals(date)) {
@@ -53,12 +59,16 @@ public class BparkServer extends AbstractServer {
 			updateDB(order);
 			System.out.println("order placed");
 			sendToSingleClient("order placed", client);
-		} else if (msg instanceof String) {
+		} 
+		
+		else if (msg instanceof String) {
 			if(msg.equals("Client disconnected"))
 				clientDisconnected(client);	
 		}
 	}
 
+	
+	
 	public ArrayList<Order> getallordersfromDB() {
 		ArrayList<Order> orderslist = new ArrayList<>();
 		try {
@@ -136,9 +146,9 @@ public class BparkServer extends AbstractServer {
 		try {
 			String update_order = "UPDATE `order` SET parking_space = ?, order_date = ? WHERE order_number = ?";
 			PreparedStatement stmt = con.prepareStatement(update_order);
-			stmt.setInt(1, order.get_ParkingSpot().getSpotId());
-			stmt.setDate(2, new java.sql.Date(order.getorder_date().getTime()));
-			stmt.setInt(3, order.get_order_id());
+			stmt.setInt(1, order.getParkingSpace().getSpotId());
+			stmt.setDate(2, new java.sql.Date(order.getOrderDate().getTime()));
+			stmt.setInt(3, order.getOrderID());
 			stmt.executeUpdate();
 			stmt.close();
 			System.out.println("Updated");

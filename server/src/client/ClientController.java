@@ -3,9 +3,21 @@ package client;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+
+import java.util.Date;
+
 import client.Client.MyClient;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.event.ActionEvent;
+
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import logic.Order;
 
 public class ClientController {
 
@@ -15,9 +27,54 @@ public class ClientController {
     private Button connectButton;  // Connect button
     @FXML
     private Button disconnectButton;  // Disconnect button
+    @FXML
+    private Button testButton;  // Test button
+
+    
+    // ─── Connect Pane controls ───
+    @FXML private Pane    connectPane;
+
+    
+    // ─── Main Pane controls ───
+    @FXML private VBox    mainPane;
+    @FXML private TableView<Order> orderTable;
+    @FXML private TableColumn<Order, Integer> colOrderId;
+    @FXML private TableColumn<Order, Date>    colOrderDate;
+    @FXML private TableColumn<Order, Integer> colSpot;
+
+    @FXML private TextField orderNumField;
+    @FXML private Label lblOrderId, lblCode, lblDate, lblSpot;
+
+    
 
     private MyClient clientConnection;
+    
+    
+    
+    
+    @FXML
+    public void initialize() {
+        // configure table columns:
+        colOrderId.setCellValueFactory(new PropertyValueFactory<>("order_id"));
+        colOrderDate.setCellValueFactory(new PropertyValueFactory<>("order_date"));
+        colSpot.setCellValueFactory(cell -> 
+            new SimpleIntegerProperty(
+              cell.getValue().getParkingSpace().getSpotId()
+            ).asObject()
+        );
 
+        // register listener for incoming messages:
+        clientConnection = null;  // will be set on connect
+    }
+    
+    
+    @FXML
+	public void handleTestButton(ActionEvent event) {
+		// Handle test button action
+		System.out.println("Test button clicked");
+	}
+    
+    
     // Action handler for the "Connect" button
     @FXML
     public void handleConnectButton(ActionEvent event) {
