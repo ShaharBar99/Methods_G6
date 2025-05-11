@@ -14,14 +14,25 @@ import logic.ParkingSpot;
 import logic.Role;
 import logic.subscriber;
 
+/**
+ * The class handles any SQL query needed
+ */
 public class MySQLConnection {
 	private Connection con;
-	
+
+	/**
+	 * @return con
+	 */
 	protected Connection getCon() {
+		// Getter of con
 		return con;
 	}
-	
+
+	/**
+	 * @return con
+	 */
 	private Connection connectToDB() {
+		// Start a connection to DB bpark returns con
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
 			System.out.println("Driver definition succeed");
@@ -30,8 +41,8 @@ public class MySQLConnection {
 			System.out.println("Driver definition failed");
 		}
 		try {
-			Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/bpark?serverTimezone=IST&useSSL=false", "root",
-					"Aa123456");
+			Connection conn = DriverManager
+					.getConnection("jdbc:mysql://localhost/bpark?serverTimezone=IST&useSSL=false", "root", "Aa123456");
 			System.out.println("DB connection succeed");
 			return conn;
 		} catch (Exception ex) {
@@ -42,7 +53,11 @@ public class MySQLConnection {
 
 	}
 
+	/**
+	 * @param con
+	 */
 	private void disconnectFromDB(Connection con) {
+		// Closes the connection
 		try {
 			if (con != null && !con.isClosed()) {
 				con.close(); // Close the connection after the operation is complete
@@ -53,7 +68,12 @@ public class MySQLConnection {
 			e.printStackTrace();
 		}
 	}
+
+	/**
+	 * @return ordersList
+	 */
 	protected ArrayList<Order> getallordersfromDB() {
+		// The method returns an ArrayList<Order> of all orders in DB
 		ArrayList<Order> orderslist = new ArrayList<>();
 		try {
 			con = connectToDB();
@@ -87,15 +107,19 @@ public class MySQLConnection {
 			System.out.println("got all orders");
 		} catch (SQLException e) {
 			System.out.println("Failed to get size of table");
-		}
-		finally {
+		} finally {
 			disconnectFromDB(con);
 		}
 		return orderslist;
 
 	}
 
+	/**
+	 * @return orders
+	 */
 	protected String[][] getordersfromDB() {
+		// Returns a matrix of strings that have only parking_space and order_date
+		// Query to get the size of the matrix
 		int size = 0;
 		try {
 			con = connectToDB();
@@ -115,7 +139,7 @@ public class MySQLConnection {
 		} finally {
 			disconnectFromDB(con);
 		}
-
+		// Query to put parking_space and order_date in orders
 		String orders[][] = new String[size][2];
 		try {
 			con = connectToDB();
@@ -144,7 +168,11 @@ public class MySQLConnection {
 		return orders;
 	}
 
+	/**
+	 * @param order
+	 */
 	protected void updateDB(Order order) {
+		// Gets an order and updates it in the DB
 		try {
 			con = connectToDB();
 			if (con == null)

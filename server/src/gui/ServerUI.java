@@ -8,26 +8,39 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import server.BparkServer;
 
-
+/**
+ * The class implements the start of the server application, holds the Main
+ * method
+ */
 public class ServerUI extends Application {
 
+	/**
+	 * @param args
+	 */
 	public static void main(String[] args) {
+		// Starts the application
 		launch(args);
 	}
 
 	@Override
 	public void start(Stage primaryStage) {
+		// The method gets a Stage, and Loads the FXML, ServerController, sets up the
+		// scene and starts The BParkServer
 		try {
 			// Load the FXML layout
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/ServerGUI.fxml"));
 			AnchorPane root = loader.load();
+
+			// Load the ServerController
 			ServerController serverController = loader.getController();
+
 			// Set up the scene
 			Scene scene = new Scene(root, 470, 462);
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("Server Client Connections");
 			primaryStage.show();
 
+			// Start the BparkServer
 			BparkServer server = new BparkServer(5555, serverController);
 			server.listen();
 

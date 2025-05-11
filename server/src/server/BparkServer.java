@@ -8,22 +8,37 @@ import gui.ServerController;
 import logic.Order;
 import ocsf.server.*;
 
+/**
+ * The class implements the Server side
+ */
 public class BparkServer extends AbstractServer {
 
 	final public static int DEFAULT_PORT = 5555;
-	private MySQLConnection con = new MySQLConnection();
-	private List<ConnectionToClient> clientConnections = new ArrayList<>();
-	private List<List<String>> requiredList = new ArrayList<>();
+	private MySQLConnection con = new MySQLConnection(); // Will be used any time an SQL Query is needed
+	private List<ConnectionToClient> clientConnections = new ArrayList<>(); // Current connections
+	private List<List<String>> requiredList = new ArrayList<>(); // Log of current and former connections
 	private ServerController serverController;
 
+	/**
+	 * @param port
+	 * @param controller
+	 */
 	public BparkServer(int port, ServerController controller) {
+		// Constructor for the class, gets DEFAULT_PORT and ServerController
 		super(port);
 		this.serverController = controller;
 		// TODO Auto-generated constructor stub
 	}
 
+	/**
+	 * @param msg
+	 * @param client
+	 */
 	public void handleMessageFromClient(Object msg, ConnectionToClient client) {
+		// Handles objects that are sent to the server
 		if (msg instanceof Order) {
+			// An updated order from the client, checks if the change is valid and if so
+			// updates the DB
 			String[][] orders;
 			orders = con.getordersfromDB();
 			Order order = (Order) msg;
@@ -33,27 +48,33 @@ public class BparkServer extends AbstractServer {
 			int size = orders.length;
 			for (int i = 0; i < size; i++) {
 				if (orders[i][0].equals(spot) && orders[i][1].equals(date)) {
+					// Invalid order
 					System.out.println("cant place order!!!!!!!!!");
 					sendToSingleClient("cant place order!!!!!!!!!", client);
 					return;
 				}
 			}
-
+			// Valid order
 			con.updateDB(order);
 
 			System.out.println("order placed");
 			sendToSingleClient("order placed", client);
 		} else if (msg instanceof String) {
-			if (msg.equals("Client disconnected"))
+			if (msg.equals("Client disconnected")) // Note, make sure client sends a message before it disconnects
 				clientDisconnected(client);
 		}
 	}
 
+	/**
+	 * @param msg
+	 * @param client
+	 */
 	public void sendToSingleClient(Object msg, ConnectionToClient client) {
+		// Sends a object msg to a client
 		try {
-			if (msg instanceof String)
+			if (msg instanceof String) // Sends a String
 				client.sendToClient(msg);
-			else if (msg instanceof List) {
+			else if (msg instanceof List) { // Sends a list of orders
 				List<Order> orderList = (List<Order>) msg;
 				client.sendToClient(orderList);
 			}
@@ -64,16 +85,23 @@ public class BparkServer extends AbstractServer {
 	}
 
 	protected void serverStarted() {
+		// Prints to console that the server started
 		System.out.println(("Server listening for connections on port " + getPort()));
 	}
 
 	protected void serverStopped() {
+		// Honestly never used
 		System.out.println("Server has stopped listening for connections.");
 	}
 
+	/**
+	 * @param client
+	 */
 	@Override
 	public void clientConnected(ConnectionToClient client) {
 		// Add the client to the list of connected clients
+		// Each client has: id, IP, hostName, status{"Connected","Disconnected"} (all
+		// strings)
 
 		if (!clientConnections.contains(client)) {
 			clientConnections.add(client);
@@ -83,14 +111,13 @@ public class BparkServer extends AbstractServer {
 			clientInfo.add(client.getInetAddress().getHostName());
 			clientInfo.add("Connected");
 			requiredList.add(clientInfo);
-			// serverController.recievedServerUpdate(requiredList);
 			serverController.recievedServerUpdate(requiredList);
 			sendToSingleClient(con.getallordersfromDB(), client);
 			// Log the connection
 			System.out.println(String.format("Client:%s IP:%s HostName:%s %s", clientInfo.get(0), clientInfo.get(1),
 					clientInfo.get(2), clientInfo.get(3)));
 
-		} else {
+		} else { // In case the same client tries to reconnect
 			try {
 				clientSetStatus(client, "Connected");
 			} catch (Exception e) {
@@ -101,9 +128,12 @@ public class BparkServer extends AbstractServer {
 
 	}
 
-	// This method is called whenever a client disconnects
+	/**
+	 * @param client
+	 */
 	@Override
 	public void clientDisconnected(ConnectionToClient client) {
+		// This method is called whenever a client disconnects
 		// Remove the client from the list when they disconnect
 		try {
 			clientSetStatus(client, "Disconnected");
@@ -114,7 +144,13 @@ public class BparkServer extends AbstractServer {
 		}
 	}
 
+	/**
+	 * @param client
+	 * @param status
+	 * @throws Exception
+	 */
 	private void clientSetStatus(ConnectionToClient client, String status) throws Exception {
+		// Updates the status of a client to either "Connected"/"Disconnected"
 		for (List<String> string : requiredList) {
 			if (string.get(0).equals(Long.toString(client.getId()))) {
 				string.set(3, status);
@@ -134,45 +170,5 @@ public class BparkServer extends AbstractServer {
 			}
 		}
 	}
-
-	/*
-	 * public List<String> getConnectedClientsInfo() { List<String> clientsInfo =
-	 * new ArrayList<>(); for (ConnectionToClient client : clientConnections) {
-	 * InetAddress clientAddress = client.getInetAddress(); // Get the client's
-	 * InetAddress String ipAddress = clientAddress.getHostAddress(); // Get the
-	 * client's IP address String hostname = clientAddress.getHostName(); // Get the
-	 * client's hostname
-	 * 
-	 * String clientInfo = ipAddress + ", " + hostname; clientsInfo.add(clientInfo);
-	 * }
-	 * 
-	 * return clientsInfo; }
-	 * 
-	 * /* public static void main(String[] args) { int port =
-	 * BparkServer.DEFAULT_PORT; // ברירת מחדל = 5555 BparkServer server = new
-	 * BparkServer(port);
-	 * 
-	 * try { server.listen(); // מפעיל את השרת } catch (Exception e) {
-	 * System.out.println("ERROR - Could not listen for clients!"); }
-	 * 
-	 * // תאריך ההזמנה Date orderDate = new Date(); // עכשיו // תאריך יצירת ההזמנה
-	 * Date placingDate = new Date(); // נניח גם עכש
-	 * 
-	 * // אובייקט זמני של Order בשביל currentReservation Order dummyOrder = null; //
-	 * נניח שאין הזמנה כרגע למקום הזה
-	 * 
-	 * // יצירת מקום חניה ParkingSpot spot = new ParkingSpot(2, null, dummyOrder);
-	 * 
-	 * // יצירת ההזמנה המלאה Order order = new Order( 2, null, orderDate,
-	 * placingDate, spot, 1 ); server.con = server.connectToDB();
-	 * getallordersfromDB(); //updateDB(order); // הדפסה לבדיקה
-	 * 
-	 * 
-	 * //System.out.println("Subscriber: " + order.getSubscriber().getFirstName());
-	 * }
-	 * 
-	 * 
-	 * 
-	 */
 
 }
