@@ -2,10 +2,12 @@ package gui;
 
 import java.io.IOException;
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import server.BparkServer;
 
 /**
@@ -25,7 +27,7 @@ public class ServerUI extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		// The method gets a Stage, and Loads the FXML, ServerController, sets up the
-		// scene and starts The BParkServer
+		// Initial scene and starts The BParkServer
 		try {
 			// Load the FXML layout
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/ServerGUI.fxml"));
@@ -38,6 +40,15 @@ public class ServerUI extends Application {
 			Scene scene = new Scene(root, 470, 462);
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("Server Client Connections");
+			// Makes sure when X is pressed it closes the server
+			primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+				@Override
+				public void handle(WindowEvent event) {
+					System.out.println("Closing application...");
+					System.gc();
+					System.exit(0);
+				}
+			});
 			primaryStage.show();
 
 			// Start the BparkServer

@@ -65,6 +65,7 @@ public class ServerController {
 	 */
 	public void getExitButton(ActionEvent e) throws Exception {
 		// Closes the server application when button is pressed
+		System.out.println("Closing application...");
 		System.gc();
 		System.exit(0);
 	}
