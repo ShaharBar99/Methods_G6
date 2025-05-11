@@ -5,14 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import gui.ServerController;
-import javafx.application.Platform;
 import logic.Order;
 import ocsf.server.*;
 
 public class BparkServer extends AbstractServer {
 
 	final public static int DEFAULT_PORT = 5555;
-	private Object obj1 = new Object();
 	private MySQLConnection con = new MySQLConnection();
 	private List<ConnectionToClient> clientConnections = new ArrayList<>();
 	private List<List<String>> requiredList = new ArrayList<>();
@@ -27,9 +25,7 @@ public class BparkServer extends AbstractServer {
 	public void handleMessageFromClient(Object msg, ConnectionToClient client) {
 		if (msg instanceof Order) {
 			String[][] orders;
-			synchronized (obj1) {
-				orders = con.getordersfromDB();
-			}
+			orders = con.getordersfromDB();
 			Order order = (Order) msg;
 			String spot, date;
 			spot = String.format("%s", order.get_ParkingSpot().getSpotId());
@@ -42,9 +38,9 @@ public class BparkServer extends AbstractServer {
 					return;
 				}
 			}
-			synchronized (obj1) {
-				con.updateDB(order);
-			}
+
+			con.updateDB(order);
+
 			System.out.println("order placed");
 			sendToSingleClient("order placed", client);
 		} else if (msg instanceof String) {
@@ -55,10 +51,10 @@ public class BparkServer extends AbstractServer {
 
 	public void sendToSingleClient(Object msg, ConnectionToClient client) {
 		try {
-			if(msg instanceof String)
-				client.sendToClient(msg + " " + client.getId());
-			else if(msg instanceof List) {
-				List<Order> orderList = (List<Order>)msg;
+			if (msg instanceof String)
+				client.sendToClient(msg);
+			else if (msg instanceof List) {
+				List<Order> orderList = (List<Order>) msg;
 				client.sendToClient(orderList);
 			}
 		} catch (IOException e) {
@@ -78,33 +74,31 @@ public class BparkServer extends AbstractServer {
 	@Override
 	public void clientConnected(ConnectionToClient client) {
 		// Add the client to the list of connected clients
-		synchronized (clientConnections) {
-			synchronized (requiredList) {
-				if (!clientConnections.contains(client)) {
-					clientConnections.add(client);
-					List<String> clientInfo = new ArrayList<>();
-					clientInfo.add(Long.toString(client.getId()));
-					clientInfo.add(client.getInetAddress().getHostAddress());
-					clientInfo.add(client.getInetAddress().getHostName());
-					clientInfo.add("Connected");
-					requiredList.add(clientInfo);
-					// serverController.recievedServerUpdate(requiredList);
-					serverController.recievedServerUpdate(requiredList);
-					sendToSingleClient(con.getallordersfromDB(),client);
-					// Log the connection
-					System.out.println(String.format("Client:%s IP:%s HostName:%s %s", clientInfo.get(0),
-							clientInfo.get(1), clientInfo.get(2), clientInfo.get(3)));
 
-				} else {
-					try {
-						clientSetStatus(client, "Connected");
-					} catch (Exception e) {
-						System.out.println("Connect failed!");
-						e.printStackTrace();
-					}
-				}
+		if (!clientConnections.contains(client)) {
+			clientConnections.add(client);
+			List<String> clientInfo = new ArrayList<>();
+			clientInfo.add(Long.toString(client.getId()));
+			clientInfo.add(client.getInetAddress().getHostAddress());
+			clientInfo.add(client.getInetAddress().getHostName());
+			clientInfo.add("Connected");
+			requiredList.add(clientInfo);
+			// serverController.recievedServerUpdate(requiredList);
+			serverController.recievedServerUpdate(requiredList);
+			sendToSingleClient(con.getallordersfromDB(), client);
+			// Log the connection
+			System.out.println(String.format("Client:%s IP:%s HostName:%s %s", clientInfo.get(0), clientInfo.get(1),
+					clientInfo.get(2), clientInfo.get(3)));
+
+		} else {
+			try {
+				clientSetStatus(client, "Connected");
+			} catch (Exception e) {
+				System.out.println("Connect failed!");
+				e.printStackTrace();
 			}
 		}
+
 	}
 
 	// This method is called whenever a client disconnects
@@ -112,11 +106,8 @@ public class BparkServer extends AbstractServer {
 	public void clientDisconnected(ConnectionToClient client) {
 		// Remove the client from the list when they disconnect
 		try {
-			synchronized (clientConnections) {
-				synchronized (requiredList) {
-					clientSetStatus(client, "Disconnected");
-				}
-			}
+			clientSetStatus(client, "Disconnected");
+
 		} catch (Exception e) {
 			System.out.println("Disconnect failed!");
 			e.printStackTrace();
