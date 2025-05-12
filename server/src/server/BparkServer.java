@@ -29,7 +29,6 @@ public class BparkServer extends AbstractServer {
 		this.serverController = controller;
 		// TODO Auto-generated constructor stub
 	}
-
 	/**
 	 * @param msg
 	 * @param client
@@ -76,7 +75,9 @@ public class BparkServer extends AbstractServer {
 				client.sendToClient(msg);
 			else if (msg instanceof List) { // Sends a list of orders
 				List<Order> orderList = (List<Order>) msg;
+				
 				client.sendToClient(orderList);
+				System.out.println(orderList);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -108,7 +109,7 @@ public class BparkServer extends AbstractServer {
 			List<String> clientInfo = new ArrayList<>();
 			clientInfo.add(Long.toString(client.getId()));
 			clientInfo.add(client.getInetAddress().getHostAddress());
-			clientInfo.add(client.getInetAddress().getHostName());
+			clientInfo.add(client.getInetAddress().getCanonicalHostName());
 			clientInfo.add("Connected");
 			requiredList.add(clientInfo);
 			serverController.recievedServerUpdate(requiredList);

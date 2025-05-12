@@ -1,5 +1,6 @@
 package server;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -8,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Scanner;
 
 import logic.Order;
 import logic.ParkingSpot;
@@ -19,6 +21,10 @@ import logic.subscriber;
  */
 public class MySQLConnection {
 	private Connection con;
+
+	protected MySQLConnection() {
+		createDatabaseAndTable();
+	}
 
 	/**
 	 * @return con
@@ -54,6 +60,31 @@ public class MySQLConnection {
 	}
 
 	/**
+	 * Connect to the MySQL server (without specifying a database)
+	 * 
+	 * @return Connection object
+	 */
+	private Connection connectToMySQL() {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+			System.out.println("Driver definition succeeded");
+		} catch (Exception ex) {
+			System.out.println("Driver definition failed");
+			return null;
+		}
+		try {
+			// Connecting to MySQL without specifying a database
+			Connection conn = DriverManager.getConnection("jdbc:mysql://localhost?serverTimezone=IST&useSSL=false",
+					"root", "Aa123456");
+			System.out.println("DB connection succeeded");
+			return conn;
+		} catch (Exception ex) {
+			System.out.println("Connection failed");
+			return null;
+		}
+	}
+
+	/**
 	 * @param con
 	 */
 	private void disconnectFromDB(Connection con) {
@@ -66,6 +97,86 @@ public class MySQLConnection {
 		} catch (SQLException e) {
 			System.out.println("Failed to close the connection.");
 			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Create the database if it doesn't exist, and import the SQL file if needed
+	 */
+	private void createDatabaseAndTable() {
+		try {
+			// Step 1: Connect to MySQL (without specifying a database)
+			con = connectToMySQL();
+			if (con == null) {
+				throw new SQLException();
+			}
+
+			// Step 2: Create the database if it doesn't exist
+			String createDatabaseSQL = "CREATE DATABASE IF NOT EXISTS bpark";
+			Statement stmt = con.createStatement();
+			stmt.executeUpdate(createDatabaseSQL);
+			System.out.println("Database created or already exists.");
+
+			// Step 3: Reconnect to the bpark database
+			stmt.close();
+			disconnectFromDB(con);
+			con = connectToDB();
+			if (con == null) {
+				System.out.println("Failed to reconnect to bpark database.");
+				return;
+			}
+
+			// Step 4: Select the bpark database explicitly
+			Statement useStmt = con.createStatement();
+			String chooseBpark = "USE bpark;";
+			useStmt.execute(chooseBpark);
+			System.out.println("Using bpark database.");
+
+			// Step 5: Check if the table exists
+			String showOrder = "SHOW TABLES LIKE 'order'";
+			ResultSet rs = useStmt.executeQuery(showOrder);
+			if (!rs.next()) {
+				System.out.println("Table 'order' does not exist. Proceeding with import.");
+				// If table does not exist, import the SQL file
+				importSQLFile();
+			} else {
+				System.out.println("Table 'order' already exists. Skipping import.");
+			}
+
+			rs.close();
+			useStmt.close();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Failed to create database or table.");
+		} finally {
+			disconnectFromDB(con);
+		}
+	}
+
+	/**
+	 * Import SQL file to create table and insert data
+	 */
+	private void importSQLFile() {
+		try {
+			InputStream is = getClass().getClassLoader().getResourceAsStream("bpark_order.sql");
+			if (is == null) {
+				throw new Exception("SQL file not found in classpath.");
+			}
+			Scanner scanner = new Scanner(is, "UTF-8").useDelimiter(";");
+			Statement stmt = con.createStatement();
+			while (scanner.hasNext()) {
+				String line = scanner.next().trim();
+				if (!line.isEmpty()) {
+					stmt.execute(line);
+				}
+			}
+			scanner.close();
+			stmt.close();
+			System.out.println("SQL file imported successfully.");
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("Failed to import SQL file.");
 		}
 	}
 
