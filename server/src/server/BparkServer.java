@@ -39,14 +39,13 @@ public class BparkServer extends AbstractServer {
 	public void handleMessageFromClient(Object msg, ConnectionToClient client) {
 		
 		System.out.println("Message received: " + msg + " from " + client);
-		int flag = 0;
 		
 		if (msg instanceof Order){
 			String[][] orders = getordersfromDB();
 			Order order = (Order) msg;
 			String spot, date;
-			spot = String.format("%s", order.getParkingSpace().getSpotId());
-			date = order.getOrderDate().toString();
+			spot = String.format("%s", order.getParkingSpot().getSpotId());
+			date = order.getOrder_date().toString();
 			
 			int size = orders.length;
 			for (int i = 0; i < size; i++) {
@@ -146,9 +145,9 @@ public class BparkServer extends AbstractServer {
 		try {
 			String update_order = "UPDATE `order` SET parking_space = ?, order_date = ? WHERE order_number = ?";
 			PreparedStatement stmt = con.prepareStatement(update_order);
-			stmt.setInt(1, order.getParkingSpace().getSpotId());
-			stmt.setDate(2, new java.sql.Date(order.getOrderDate().getTime()));
-			stmt.setInt(3, order.getOrderID());
+			stmt.setInt(1, order.getParkingSpot().getSpotId());
+			stmt.setDate(2, new java.sql.Date(order.getOrder_date().getTime()));
+			stmt.setInt(3, order.getOrder_id());
 			stmt.executeUpdate();
 			stmt.close();
 			System.out.println("Updated");

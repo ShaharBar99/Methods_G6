@@ -27,8 +27,6 @@ public class ClientController {
     private Button connectButton;  // Connect button
     @FXML
     private Button disconnectButton;  // Disconnect button
-    @FXML
-    private Button testButton;  // Test button
 
     
     // ─── Connect Pane controls ───
@@ -59,7 +57,7 @@ public class ClientController {
         colOrderDate.setCellValueFactory(new PropertyValueFactory<>("order_date"));
         colSpot.setCellValueFactory(cell -> 
             new SimpleIntegerProperty(
-              cell.getValue().getParkingSpace().getSpotId()
+              cell.getValue().getParkingSpot().getSpotId()
             ).asObject()
         );
 
@@ -67,12 +65,7 @@ public class ClientController {
         clientConnection = null;  // will be set on connect
     }
     
-    
-    @FXML
-	public void handleTestButton(ActionEvent event) {
-		// Handle test button action
-		System.out.println("Test button clicked");
-	}
+   
     
     
     // Action handler for the "Connect" button

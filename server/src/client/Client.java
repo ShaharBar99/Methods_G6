@@ -26,7 +26,6 @@ import javafx.event.EventHandler;
 import logic.Role;
 
 
-
 public class Client extends Application {
 
     private static MyClient clientConnection;
@@ -40,7 +39,7 @@ public class Client extends Application {
         try {
             // Create simple GUI for entering IP
             AnchorPane root = new AnchorPane();
-
+            
             // Create TextField for IP
             TextField ipField = new TextField();
             ipField.setPromptText("Enter Server IP");
@@ -78,7 +77,7 @@ public class Client extends Application {
             primaryStage.show();
             
             
-            //exactly what it says madafaka
+            //exactly what it says
             displaySQLTable();
             
 
@@ -107,7 +106,7 @@ public class Client extends Application {
     
     public static void displaySQLTable() {
         
-    	// the root for the table daaaahh
+    	// the root for the table
     	AnchorPane tableRoot = new AnchorPane();
     	
         //create TableView
@@ -116,31 +115,30 @@ public class Client extends Application {
         // Create columns for the table
         
         TableColumn<Order, Integer> spotColumn = new TableColumn<>("Spot");
-        //spotColumn.setCellValueFactory(new PropertyValueFactory<Order, Integer>("ParkingSpace.getSpotId()"));
-        spotColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getParkingSpace().getSpotId()));
-        //This one is because there's no getter for parkingSpaceID in the Order class
+        spotColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getParkingSpot().getSpotId()));
+        //This one is because there's no getter for SpotID in the Order class
         
         TableColumn<Order, Integer> orderIdColumn = new TableColumn<>("Order Number");
-        orderIdColumn.setCellValueFactory(new PropertyValueFactory<Order, Integer>("orderID"));
+        orderIdColumn.setCellValueFactory(new PropertyValueFactory<Order, Integer>("order_id"));
 
         TableColumn<Order, Date> orderDateColumn = new TableColumn<>("Order Date");
-        orderDateColumn.setCellValueFactory(new PropertyValueFactory<Order, Date>("orderDate"));
+        orderDateColumn.setCellValueFactory(new PropertyValueFactory<Order, Date>("order_date"));
         
-        TableColumn<Order, Integer> confirmationCodeColumn = new TableColumn<>("Code");
-        confirmationCodeColumn.setCellValueFactory(new PropertyValueFactory<Order, Integer>("confirmationCode"));
+        TableColumn<Order, Integer> codeColumn = new TableColumn<>("Code");
+        codeColumn.setCellValueFactory(new PropertyValueFactory<Order, Integer>("code"));
         
         TableColumn<Order, Integer> subscriberIdColumn = new TableColumn<>("Subscriber ID");
         subscriberIdColumn.setCellValueFactory(new PropertyValueFactory<Order, Integer>("subscriberID"));
         
         TableColumn<Order, Date> dateOfPlacingOrderColumn = new TableColumn<>("Date of Placing Order");
-        dateOfPlacingOrderColumn.setCellValueFactory(new PropertyValueFactory<Order, Date>("dateOfPlacingAnOrder"));
+        dateOfPlacingOrderColumn.setCellValueFactory(new PropertyValueFactory<Order, Date>("date_of_placing_an_order"));
                     
         
         // Add the columns to the table
         orderTable.getColumns().add(orderIdColumn);
         orderTable.getColumns().add(subscriberIdColumn);
         orderTable.getColumns().add(spotColumn);
-        orderTable.getColumns().add(confirmationCodeColumn);
+        orderTable.getColumns().add(codeColumn);
         orderTable.getColumns().add(orderDateColumn);
         orderTable.getColumns().add(dateOfPlacingOrderColumn);
         
@@ -151,7 +149,7 @@ public class Client extends Application {
         orderIdColumn.setPrefWidth(110);
         subscriberIdColumn.setPrefWidth(110);
         spotColumn.setPrefWidth(100);
-        confirmationCodeColumn.setPrefWidth(100);
+        codeColumn.setPrefWidth(100);
         orderDateColumn.setPrefWidth(150);
     	dateOfPlacingOrderColumn.setPrefWidth(150);
 
