@@ -59,8 +59,13 @@ public class BparkServer extends AbstractServer {
 			System.out.println("order placed");
 			sendToSingleClient("order placed", client);
 		} else if (msg instanceof String) {
-			if (msg.equals("Client disconnected")) // Note, make sure client sends a message before it disconnects
+			String msgString = (String)msg;
+			if (msgString.equals("Client disconnected")) // Note, make sure client sends a message before it disconnects
 				clientDisconnected(client);
+			if (msgString.startsWith("get_order: ")) {
+				String parts[] = msgString.split("get_order: ");
+				con.getOrdersFromDB(parts[1]);
+			}
 		}
 	}
 

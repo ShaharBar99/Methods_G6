@@ -217,11 +217,56 @@ public class MySQLConnection {
 			stmt.close();
 			System.out.println("got all orders");
 		} catch (SQLException e) {
-			System.out.println("Failed to get size of table");
+			System.out.println("Failed to get all orders");
 		} finally {
 			disconnectFromDB(con);
 		}
 		return orderslist;
+
+	}
+
+	/**
+	 * @return ordersList
+	 */
+	protected Order getOrdersFromDB(String id) {
+		// The method returns an order of a received order id in DB
+		Order temp = null;
+		try {
+			con = connectToDB();
+			if (con == null)
+				throw new SQLException();
+			String order = "SELECT* FROM `order` WHERE id=?;";
+			PreparedStatement stmt = con.prepareStatement(order);
+			ResultSet rs = stmt.executeQuery(order);
+
+			if (rs.next()) {
+				int order_number = rs.getInt("order_number");
+				int parking_space = rs.getInt("parking_space");
+				Date order_date = rs.getDate("order_date");
+				int confirmation_code = rs.getInt("confirmation_code");
+				int subscriber_id = rs.getInt("subscriber_id");
+				Date placing_date = rs.getDate("date_of_placing_an_order");
+				subscriber sub = new subscriber(subscriber_id, "", "", "", Role.SUBSCRIBER, null, 0);
+				ParkingSpot spot = new ParkingSpot(parking_space, null, null);
+
+				// Create Order
+				temp = new Order(confirmation_code, // code
+						sub, // subscriber
+						order_date, // order_date
+						placing_date, // date_of_placing_an_order
+						spot, // parking_space
+						order_number // order_id
+				);
+			}
+			rs.close();
+			stmt.close();
+			System.out.println("got order: " + id);
+		} catch (SQLException e) {
+			System.out.println("Failed to get order");
+		} finally {
+			disconnectFromDB(con);
+		}
+		return temp;
 
 	}
 
