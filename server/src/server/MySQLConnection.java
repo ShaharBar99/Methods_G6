@@ -7,6 +7,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
@@ -48,7 +51,7 @@ public class MySQLConnection {
 		}
 		try {
 			Connection conn = DriverManager
-					.getConnection("jdbc:mysql://localhost/bpark?serverTimezone=IST&useSSL=false", "root", "Aa123456");
+					.getConnection("jdbc:mysql://localhost/bpark?serverTimezone=UTC&useSSL=false", "root", "Aa123456");
 			System.out.println("DB connection succeed");
 			return conn;
 		} catch (Exception ex) {
@@ -74,7 +77,7 @@ public class MySQLConnection {
 		}
 		try {
 			// Connecting to MySQL without specifying a database
-			Connection conn = DriverManager.getConnection("jdbc:mysql://localhost?serverTimezone=IST&useSSL=false",
+			Connection conn = DriverManager.getConnection("jdbc:mysql://localhost?serverTimezone=UTC&useSSL=false",
 					"root", "Aa123456");
 			System.out.println("DB connection succeeded");
 			return conn;
@@ -337,7 +340,9 @@ public class MySQLConnection {
 			String update_order = "UPDATE `order` SET parking_space = ?, order_date = ? WHERE order_number = ?";
 			PreparedStatement stmt = con.prepareStatement(update_order);
 			stmt.setInt(1, order.get_ParkingSpot().getSpotId());
-			stmt.setDate(2, new java.sql.Date(order.getorder_date().getTime()));
+			Date sqlDate = order.getorder_date();
+			// Convert Date back to java.sql.Date
+			stmt.setDate(2, realDate(sqlDate));
 			stmt.setInt(3, order.get_order_id());
 			stmt.executeUpdate();
 			stmt.close();
@@ -347,5 +352,17 @@ public class MySQLConnection {
 		} finally {
 			disconnectFromDB(con);
 		}
+	}
+	
+	private java.sql.Date realDate(Date date){
+		
+		java.util.Date utilDate = new java.util.Date(date.getTime()); 
+
+		// Convert java.util.Date to LocalDate
+		LocalDate localDate = utilDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+
+		// Add one day using LocalDate
+		LocalDate newLocalDate = localDate.plusDays(1);
+		return java.sql.Date.valueOf(newLocalDate);
 	}
 }
