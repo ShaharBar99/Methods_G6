@@ -45,12 +45,17 @@ public class BParkClientController {
 
 	@FXML
 	private Button editButton;
-
+	@FXML
+	private Button backButton;
 	private BParkClient client;
 
 	private List<Order> orders;
 
 	private Runnable backHandler;
+
+	private Stage editStage;
+
+	private EditOrderController controller;
 
 	@FXML
 	public void initialize() {
@@ -79,6 +84,13 @@ public class BParkClientController {
 		}
 	}
 
+/*	public void handleServerMessage(Object msg) {
+		if (msg instanceof List<?>) {
+			setOrders((List<Order>) msg);
+			setClient(client);
+		}
+	}*/
+
 	public void setClient(BParkClient client) {
 		this.client = client;
 		if (orders != null)
@@ -89,6 +101,7 @@ public class BParkClientController {
 
 	public void setBackHandler(Runnable backHandler) {
 		this.backHandler = backHandler;
+
 	}
 
 	public void handleEditButton(ActionEvent e) {
@@ -96,13 +109,14 @@ public class BParkClientController {
 			// Load the new FXML file
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("EditOrder.fxml"));
 			Parent newRoot = loader.load();
-			EditOrderController controller = loader.getController();
+			controller = loader.getController();
 			controller.setClient(client);
+
 			// Create a new stage
-			Stage newStage = new Stage();
-			newStage.setScene(new Scene(newRoot));
-			newStage.setTitle("Edit Order");
-			newStage.show();
+			editStage = new Stage();
+			editStage.setScene(new Scene(newRoot));
+			editStage.setTitle("Edit Order");
+			editStage.show();
 
 		} catch (IOException ex) {
 			ex.printStackTrace();
@@ -111,6 +125,10 @@ public class BParkClientController {
 
 	@FXML
 	private void handleBackButton() {
+		if (editStage.isShowing()) {
+			editStage.close(); // Close the editStage window
+		}
+		System.out.println("editStage closed");
 		if (backHandler != null) {
 			backHandler.run();
 		}

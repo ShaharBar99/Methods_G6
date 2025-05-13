@@ -56,7 +56,7 @@ public class BparkServer extends AbstractServer {
 			}
 			// Valid order
 			con.updateDB(order);
-
+			sendToAllClients(con.getallordersfromDB());
 			System.out.println("order placed");
 			sendToSingleClient("order placed", client);
 		} else if (msg instanceof String) {

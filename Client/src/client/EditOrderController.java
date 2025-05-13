@@ -2,7 +2,9 @@ package client;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.stage.Stage;
 import logic.Order;
 import logic.ParkingSpot;
 
@@ -40,18 +42,7 @@ public class EditOrderController {
             statusLabel.setText("Invalid order number");
         }
     }
-    
-    /*
-    // need to implement inside BparkServer.handleMessageFromClient():
-    if (msg instanceof String str && str.startsWith("get_order:")) {
-        int orderId = Integer.parseInt(str.split(":")[1]);
-        Order order = getOrderById(orderId); // ← you implement this
-        sendToSingleClient(order, client);
-    }
-    else if (msg instanceof Order updatedOrder) {
-        updateDB(updatedOrder); // already exists
-        sendToSingleClient("Order updated successfully", client);
-    }*/
+
 
 
     // update order in server
@@ -93,4 +84,5 @@ public class EditOrderController {
             }
         });
     }
+    
 }
