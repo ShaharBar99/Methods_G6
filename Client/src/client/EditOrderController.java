@@ -1,15 +1,16 @@
 package client;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import logic.Order;
 import logic.ParkingSpot;
-
-import java.time.LocalDate;
-import java.util.Date;
 
 public class EditOrderController {
 
@@ -20,10 +21,41 @@ public class EditOrderController {
 
     private BParkClient client;
     private Order loadedOrder;
+    private BParkClientController parentController;
 
     public void setClient(BParkClient client) {
         this.client = client;
-        client.setMessageListener(this::handleServerResponse);
+        // install our single listener for everything
+        client.setMessageListener(this::handleServerMessage);
+    }
+    
+    public void setParentController(BParkClientController parent) {
+        this.parentController = parent;
+    }
+    
+    private void handleServerMessage(Object msg) {
+        if (msg instanceof Order || msg instanceof String) {
+            // “get_order” reply or the “Updated” message
+            handleServerResponse(msg);
+
+        } else if (msg instanceof List<?>) {
+            // server broadcast: hand the listener back to the table,
+            // forward the List<Order> there, then close this window
+            @SuppressWarnings("unchecked")
+            List<Order> updated = (List<Order>) msg;
+
+            // restore the table-listener
+            client.setMessageListener(parentController::handleServerMessage);
+
+            // forward the data so your table controller does its updateOrders()
+            parentController.handleServerMessage(updated);
+
+            // now close the edit window on the FX thread
+            Platform.runLater(() -> {
+                Stage myStage = (Stage) orderIdField.getScene().getWindow();
+                myStage.close();
+            });
+        }
     }
 
     // get order from server by order id
@@ -84,5 +116,5 @@ public class EditOrderController {
             }
         });
     }
-    
+        
 }

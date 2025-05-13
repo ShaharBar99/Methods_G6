@@ -40,7 +40,7 @@ public class ServerUI extends Application {
 			Scene scene = new Scene(root, 470, 462);
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("Server Client Connections");
-			// Makes sure when X is pressed it closes the server
+			// Makes sure when X is pressed it closes the server(and port)
 			primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 				@Override
 				public void handle(WindowEvent event) {

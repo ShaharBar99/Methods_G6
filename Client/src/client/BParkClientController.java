@@ -1,24 +1,22 @@
 package client;
 
+import java.io.IOException;
+import java.util.Date;
+import java.util.List;
+
 import javafx.application.Platform;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.event.ActionEvent;
 import logic.Order;
-
-import java.io.IOException;
-import java.util.Date;
-import java.util.List;
 
 public class BParkClientController {
 
@@ -45,17 +43,12 @@ public class BParkClientController {
 
 	@FXML
 	private Button editButton;
-	@FXML
-	private Button backButton;
+
+
 	private BParkClient client;
-
 	private List<Order> orders;
-
 	private Runnable backHandler;
-
 	private Stage editStage;
-
-	private EditOrderController controller;
 
 	@FXML
 	public void initialize() {
@@ -79,20 +72,26 @@ public class BParkClientController {
 	}
 
 	private void updateOrders() {
-		for (Order order : orders) {
-			orderTable.getItems().add(order);
+		orderTable.getItems().setAll(orders);
+	}
+
+	public void handleServerMessage(Object msg) {
+		if (msg instanceof List<?>) {
+			List<Order> updated = (List<Order>) msg;
+			Platform.runLater(() -> {
+				this.orders = updated; // update the orders list
+				updateOrders(); // update the table
+			});
 		}
 	}
 
-/*	public void handleServerMessage(Object msg) {
-		if (msg instanceof List<?>) {
-			setOrders((List<Order>) msg);
-			setClient(client);
-		}
-	}*/
-
 	public void setClient(BParkClient client) {
 		this.client = client;
+
+		// whenever the server broadcasts a new orders‐list, call our handler
+		client.setMessageListener(this::handleServerMessage);
+
+		// if you’d already fetched orders before wiring, show them now
 		if (orders != null)
 			updateOrders();
 		else
@@ -104,16 +103,21 @@ public class BParkClientController {
 
 	}
 
+	@FXML
 	public void handleEditButton(ActionEvent e) {
 		try {
-			// Load the new FXML file
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("EditOrder.fxml"));
 			Parent newRoot = loader.load();
-			controller = loader.getController();
+			EditOrderController controller = loader.getController();
+
+			// 1) give it the client
 			controller.setClient(client);
 
-			// Create a new stage
-			editStage = new Stage();
+			// 2) also give it *this* table controller so it can restore us later
+			controller.setParentController(this);
+
+			// show the stage
+			Stage editStage = new Stage();
 			editStage.setScene(new Scene(newRoot));
 			editStage.setTitle("Edit Order");
 			editStage.show();
@@ -125,10 +129,11 @@ public class BParkClientController {
 
 	@FXML
 	private void handleBackButton() {
-		if (editStage.isShowing()) {
-			editStage.close(); // Close the editStage window
+		// only try to close the edit window if it actually exists and is open
+		if (editStage != null && editStage.isShowing()) {
+			editStage.close();
 		}
-		System.out.println("editStage closed");
+		// swap the TableView scene back to the connect screen
 		if (backHandler != null) {
 			backHandler.run();
 		}

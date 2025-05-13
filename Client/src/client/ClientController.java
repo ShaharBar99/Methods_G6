@@ -29,7 +29,6 @@ public class ClientController {
 	private Button disconnectButton; // Exit button (renamed use)
 
 	private BParkClient clientConnection;
-
 	private List<Order> orders;
 
 	@FXML
@@ -118,6 +117,8 @@ public class ClientController {
 					ex.printStackTrace();
 				}
 			});
+			// hand off all future messages to the BParkClientController
+			clientConnection.setMessageListener(controller::handleServerMessage);
 		});
 	}
 	

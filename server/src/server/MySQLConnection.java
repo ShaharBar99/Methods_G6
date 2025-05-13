@@ -354,7 +354,12 @@ public class MySQLConnection {
 		}
 	}
 	
+	/**
+	 * @param date
+	 * @return java.sql.Date
+	 */
 	private java.sql.Date realDate(Date date){
+		// Converts java.util.Date to java.sql.Date
 		
 		java.util.Date utilDate = new java.util.Date(date.getTime()); 
 
