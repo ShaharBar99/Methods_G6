@@ -25,6 +25,9 @@ import logic.subscriber;
 public class MySQLConnection {
 	private Connection con;
 
+	/**
+	 * Class Constructor
+	 */
 	protected MySQLConnection() {
 		createDatabaseAndTable();
 	}
