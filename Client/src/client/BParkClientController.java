@@ -42,7 +42,7 @@ public class BParkClientController {
 
 	@FXML
 	private TableColumn<Order, Date> colDatePlacingOrder;
-	
+
 	@FXML
 	private Button editButton;
 
@@ -64,8 +64,8 @@ public class BParkClientController {
 		colSubscriberID.setCellValueFactory(
 				cellData -> new SimpleIntegerProperty(cellData.getValue().getSubscriber().getId()).asObject());
 
-		colDatePlacingOrder
-				.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getdate_of_placing_an_order()));
+		colDatePlacingOrder.setCellValueFactory(
+				cellData -> new SimpleObjectProperty<>(cellData.getValue().getdate_of_placing_an_order()));
 
 	}
 
@@ -90,23 +90,25 @@ public class BParkClientController {
 	public void setBackHandler(Runnable backHandler) {
 		this.backHandler = backHandler;
 	}
+
 	public void handleEditButton(ActionEvent e) {
 		try {
-	        // Load the new FXML file
-	        FXMLLoader loader = new FXMLLoader(getClass().getResource("EditOrder.fxml"));
-	        Parent newRoot = loader.load();
+			// Load the new FXML file
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("EditOrder.fxml"));
+			Parent newRoot = loader.load();
+			EditOrderController controller = loader.getController();
+			controller.setClient(client);
+			// Create a new stage
+			Stage newStage = new Stage();
+			newStage.setScene(new Scene(newRoot));
+			newStage.setTitle("Edit Order");
+			newStage.show();
 
-	        // Create a new stage
-	        Stage newStage = new Stage();
-	        newStage.setScene(new Scene(newRoot));
-	        newStage.setTitle("Edit Order");
-	        newStage.show();
-
-	    } catch (IOException ex) {
-	        ex.printStackTrace();
-	    }
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
 	}
-	
+
 	@FXML
 	private void handleBackButton() {
 		if (backHandler != null) {

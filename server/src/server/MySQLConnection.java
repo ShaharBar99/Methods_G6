@@ -228,17 +228,18 @@ public class MySQLConnection {
 	/**
 	 * @return ordersList
 	 */
-	protected Order getOrdersFromDB(String id) {
-		// The method returns an order of a received order id in DB
+	protected Order getOrderFromDB(String id) {
+		// The method returns an order of a received order number in DB
 		Order temp = null;
 		try {
 			con = connectToDB();
 			if (con == null)
 				throw new SQLException();
-			String order = "SELECT* FROM `order` WHERE id=?;";
+			String order = "SELECT* FROM `order` WHERE order_number = ?;";
 			PreparedStatement stmt = con.prepareStatement(order);
-			ResultSet rs = stmt.executeQuery(order);
-
+			stmt.setString(1, id);
+			ResultSet rs = stmt.executeQuery();
+			
 			if (rs.next()) {
 				int order_number = rs.getInt("order_number");
 				int parking_space = rs.getInt("parking_space");

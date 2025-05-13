@@ -29,6 +29,7 @@ public class BparkServer extends AbstractServer {
 		this.serverController = controller;
 		// TODO Auto-generated constructor stub
 	}
+
 	/**
 	 * @param msg
 	 * @param client
@@ -59,12 +60,16 @@ public class BparkServer extends AbstractServer {
 			System.out.println("order placed");
 			sendToSingleClient("order placed", client);
 		} else if (msg instanceof String) {
-			String msgString = (String)msg;
+			String msgString = (String) msg;
+			System.out.println(msgString);
 			if (msgString.equals("Client disconnected")) // Note, make sure client sends a message before it disconnects
 				clientDisconnected(client);
+			
 			if (msgString.startsWith("get_order: ")) {
 				String parts[] = msgString.split("get_order: ");
-				con.getOrdersFromDB(parts[1]);
+				Order order = con.getOrderFromDB(parts[1]);
+				System.out.println("Retrieving an order...");
+				sendToSingleClient(order,client);
 			}
 		}
 	}
@@ -80,9 +85,13 @@ public class BparkServer extends AbstractServer {
 				client.sendToClient(msg);
 			else if (msg instanceof List) { // Sends a list of orders
 				List<Order> orderList = (List<Order>) msg;
-				
+
 				client.sendToClient(orderList);
 				System.out.println(orderList);
+			} else if (msg instanceof Order) {
+				Order order = (Order) msg;
+				client.sendToClient(order);
+				System.out.println(order);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

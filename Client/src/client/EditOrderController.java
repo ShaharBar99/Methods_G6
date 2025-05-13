@@ -35,7 +35,7 @@ public class EditOrderController {
 
         try {
             int orderId = Integer.parseInt(idText);
-            client.sendToServerSafely("get_order:" + orderId);
+            client.sendToServerSafely("get_order: " + orderId);
         } catch (NumberFormatException e) {
             statusLabel.setText("Invalid order number");
         }
@@ -72,6 +72,7 @@ public class EditOrderController {
 
         try {
             int spotId = Integer.parseInt(spotText);
+            System.out.println("Updating order with date: " + date);
             loadedOrder.setorder_date(java.sql.Date.valueOf(date));
             loadedOrder.set_ParkingSpot(new ParkingSpot(spotId, null, null));
             client.sendToServerSafely(loadedOrder);

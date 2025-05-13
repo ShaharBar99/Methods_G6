@@ -69,7 +69,7 @@ public class ClientController {
 			disconnectButton.setDisable(false);
 			clientConnection.start();
 			clientConnection.setMessageListener(this::handleServerMessage);
-
+			
 		} catch (Exception e) {
 			showAlert("Error", "Failed to connect to the server at " + ipAddress + ":" + port, Alert.AlertType.ERROR);
 			e.printStackTrace();
