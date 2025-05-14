@@ -39,7 +39,7 @@ public class ServerController {
 	public void initialize() {
 		// This method is called once the FXML has been loaded and initialized
 		setServerIP(); // Set the server IP when the scene is initialized
-		
+
 		// Updates the TableView
 		clientData = FXCollections.observableArrayList();
 		clientTable.setItems(clientData);
@@ -60,16 +60,18 @@ public class ServerController {
 	/**
 	 * @param e
 	 * @throws Exception
+	 * Closes the server application when button is pressed
 	 */
 	public void getExitButton(ActionEvent e) throws Exception {
-		// Closes the server application when button is pressed
 		System.out.println("Closing application...");
 		System.gc();
 		System.exit(0);
 	}
 
-	public void setServerIP() {
-		// Sets IP of the server in the ipLabel
+	/**
+	 * Sets IP of the server in the ipLabel
+	 */
+	private void setServerIP() {
 		try {
 			// Get the IP address of the local machine
 			String ip = InetAddress.getLocalHost().getHostAddress();
@@ -81,25 +83,24 @@ public class ServerController {
 
 	/**
 	 * @param clientInfo
+	 * Gets all clients and starts method that will update the TableView
 	 */
-	public void recievedServerUpdate(List<List<String>> clientInfo) {
-		// Gets all clients and starts method that will update the TableView
-		updateClientList(clientInfo);
+	public void recievedServerUpdate(List<List<String>> clientInfoList) {
+		updateClientList(clientInfoList);
 	}
 
 	/**
 	 * @param clientInfo
+	 * Gets all clients and updates the TableView
 	 */
-	private void updateClientList(List<List<String>> clientInfo) {
-		// Gets all clients and updates the TableView
-		
+	private void updateClientList(List<List<String>> clientInfoList) {
 		// Clear any old items
 		clientData.clear();
 
 		// Add updated client information to the TableView
-		for (List<String> string : clientInfo) { // Each string has 4 Strings: id, IP, HostName, Status
-			if (string.size() == 4) {
-				clientData.add(0, string);
+		for (List<String> clientString : clientInfoList) { // Each string has 4 Strings: id, IP, HostName, Status
+			if (clientString.size() == 4) {
+				clientData.add(0, clientString);
 			}
 		}
 	}

@@ -18,16 +18,19 @@ public class ServerUI extends Application {
 
 	/**
 	 * @param args
+	 * Starts the application
 	 */
 	public static void main(String[] args) {
-		// Starts the application
+		// 
 		launch(args);
 	}
 
+	/**
+	 * The method gets a Stage, and Loads the FXML, ServerController, sets up the
+	 * Initial scene and starts The BParkServer
+	 */
 	@Override
 	public void start(Stage primaryStage) {
-		// The method gets a Stage, and Loads the FXML, ServerController, sets up the
-		// Initial scene and starts The BParkServer
 		try {
 			// Load the FXML layout
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/ServerGUI.fxml"));

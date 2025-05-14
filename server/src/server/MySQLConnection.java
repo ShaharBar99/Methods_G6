@@ -7,9 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
@@ -35,7 +33,7 @@ public class MySQLConnection {
 	/**
 	 * @return con
 	 */
-	protected Connection getCon() {
+	public Connection getCon() {
 		// Getter of con
 		return con;
 	}
@@ -67,7 +65,7 @@ public class MySQLConnection {
 
 	/**
 	 * Connect to the MySQL server (without specifying a database)
-	 * 
+	 * Happens at Server Startup
 	 * @return Connection object
 	 */
 	private Connection connectToMySQL() {
@@ -188,9 +186,9 @@ public class MySQLConnection {
 
 	/**
 	 * @return ordersList
+	 * The method returns an ArrayList<Order> of all orders in DB
 	 */
-	protected ArrayList<Order> getallordersfromDB() {
-		// The method returns an ArrayList<Order> of all orders in DB
+	public ArrayList<Order> getallordersfromDB() {
 		ArrayList<Order> orderslist = new ArrayList<>();
 		try {
 			con = connectToDB();
@@ -233,9 +231,9 @@ public class MySQLConnection {
 
 	/**
 	 * @return ordersList
+	 * The method returns an order of a received order number in DB
 	 */
-	protected Order getOrderFromDB(String id) {
-		// The method returns an order of a received order number in DB
+	public Order getOrderFromDB(String id) {
 		Order temp = null;
 		try {
 			con = connectToDB();
@@ -278,64 +276,10 @@ public class MySQLConnection {
 	}
 
 	/**
-	 * @return orders
-	 */
-	protected String[][] getordersfromDB() {
-		// Returns a matrix of strings that have only parking_space and order_date
-		// Query to get the size of the matrix
-		int size = 0;
-		try {
-			con = connectToDB();
-			if (con == null)
-				throw new SQLException();
-			String sizetable = "SELECT COUNT(*) AS total FROM `order`; ";
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery(sizetable);
-			if (rs.next()) {
-				size = rs.getInt("total");
-				System.out.println("got size!");
-			}
-			rs.close();
-			stmt.close();
-		} catch (SQLException e) {
-			System.out.println("Failed to get size of table");
-		} finally {
-			disconnectFromDB(con);
-		}
-		// Query to put parking_space and order_date in orders
-		String orders[][] = new String[size][2];
-		try {
-			con = connectToDB();
-			if (con == null)
-				throw new SQLException();
-			String getorders = "SELECT parking_space,order_date FROM `order`;";
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery(getorders);
-			int index = 0;
-			while (rs.next()) {
-				String parking_space = rs.getString("parking_space");
-				String order_date = rs.getString("order_date");
-				orders[index][0] = parking_space;
-				orders[index][1] = order_date;
-				index++;
-			}
-			rs.close();
-			stmt.close();
-			System.out.println("got orders!");
-		} catch (SQLException e) {
-			System.out.println("Failed to get orders");
-		} finally {
-			disconnectFromDB(con);
-		}
-
-		return orders;
-	}
-
-	/**
 	 * @param order
+	 * Gets an order and updates it in the DB
 	 */
-	protected void updateDB(Order order) {
-		// Gets an order and updates it in the DB
+	public void updateDB(Order order) {
 		try {
 			con = connectToDB();
 			if (con == null)
@@ -360,10 +304,9 @@ public class MySQLConnection {
 	/**
 	 * @param date
 	 * @return java.sql.Date
+	 * Converts java.util.Date to java.sql.Date
 	 */
-	private java.sql.Date realDate(Date date){
-		// Converts java.util.Date to java.sql.Date
-		
+	private java.sql.Date realDate(Date date){	
 		java.util.Date utilDate = new java.util.Date(date.getTime()); 
 
 		// Convert java.util.Date to LocalDate
