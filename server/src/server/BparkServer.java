@@ -23,9 +23,9 @@ public class BparkServer extends AbstractServer {
 	 * @param port
 	 * @param controller
 	 */
-	public BparkServer(int port, ServerController controller) {
-		// Constructor for the class, gets DEFAULT_PORT and ServerController
-		super(port);
+	public BparkServer(ServerController controller) {
+		// Constructor for the class, gets ServerController
+		super(DEFAULT_PORT);
 		this.serverController = controller;
 		// TODO Auto-generated constructor stub
 	}

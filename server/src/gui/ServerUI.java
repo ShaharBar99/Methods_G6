@@ -52,7 +52,7 @@ public class ServerUI extends Application {
 			primaryStage.show();
 
 			// Start the BparkServer
-			BparkServer server = new BparkServer(5555, serverController);
+			BparkServer server = new BparkServer(serverController);
 			server.listen();
 
 		} catch (IOException e) {
