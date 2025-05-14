@@ -2,48 +2,72 @@ package client;
 
 import java.io.IOException;
 
+/**
+ * The class handles clients of BPark
+ */
 public class BParkClient extends ObservableClient {
 
-    private MessageListener messageListener;
+	private MessageListener messageListener;
 
-    public BParkClient(String host, int port) {
-        super(host, port); // This sets the host and port to be used in openConnection()
-    }
+	/**
+	 * @param host
+	 * @param port sets the host and port for the connection
+	 */
+	public BParkClient(String host, int port) {
+		super(host, port); // This sets the host and port to be used in openConnection()
+	}
 
-    public void setMessageListener(MessageListener listener) {
-        this.messageListener = listener;
-    }
+	/**
+	 * @param listener Sets the listener for incoming messages from the server
+	 */
+	public void setMessageListener(MessageListener listener) {
+		this.messageListener = listener;
+	}
 
-    @Override
-    protected void handleMessageFromServer(Object msg) {
-       // System.out.println("Received from server: " + msg);
-        if (messageListener != null) {
-            messageListener.onMessage(msg);
-        }
-    }
+	/**
+	 * Handles messages received from the server
+	 */
+	@Override
+	protected void handleMessageFromServer(Object msg) {
+		if (messageListener != null) {
+			messageListener.onMessage(msg);
+		}
+	}
 
-    public void sendToServerSafely(Object msg) {
-        try {
-            sendToServer(msg);
-        } catch (IOException e) {
-            System.err.println("Failed to send message to server: " + e.getMessage());
-        }
-    }
+	/**
+	 * @param msg Safely sends a message to the server with error handling
+	 */
+	public void sendToServerSafely(Object msg) {
+		try {
+			sendToServer(msg);
+		} catch (IOException e) {
+			System.err.println("Failed to send message to server: " + e.getMessage());
+		}
+	}
 
-    public void start() {
-        try {
-            openConnection();
-        } catch (IOException e) {
-            System.err.println("Failed to open connection: " + e.getMessage());
-        }
-    }
+	/**
+	 * Starts the client connection
+	 * @throws Exception 
+	 */
+	public void start() throws Exception {
+		try {
+			openConnection();
+		} catch (IOException e) {
+			System.err.println("Failed to open connection: " + e.getMessage());
+			throw new Exception();
+		}
+	}
 
-    public void stop() {
-        try {
-        	this.sendToServerSafely("Client disconnected");
-            closeConnection();
-        } catch (IOException e) {
-            System.err.println("Failed to close connection: " + e.getMessage());
-        }
-    }
+	/**
+	 * Stops the client connection
+	 */
+	public void stop() {
+		try {
+			this.sendToServerSafely("Client disconnected");
+			closeConnection();
+		} catch (IOException e) {
+			System.err.println("Failed to close connection: " + e.getMessage());
+
+		}
+	}
 }

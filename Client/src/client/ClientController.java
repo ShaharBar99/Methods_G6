@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,6 +13,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import logic.Order;
 
 public class ClientController {
@@ -55,7 +57,6 @@ public class ClientController {
 	@FXML
 	public void handleDisconnectButton() {
 		// Exit application
-
 		System.gc();
 		Platform.exit();
 
@@ -67,11 +68,12 @@ public class ClientController {
 			connectButton.setDisable(true);
 			disconnectButton.setDisable(false);
 			clientConnection.start();
+			// Creates the order table 
 			clientConnection.setMessageListener(this::handleServerMessage);
 			
 		} catch (Exception e) {
 			showAlert("Error", "Failed to connect to the server at " + ipAddress + ":" + port, Alert.AlertType.ERROR);
-			e.printStackTrace();
+			connectButton.setDisable(false);
 		}
 	}
 
@@ -98,7 +100,16 @@ public class ClientController {
 			Stage stage = (Stage) connectButton.getScene().getWindow();
 			stage.setScene(new Scene(tableRoot));
 			stage.setTitle("Orders Table");
-
+			// Makes sure when X is pressed it closes the connection to the server
+			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+				@Override
+				public void handle(WindowEvent event) {
+					System.out.println("Closing application...");
+					clientConnection.stop();
+					System.gc();
+					System.exit(0);
+				}
+			});
 			BParkClientController controller = loader.getController();
 			controller.setOrders(orders);
 			controller.setClient(clientConnection);

@@ -25,7 +25,7 @@ public class EditOrderController {
 
     public void setClient(BParkClient client) {
         this.client = client;
-        // install our single listener for everything
+        // Whenever the server broadcasts a new Object, calls handleServerMessage
         client.setMessageListener(this::handleServerMessage);
     }
     
@@ -36,21 +36,29 @@ public class EditOrderController {
     private void handleServerMessage(Object msg) {
         if (msg instanceof Order || msg instanceof String) {
             // “get_order” reply or the “Updated” message
-            handleServerResponse(msg);
+        	Platform.runLater(() -> {
+                if (msg instanceof Order order) {
+                    loadedOrder = order;
+                    orderDatePicker.setValue(((java.sql.Date) order.getorder_date()).toLocalDate());
+                    spotIdField.setText(String.valueOf(order.get_ParkingSpot().getSpotId()));
+                    statusLabel.setText("Order loaded.");
+                } else if (msg instanceof String s) {
+                    statusLabel.setText(s);
+                }
+            });
 
         } else if (msg instanceof List<?>) {
             // server broadcast: hand the listener back to the table,
             // forward the List<Order> there, then close this window
-            @SuppressWarnings("unchecked")
             List<Order> updated = (List<Order>) msg;
 
-            // restore the table-listener
+            // Restore the table-listener
             client.setMessageListener(parentController::handleServerMessage);
 
-            // forward the data so your table controller does its updateOrders()
+            // Forward the data so the table controller does its updateOrders()
             parentController.handleServerMessage(updated);
 
-            // now close the edit window on the FX thread
+            // Close the EditOrder window
             Platform.runLater(() -> {
                 Stage myStage = (Stage) orderIdField.getScene().getWindow();
                 myStage.close();
@@ -102,19 +110,5 @@ public class EditOrderController {
         } catch (NumberFormatException e) {
             statusLabel.setText("Invalid spot ID");
         }
-    }
-
-    private void handleServerResponse(Object msg) {
-        Platform.runLater(() -> {
-            if (msg instanceof Order order) {
-                loadedOrder = order;
-                orderDatePicker.setValue(((java.sql.Date) order.getorder_date()).toLocalDate());
-                spotIdField.setText(String.valueOf(order.get_ParkingSpot().getSpotId()));
-                statusLabel.setText("Order loaded.");
-            } else if (msg instanceof String s) {
-                statusLabel.setText(s);
-            }
-        });
-    }
-        
+    }   
 }

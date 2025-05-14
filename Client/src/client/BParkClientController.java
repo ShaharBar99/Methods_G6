@@ -75,11 +75,16 @@ public class BParkClientController {
 		orderTable.getItems().setAll(orders);
 	}
 
+	
+	/**
+	 * @param msg
+	 * Updates the table after Edit happens
+	 */
 	public void handleServerMessage(Object msg) {
 		if (msg instanceof List<?>) {
 			List<Order> updated = (List<Order>) msg;
 			Platform.runLater(() -> {
-				this.orders = updated; // update the orders list
+				setOrders(updated); // update the orders list				 
 				updateOrders(); // update the table
 			});
 		}
@@ -88,10 +93,8 @@ public class BParkClientController {
 	public void setClient(BParkClient client) {
 		this.client = client;
 
-		// whenever the server broadcasts a new orders‐list, call our handler
+		// whenever the server broadcasts a new orders‐list, calls handleServerMessage
 		client.setMessageListener(this::handleServerMessage);
-
-		// if you’d already fetched orders before wiring, show them now
 		if (orders != null)
 			updateOrders();
 		else
@@ -110,13 +113,11 @@ public class BParkClientController {
 			Parent newRoot = loader.load();
 			EditOrderController controller = loader.getController();
 
-			// 1) give it the client
+			// Refreshes the table after the edit happens (Back to the order Table)
 			controller.setClient(client);
-
-			// 2) also give it *this* table controller so it can restore us later
 			controller.setParentController(this);
 
-			// show the stage
+			// Show the EditOrder screen
 			Stage editStage = new Stage();
 			editStage.setScene(new Scene(newRoot));
 			editStage.setTitle("Edit Order");
@@ -129,7 +130,7 @@ public class BParkClientController {
 
 	@FXML
 	private void handleBackButton() {
-		// only try to close the edit window if it actually exists and is open
+		// Close the EditOrder screen if it actually exists and is open
 		if (editStage != null && editStage.isShowing()) {
 			editStage.close();
 		}
