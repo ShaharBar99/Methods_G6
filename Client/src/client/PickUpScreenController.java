@@ -10,7 +10,7 @@ public class PickUpScreenController {
 
 	private Runnable backHandler;
 	private BParkClient client;
-	private user user;;
+	private user user;
 	@FXML
 	TextArea parkingCode;
 	
@@ -44,12 +44,11 @@ public class PickUpScreenController {
 	public void showPickUpSuccess() {
 		ShowAlert.showAlert("Success",
 				"Pickup Success! Please wait while your vehicle moves to the vehicle collection point",
-				Alert.AlertType.CONFIRMATION);
+				Alert.AlertType.INFORMATION);
 	}
 
 	public void showLateFeeNotice() {
-		// showPickUpSuccess();
-		ShowAlert.showAlert("Late!", "You were late picking up your vehicle", Alert.AlertType.WARNING);
+		ShowAlert.showAlert("Late!", "You were late to pick up your vehicle", Alert.AlertType.WARNING);
 	}
 
 	/**
