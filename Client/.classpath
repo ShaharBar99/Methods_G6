@@ -6,7 +6,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry excluding="logic/" kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/JavaFx"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/JavaFX"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/bpark"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
