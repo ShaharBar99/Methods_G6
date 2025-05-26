@@ -1,8 +1,7 @@
 package client;
 
-import javafx.application.Platform;
+
 import javafx.scene.control.Alert;
-import javafx.stage.Stage;
 
 public class ShowAlert {
 

@@ -11,43 +11,71 @@ public class PickUpScreenController {
 	private Runnable backHandler;
 	private BParkClient client;
 	private user user;
+	// private ParkingController parkingController=new ParkingController(this,user);
 	@FXML
 	TextArea parkingCode;
-	
-	// private ParkingController parkingController=new ParkingController(this,user);
+
+	/**
+	 * Allow only digits and limit to 6 characters to the textbox
+	 */
+	@FXML
+	public void initialize() {
+		parkingCode.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (!newValue.matches("\\d{0,6}")) {
+				parkingCode.setText(oldValue); // Revert to old value if invalid
+			}
+		});
+	}
+
+	/**
+	 * @param backHandler Sets the backHandler
+	 */
 	public void setBackHandler(Runnable backHandler) {
 		this.backHandler = backHandler;
 	}
-	
+
+	/**
+	 * Sends a message to server to send Email and sms to the subscriber, shows a
+	 * popup
+	 */
 	@FXML
 	public void handleLostCodeRequest() {
 		// parkingController.handleLostCode();
-		ShowAlert.showAlert("Code sent!", "Code was sent to Email and phone",Alert.AlertType.INFORMATION);
+		ShowAlert.showAlert("Code sent!", "Code was sent to Email and phone", Alert.AlertType.INFORMATION);
 	}
 
+	/**
+	 * Sends the code to the ParkingController verifies it and shows a popup
+	 */
 	@FXML
 	public void submitParkingCode() {
 		String code = parkingCode.getText().trim();
-		if (code.isEmpty()) {
-			ShowAlert.showAlert("Error", "Please enter a parking code", Alert.AlertType.ERROR);
+		if (code.length() < 6) {
+			ShowAlert.showAlert("Error", "Enter a 6 digit code!", Alert.AlertType.ERROR);
 		} else {
 			try {
-				// parkingController.requestCarPickUp(code);
-				ShowAlert.showAlert("Message sent!", "Message was sent to Email and phone",
-						Alert.AlertType.INFORMATION);
+				int parkingCode = Integer.parseInt(code);
+				// parkingController.requestCarPickUp(parkingCode);
+				showPickUpSuccess();
 			} catch (Exception e) {
 				ShowAlert.showAlert("Error", "Entered wrong code!", Alert.AlertType.ERROR);
 			}
 		}
 	}
 
+	/**
+	 * Shows success popup
+	 */
 	public void showPickUpSuccess() {
 		ShowAlert.showAlert("Success",
 				"Pickup Success! Please wait while your vehicle moves to the vehicle collection point",
 				Alert.AlertType.INFORMATION);
 	}
 
-	public void showLateFeeNotice() {
+	/**
+	 * Shows late pickup popup
+	 */
+	public void showLateArrivalMessage() {
 		ShowAlert.showAlert("Late!", "You were late to pick up your vehicle", Alert.AlertType.WARNING);
 	}
 
