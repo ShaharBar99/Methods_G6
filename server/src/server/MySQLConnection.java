@@ -78,7 +78,7 @@ public class MySQLConnection {
 		}
 		try {
 			// Connecting to MySQL without specifying a database
-			Connection conn = DriverManager.getConnection("jdbc:mysql://localhost?serverTimezone=UTC&useSSL=false",
+			Connection conn = DriverManager.getConnection("jdbc:mysql://localhost?serverTimezone=IST&useSSL=false",
 					"root", "Aa123456");
 			System.out.println("DB connection succeeded");
 			return conn;

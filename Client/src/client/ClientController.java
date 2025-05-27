@@ -80,26 +80,23 @@ public class ClientController {
 	private void handleServerMessage(Object msg) {
 		Platform.runLater(() -> {
 			System.out.println("[Server] " + msg);
-			if (msg instanceof List<?>) {
-				orders = (List<Order>) msg;
-				System.out.println(orders);
-				System.out.println("Orders added");
-			}
 
 			// Load next screen (Order Table)
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("BParkClientUI.fxml"));
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("MainMenuScreen.fxml"));
 			Parent tableRoot = null;
 			try {
 				tableRoot = loader.load();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
+				System.out.println("cant load main menu screen");
 				e.printStackTrace();
 			}
-
 			// After Connection start the order table
 			Stage stage = (Stage) connectButton.getScene().getWindow();
 			stage.setScene(new Scene(tableRoot));
-			stage.setTitle("Orders Table");
+			stage.setTitle("Main Menu");
+			stage.setFullScreen(true);
+
 			// Makes sure when X is pressed it closes the connection to the server
 			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 				@Override
@@ -110,9 +107,9 @@ public class ClientController {
 					System.exit(0);
 				}
 			});
-			BParkClientController controller = loader.getController();
-			controller.setOrders(orders);
-			controller.setClient(clientConnection);
+			MainMenuController controller = loader.getController();
+			//controller.setOrders(orders);
+			//controller.setClient(clientConnection);
 			controller.setBackHandler(() -> { // Handle back button action using lambda
 				try { // Stop the client connection
 					clientConnection.stop();
@@ -129,7 +126,7 @@ public class ClientController {
 				}
 			});
 			// hand off all future messages to the BParkClientController
-			clientConnection.setMessageListener(controller::handleServerMessage);
+			//clientConnection.setMessageListener(controller::handleServerMessage);
 		});
 	}
 	
