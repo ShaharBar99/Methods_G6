@@ -173,10 +173,18 @@ public class ParkingController {
 		}
 	}
 
-	public void markLateArrival(Parkingsession session) {
+	public void markLateArrival(Parkingsession session) throws Exception {
 		// this method is called when the car is picked up late
 		session.setLate(true);
-		// TO DO: update session in the database
+		// TO DO: update session in the database/send message to client about being late
+		try {
+			client.sendToServerSafely("Send late message by Email/SMS to:" + subscriber1.getId());
+		} catch (Exception e) {
+			System.err.println("Error getting parking code from server: " + e.getMessage());
+
+			e.printStackTrace();
+			throw new Exception();
+		}
 		pickUpScreen.showLateArrivalMessage(); // show late arrival message
 
 	}
