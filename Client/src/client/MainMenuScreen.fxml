@@ -5,24 +5,56 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane fx:id="mainPane" prefHeight="1080.0" prefWidth="1920.0" styleClass="main-pane"
+<AnchorPane fx:id="mainPane"
+            styleClass="main-pane"
             stylesheets="@styles.css"
+            maxWidth="Infinity" maxHeight="Infinity"
             xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="client.MainMenuController">
 
+    <VBox fx:id="mainVBox"
+          alignment="CENTER"
+          spacing="30.0"
+          AnchorPane.topAnchor="60.0"
+          AnchorPane.leftAnchor="200.0"
+          AnchorPane.rightAnchor="200.0"
+          AnchorPane.bottomAnchor="100.0"
+          maxWidth="Infinity" maxHeight="Infinity"
+          styleClass="menu-container">
 
-    <children>
-        <VBox alignment="CENTER" prefHeight="600.0" prefWidth="600.0" spacing="30.0" AnchorPane.leftAnchor="660.0" AnchorPane.topAnchor="150.0">
+        <Label styleClass="title-label" text="🚘 Parking System" />
 
-            <Label styleClass="title-label" text="🚘 Parking System" />
-            <Button onAction="#parkingRequest" styleClass="menu-button" text="🚗 Parking Request" />
-            <Button onAction="#retrieveRequest" styleClass="menu-button" text="🎁 Retrieve Request" />
-            <Button onAction="#reservationRequest" styleClass="menu-button" text="📅 Reservation Request" />
-            <Button onAction="#historyRequest" fx:id="historybutton" styleClass="menu-button" text="📖 History Request" />
-            <Button onAction="#admin" fx:id="adminbutton" styleClass="menu-button" text="🛠️ Admin Panel" />
+        <Button onAction="#parkingRequest"
+                styleClass="menu-button"
+                text="🚗 Parking Request"/>
 
-        </VBox>
-        <Button layoutX="1615.0" layoutY="943.0" onAction="#handleBackButton" prefWidth="191.0" styleClass="disconnect-button" text="Disconnect" />
-    </children>
+        <Button onAction="#retrieveRequest"
+                styleClass="menu-button"
+                text="🎁 Retrieve Request"/>
+
+        <Button onAction="#reservationRequest"
+                styleClass="menu-button"
+                text="📅 Reservation Request"/>
+
+        <Button onAction="#historyRequest"
+                fx:id="historybutton"
+                styleClass="menu-button"
+                text="📖 History Request"/>
+
+        <Button onAction="#admin"
+                fx:id="adminbutton"
+                styleClass="menu-button"
+                text="🛠️ Admin Panel"/>
+
+    </VBox>
+
+    <Button fx:id="disconnectButton"
+            text="Disconnect"
+            onAction="#handleBackButton"
+            styleClass="disconnect-button"
+            AnchorPane.bottomAnchor="40.0"
+            AnchorPane.rightAnchor="60.0"
+            maxWidth="Infinity" maxHeight="Infinity"
+            prefWidth="200.0" prefHeight="50.0"/>
 </AnchorPane>

@@ -1,6 +1,10 @@
 package client;
 
 
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.geom.AffineTransform;
 import java.io.IOException;
 
 import javafx.event.ActionEvent;
@@ -10,6 +14,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 
@@ -60,7 +65,7 @@ public class MainMenuController {
             Stage stage = new Stage();
             stage.setTitle("History");
             stage.setScene(new Scene(root));
-            stage.setFullScreen(true);
+            stage.setMaximized(true);
             stage.show();
 
             // סגור את החלון הנוכחי
@@ -93,12 +98,33 @@ public class MainMenuController {
             // טען את המסך החדש
             FXMLLoader loader = new FXMLLoader(getClass().getResource("AdminScreen.fxml"));
             Parent root = loader.load();
+            //scaling check
+            GraphicsDevice gd = GraphicsEnvironment
+                    .getLocalGraphicsEnvironment()
+                    .getDefaultScreenDevice();
 
+                GraphicsConfiguration gc = gd.getDefaultConfiguration();
+                AffineTransform transform = gc.getDefaultTransform();
+
+                double scaleX = transform.getScaleX();
+                double scaleY = transform.getScaleY();
+            if(scaleX == 1.25) {
+            	scaleX = 0.8;
+            	scaleY = 0.8;
+            }
+
+                //System.out.println("Windows Display Scaling (X): " + scaleX);
+                //System.out.println("Windows Display Scaling (Y): " + scaleY);
+            //////////////////
             // פתח חלון חדש
             Stage stage = new Stage();
             stage.setTitle("AdminScreen");
             stage.setScene(new Scene(root));
-            stage.setFullScreen(true);
+            stage.setMaximized(true);
+            stage.setRenderScaleX(0);
+            stage.setRenderScaleY(0);
+            //root.setScaleX(scaleX); // zoom in
+            //root.setScaleY(scaleY);
             stage.show();
 
             // סגור את החלון הנוכחי

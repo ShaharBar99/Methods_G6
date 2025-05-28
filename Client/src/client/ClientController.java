@@ -1,5 +1,12 @@
 package client;
 
+import java.awt.Dimension;
+import java.awt.DisplayMode;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Toolkit;
+import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.List;
 
@@ -7,11 +14,15 @@ import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.transform.Scale;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import logic.Order;
@@ -92,10 +103,26 @@ public class ClientController {
 				e.printStackTrace();
 			}
 			// After Connection start the order table
-			Stage stage = (Stage) connectButton.getScene().getWindow();
-			stage.setScene(new Scene(tableRoot));
+         // Create a group and apply scale
+            /*Group scaledGroup = new Group(tableRoot);
+
+            // Calculate scale
+            Dimension logicalSize = Toolkit.getDefaultToolkit().getScreenSize();
+            GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+            DisplayMode dm = gd.getDisplayMode();
+            double scaleX = dm.getWidth() / logicalSize.getWidth();
+            double scaleY = dm.getHeight() / logicalSize.getHeight();
+
+            Scale scale = new Scale(1/scaleX, 1/scaleY, 0, 0);
+            scaledGroup.getTransforms().add(scale);*/
+
+            Stage stage = (Stage) connectButton.getScene().getWindow();
+            Scene scene = new Scene(tableRoot);
+            stage.setScene(scene);
+            stage.sizeToScene();
+            stage.centerOnScreen();
 			stage.setTitle("Main Menu");
-			stage.setFullScreen(true);
+			stage.setMaximized(true);
 
 			// Makes sure when X is pressed it closes the connection to the server
 			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
