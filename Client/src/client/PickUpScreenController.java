@@ -2,8 +2,7 @@ package client;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
-import javafx.scene.control.TextArea;
-import javafx.stage.Stage;
+import javafx.scene.control.TextField;
 import logic.*;
 
 public class PickUpScreenController {
@@ -13,7 +12,7 @@ public class PickUpScreenController {
 	private user user;
 	// private ParkingController parkingController=new ParkingController(this,user);
 	@FXML
-	TextArea parkingCode;
+	TextField parkingCode;
 
 	/**
 	 * Allow only digits and limit to 6 characters to the textbox
@@ -40,6 +39,7 @@ public class PickUpScreenController {
 	 */
 	@FXML
 	public void handleLostCodeRequest() {
+		parkingCode.setText("");
 		// parkingController.handleLostCode();
 		ShowAlert.showAlert("Code sent!", "Code was sent to Email and phone", Alert.AlertType.INFORMATION);
 	}
@@ -53,6 +53,7 @@ public class PickUpScreenController {
 		if (code.length() < 6) {
 			ShowAlert.showAlert("Error", "Enter a 6 digit code!", Alert.AlertType.ERROR);
 		} else {
+			parkingCode.setText("");
 			try {
 				int parkingCode = Integer.parseInt(code);
 				// parkingController.requestCarPickUp(parkingCode);
