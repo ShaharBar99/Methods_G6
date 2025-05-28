@@ -3,14 +3,15 @@ package client;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Alert.AlertType;
 import logic.*;
 
 public class PickUpScreenController {
 
 	private Runnable backHandler;
 	private BParkClient client;
-	private user user;
-	// private ParkingController parkingController=new ParkingController(this,user);
+	private boolean serverConnection = true;
+	private ParkingController parkingController;
 	@FXML
 	TextField parkingCode;
 
@@ -33,6 +34,20 @@ public class PickUpScreenController {
 		this.backHandler = backHandler;
 	}
 
+	public void setParkingController(ParkingController parkingController) {
+		this.parkingController = parkingController;
+	}
+	
+	public void setClient(BParkClient client) {
+		this.client = client;
+	}
+
+	private void initializeParkingControllerIfNeeded() {
+		if (parkingController == null) {
+			parkingController = ParkingController.getInstance(client);
+		}
+	}
+
 	/**
 	 * Sends a message to server to send Email and sms to the subscriber, shows a
 	 * popup
@@ -40,7 +55,16 @@ public class PickUpScreenController {
 	@FXML
 	public void handleLostCodeRequest() {
 		parkingCode.setText("");
-		// parkingController.handleLostCode();
+		initializeParkingControllerIfNeeded();
+		try {
+			parkingController.handleLostCode();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			ShowAlert.showAlert("Error", "Server communication failure.", AlertType.ERROR);
+			e.printStackTrace();
+			serverConnection = false;
+		}
+		if(serverConnection)
 		ShowAlert.showAlert("Code sent!", "Code was sent to Email and phone", Alert.AlertType.INFORMATION);
 	}
 
@@ -56,11 +80,18 @@ public class PickUpScreenController {
 			parkingCode.setText("");
 			try {
 				int parkingCode = Integer.parseInt(code);
-				// parkingController.requestCarPickUp(parkingCode);
-				showPickUpSuccess();
+				initializeParkingControllerIfNeeded();
+				try {
+					parkingController.requestCarPickUp(parkingCode);
+				} catch (Exception e) {
+					ShowAlert.showAlert("Error", "Server communication failure.", AlertType.ERROR);
+					serverConnection = false;
+				}
 			} catch (Exception e) {
 				ShowAlert.showAlert("Error", "Entered wrong code!", Alert.AlertType.ERROR);
 			}
+			if(serverConnection)
+			showPickUpSuccess();
 		}
 	}
 
