@@ -11,8 +11,12 @@ public class ParkingController {
 	private PickUpScreenController pickUpScreen;
 	private static final Object lock = new Object();
 	private ParkingSpot spot;
+	//private ParkingSpot spot = new ParkingSpot(0, SpotStatus.FREE, null); // testin
 	private boolean isAvailable = false;
-	private boolean isUsedCode = false;
+	//private boolean isUsedCode = false;
+	private volatile boolean isUsedCode = true;
+	private volatile boolean responseReceived = false;
+
 	private Parkingsession mySession;
 	private DropOffScreenController dropOffScreen;
 	private BParkClient client;
@@ -20,45 +24,68 @@ public class ParkingController {
 	 * public ParkingController(subscriber subscriber1, DropOffScreen dropOffScreen)
 	 * { this.subscriber1 = subscriber1; this.dropOffScreen = dropOffScreen; }
 	 */
-
-	private void handleServerMessage(Object msg) {
-		Platform.runLater(() -> {
-			System.out.println("[Server] " + msg);
-			if (msg instanceof subscriber) {
-				setSubscriber1((subscriber) msg);
-				if (parkingControllerObject == null) {
-					initializeParkingController();
-				}
-			} else if (msg instanceof ParkingSpot) {
-				setSpot((ParkingSpot) msg);
-			} else if (msg instanceof Parkingsession) {
-				setMySession((Parkingsession) msg);
-			} else if (msg instanceof String) {
-				String str = (String) msg;
-				if (str.startsWith("The Availablity is:")) {
-					String parts[] = str.split(":");
-					if (parts[1].equals("True")) // Note! should make sure what database returns True/False or
-													// true/false
-						isAvailable = true;
-					else
-						isAvailable = false;
-				} else if (str.startsWith("The suggested Parking Code is:")) {
-					String parts[] = str.split(":");
-					if (parts[1].equals("Used")) // Note! should make sure what database returns True/False or
-													// true/false
-						isUsedCode = true;
-					else
-						isUsedCode = false;
-				}
-			}
-		});
+	
+	/*
+	 * this method is used to handle messages from the server
+	 */
+//	private void handleServerMessage(Object msg) {
+//		Platform.runLater(() -> {
+//			System.out.println("[Server] " + msg);
+//			if (msg instanceof subscriber) {
+//				setSubscriber1((subscriber) msg);
+//				if (parkingControllerObject == null) {
+//					initializeParkingController();
+//				}
+//			} else if (msg instanceof ParkingSpot) {
+//				setSpot((ParkingSpot) msg);
+//			} else if (msg instanceof Parkingsession) {
+//				setMySession((Parkingsession) msg);
+//			} else if (msg instanceof String) {
+//				String str = (String) msg;
+//				if (str.startsWith("The Availablity is:")) {
+//					String parts[] = str.split(":");
+//					if (parts[1].equals("True")) // Note! should make sure what database returns True/False or
+//													// true/false
+//						isAvailable = true;
+//					else
+//						isAvailable = false;
+//				} else if (str.startsWith("The suggested Parking Code is:")) {
+//					String parts[] = str.split(":");
+//					if (parts[1].equals("Used")) // Note! should make sure what database returns True/False or
+//													// true/false
+//						isUsedCode = true;
+//					else
+//						isUsedCode = false;
+//				}
+//			}
+//		});
+//	}
+	
+	public void handleServerResponse(Object message) {
+		if (message instanceof String) {
+			        String msg = (String) message;
+	    if (msg.startsWith("Code status:")) {
+	        isUsedCode = Boolean.parseBoolean(msg.split(":")[1]); // true = used
+	        responseReceived = true; // signal main thread
+	    	}
+	    if( msg.startsWith("The Availablity is:")) {
+            String parts[] = msg.split(":");
+            if (parts[1].equals("True")) // Note! should make sure what database returns True/False or true/false
+                isAvailable = true;
+            else {
+                isAvailable = false;
+            }
+            responseReceived = true; // signal main thread
+        	}
+	    }
 	}
+
 
 	private ParkingController(BParkClient client) {
 		this.client = client;
 	}
 
-	private void setSubscriber1(subscriber subscriber1) {
+	public void setSubscriber1(subscriber subscriber1) {
 		this.subscriber1 = subscriber1;
 	}
 
@@ -94,7 +121,10 @@ public class ParkingController {
 			e.printStackTrace();
 		}
 	}
-
+	
+	/*
+	 * Singleton pattern to ensure only one instance of ParkingController
+	 */
 	public static ParkingController getInstance(BParkClient client) {
 		if (parkingControllerObject == null) {
 			// Synchronize to ensure thread safety when creating the instance
@@ -134,9 +164,8 @@ public class ParkingController {
 		// if there's no available parking spot
 		if (!checkParkingSpotAvailability()) {
 			dropOffScreen.showNoAvailability(); // show no availability message
-			// it stops here
+			// it stops the code here
 		}
-		
 		else {
 			System.out.println("else");
 			Date inTime = new Date();
@@ -161,6 +190,38 @@ public class ParkingController {
 		}
 	}
 
+	
+	/*
+	 * checks if there's any free parking spot returns true if it finds one
+	 */
+	public boolean checkParkingSpotAvailability() {
+		/*
+		 * Happens in the server for (ParkingSpot spot : ParkingLot) { if
+		 * (spot.getStatus() == SpotStatus.FREE) return true; } return false;
+		 */
+		
+		// Reset flags
+		isAvailable = false; // Assume no availability initially;
+	    responseReceived = false;
+		
+		client.sendToServerSafely("Check Availability");
+		
+		// Poll until response is received
+	    while (!responseReceived) {
+	        try {
+	            Thread.sleep(10); // sleep briefly to avoid busy-waiting
+	        } catch (InterruptedException e) {
+	            e.printStackTrace();
+	        }
+	    }
+		
+		//isAvailable = true; // For testing
+		return isAvailable;
+		// TO DO: maybe we should get this information from the server
+	}
+	
+	
+	
 	public void requestCarPickUp(int code) throws Exception {
 		// the client enters the parking code so they can find the session
 		try {
@@ -233,50 +294,47 @@ public class ParkingController {
 													// there
 		} catch (Exception e) {
 			System.err.println("Error sending parking code to server: " + e.getMessage());
-
 			e.printStackTrace();
 			throw new Exception();
 		}
 	}
 
 	/*
-	 * this method is called when the car is picked up gets the parking spot and
-	 * releases it
+	 * This method is called when the car is picked up gets the parking spot and releases it
 	 */
 	public void releaseSpot(int spotId) {
 		client.sendToServerSafely("Free spot:" + spotId);
 		// TO DO: update the parking spot in the database
 	}
 
-	/// זאת דוגמא בינתיים
-	// maybe we should move this method to the server?
-	//
+	
 	public int generateParkingCode() {
-		// should we move code from reservation to parkingsession???
-		int parkingCode = 0;
-		do {
-			// generate a random 6-digit code for parking
-			Random random = new Random();
-			parkingCode = 100000 + random.nextInt(900000); // range: 100000–999999
+	    int parkingCode;
 
-			client.sendToServerSafely("Check new parking code:" + parkingCode); // we should send the parking code to server
-		} // this is a problem because of the time difference between the client and server
-		while (!isUsedCode);
-		
-		return parkingCode;
+	    do {
+	        Random random = new Random(); // Generate code
+	        parkingCode = 100000 + random.nextInt(900000);
+
+	        // Reset flags
+	        isUsedCode = true;
+	        responseReceived = false;
+
+	        // Send to server
+	        client.sendToServerSafely("Check new parking code:" + parkingCode);
+
+	        // Poll until response is received
+	        while (!responseReceived) {
+	            try {
+	                Thread.sleep(10); // sleep briefly to avoid busy-waiting
+	            } catch (InterruptedException e) {
+	                e.printStackTrace();
+	            }
+	        }
+
+	    } while (isUsedCode); // if used, repeat
+
+	    return parkingCode;
 	}
 
-	/*
-	 * checks if there's any free parking spot returns true if it finds one
-	 */
-	public boolean checkParkingSpotAvailability() {
-		/*
-		 * Happens in the server for (ParkingSpot spot : ParkingLot) { if
-		 * (spot.getStatus() == SpotStatus.FREE) return true; } return false;
-		 */
-		client.sendToServerSafely("Check Availability");
-		return isAvailable;
-		// TO DO: maybe we should get this information from the server
-	}
 
 }

@@ -118,7 +118,7 @@ public class ClientController {
 				}
 			});
 			// hand off all future messages to the BParkClientController
-			//clientConnection.setMessageListener(controller::handleServerMessage);
+			clientConnection.setMessageListener(controller::handleServerMessage);
 		});
 	}
 	

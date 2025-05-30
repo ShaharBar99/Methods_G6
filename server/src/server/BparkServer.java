@@ -68,6 +68,22 @@ public class BparkServer extends AbstractServer {
 			sendToSingleClient("order placed", client);
 		} else if (msg instanceof String) {
 			String msgString = (String) msg;
+			
+			
+			if (msgString.startsWith("Check new parking code:")) {
+		        // Extract the code
+		        String codeStr = msgString.substring("Check new parking code:".length()).trim();
+		        int code = Integer.parseInt(codeStr);
+
+		        // Check if the code is already in use
+		        //boolean isUsed = con.isCodeUsed(code); // this is the way to do it
+		        boolean isUsed = false; // testing
+
+		        // Send result back to the client       
+		        sendToSingleClient("Code status:" + isUsed, client);
+		    }
+			
+			
 			System.out.println(msgString);
 			if (msgString.equals("Client disconnected")) // Note, make sure client sends a message before it disconnects
 				clientDisconnected(client);

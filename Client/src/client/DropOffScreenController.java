@@ -3,9 +3,16 @@ package client;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
-import logic.ParkingSpot;
+import logic.*;
 
 public class DropOffScreenController {
+	// subscriber for the parking controller
+	private subscriber subscriber1;
+	
+	//testing
+	//private subscriber subscriber1 = new subscriber(0, "", "", "", Role.SUBSCRIBER, null, 0);
+	
+	
 	private BParkClient client;
 	private ParkingController parkingController;
 	private Runnable backHandler; // to handle the "back" button
@@ -16,6 +23,10 @@ public class DropOffScreenController {
 	/////////////////////////////////////////////////
 	/*----------SET AND INITIALIZE THINGS----------*/
 	////////////////////////////////////////////////
+	
+	public void setSubscriber(subscriber subscriber1) {
+		this.subscriber1 = subscriber1; // set the subscriber for the parking controller
+	}
 	
 	public void setClient(BParkClient client) {
 		this.client = client;
@@ -28,8 +39,9 @@ public class DropOffScreenController {
 	/* this method initializes the parking controller if it is null*/
 	public void initilizeParkingControllerIfNeeded() {
 		if (parkingController == null) {
-			parkingController = parkingController.getInstance(client);
+			parkingController = parkingController.getInstance(client); // get the singleton instance of ParkingController
 			parkingController.setDropOffScreen(this); // set the DropOffScreenController for the ParkingController
+			parkingController.setSubscriber1(subscriber1); // set the subscriber for the ParkingController
 		}	
 	}
 	
@@ -68,8 +80,7 @@ public class DropOffScreenController {
 			parkingController.confirmDropOff();
 			}
 		catch (Exception e) {  // if subscriber1 is null, throw an exception
-			ShowAlert.showAlert("Error", "An error occurred while processing your request: ",
-					Alert.AlertType.ERROR);
+			ShowAlert.showAlert("Error", "An error occurred while processing your request: ", Alert.AlertType.ERROR);
 			e.printStackTrace();
 		}
 	}
@@ -108,5 +119,13 @@ public class DropOffScreenController {
 	public void showNoAvailability() {
 		System.out.println("inside showNoAvailability");
 		//ShowAlert.showAlert("Error", "No parking spots available at the moment.", Alert.AlertType.ERROR);
+	}
+	
+	
+	
+	
+	public void handleServerMessage(Object message) {
+		initilizeParkingControllerIfNeeded();
+		parkingController.handleServerResponse(message);
 	}
 }
