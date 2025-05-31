@@ -144,7 +144,7 @@ public class ParkingController {
 	public ParkingSpot assignParkingSpot() throws Exception {
 		responseReceived = false;
 		// Send to server
-		client.sendToServerSafely("get free spot");
+		client.sendToServerSafely(new SendObject<String>("Get ", " Free spot"));
 		// Poll until response is received
 		waitForServerResponse(15000);
 		return spot;
@@ -168,10 +168,10 @@ public class ParkingController {
 			// subscriber1 != null for testing/checking
 			if (subscriber1 != null) {
 				Parkingsession session = new Parkingsession(0, subscriber1.getId(), spot.getSpotId(), parkingCode,
-						inTime, outTime, false, false,true);
+						inTime, outTime, false, false, true);
 				// TO DO: send session to database
-				client.sendToServerSafely(session);
-				int spotId=spot.getSpotId();
+				client.sendToServerSafely(new SendObject<Parkingsession>("Create new", session));
+				int spotId = spot.getSpotId();
 				Platform.runLater(() -> {
 					dropOffScreen.showParkingSuccess(); // show success message
 					dropOffScreen.displayAssignedSpot(spotId);
@@ -203,7 +203,7 @@ public class ParkingController {
 		isAvailable = false; // Assume no availability initially;
 		responseReceived = false;
 
-		client.sendToServerSafely("Check Availability");
+		client.sendToServerSafely(new SendObject<String>("Check ", "Availability"));
 
 		// Poll until response is received
 		waitForServerResponse(15000);
@@ -228,14 +228,15 @@ public class ParkingController {
 				}
 				mySession.setActive(false);
 				subscriber1.getHistory().add(mySession); // add session to subscriber's history
-				// TO DO: send session and subscriber1 to the database for update/deletion
+				// TO DO: send session and subscriber1 to the database for update
 				releaseSpot(mySession.getSpotId()); // release the parking spot
-				client.sendToServerSafely(new SendObject<subscriber>("Update Subscriber",subscriber1));
+				client.sendToServerSafely(new SendObject<Parkingsession>("Update Session", mySession));
+				client.sendToServerSafely(new SendObject<subscriber>("Update Subscriber", subscriber1));
 				// reset the controller for next use
 				mySession = null;
 				spot = null;
 				isAvailable = false;
-				isUsedCode = false;
+				isUsedCode = true;
 			} else
 				throw new Exception();
 		} catch (Exception e) {
@@ -251,7 +252,7 @@ public class ParkingController {
 		session.setLate(true);
 		// TO DO: update session in the database/send message to client about being late
 		try {
-			client.sendToServerSafely("Send late message by Email/SMS to:" + subscriber1.getId());
+			client.sendToServerSafely(new SendObject<subscriber>("Send late message by Email/SMS", subscriber1));
 		} catch (Exception e) {
 			System.err.println("Error getting parking code from server: " + e.getMessage());
 
@@ -270,7 +271,7 @@ public class ParkingController {
 		// should send the code to the user via email
 		// בDB שולח לסרבר ומצליב בין הסאבסקראייבר לבין הסשן הכי עדכני שלו
 		try {
-			client.sendToServerSafely("Send code by Email/SMS to:" + subscriber1.getId());
+			client.sendToServerSafely(new SendObject<subscriber>("Send Parking Code by Email/SMS", subscriber1));
 		} catch (Exception e) {
 			System.err.println("Error getting parking code from server: " + e.getMessage());
 
@@ -286,8 +287,14 @@ public class ParkingController {
 	public void sendParkingCode(int parkingCode) throws Exception {
 		// should we move code from reservation to Parkingsession???
 		try {
-			client.sendToServerSafely(parkingCode); // Should return the Parkingsession from the db and delete it from
-													// there
+			client.sendToServerSafely(new SendObject<Integer>("Check recieved Parking Code", parkingCode)); // Should
+																											// return
+																											// the
+																											// Parkingsession
+																											// from the
+																											// db and
+																											// setActive(false)
+
 		} catch (Exception e) {
 			System.err.println("Error sending parking code to server: " + e.getMessage());
 			e.printStackTrace();
@@ -300,7 +307,7 @@ public class ParkingController {
 	 * releases it
 	 */
 	public void releaseSpot(int spotId) {
-		client.sendToServerSafely("Free spot:" + spotId);
+		client.sendToServerSafely(new SendObject<Integer>("Free spot", spotId));
 		// TO DO: update the parking spot in the database
 	}
 
@@ -314,9 +321,9 @@ public class ParkingController {
 			// Reset flags
 			isUsedCode = true;
 			responseReceived = false;
-			
+
 			// Send to server
-			client.sendToServerSafely("Check new parking code:" + parkingCode);
+			client.sendToServerSafely(new SendObject<Integer>("Check new Parking Code", parkingCode));
 			waitForServerResponse(15000);
 		} while (isUsedCode); // if used, repeat
 
