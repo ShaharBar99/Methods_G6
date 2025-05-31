@@ -18,7 +18,10 @@
             </columns>
         </TableView>
         <Button fx:id="editButton" layoutX="457.0" layoutY="340.0" onAction="#handleEditButton" prefWidth="120" text="Edit Order" />
-        <Button fx:id="exportCsvButton" layoutX="881.0" layoutY="340.0" text="Export as CSV" />
+        <Button fx:id="exportCsvButton" layoutX="896.0" layoutY="340.0" text="Export as CSV" />
         <Button fx:id="backButton" layoutX="20" layoutY="340" onAction="#handleBackButton" text="Back" />
+        <Button fx:id="sortByDateButton" layoutX="788.0" layoutY="361.0" text="Sort by Date" />
+		<Button fx:id="sortByIdButton" layoutX="788.0" layoutY="328.0" prefHeight="25.0" prefWidth="82.0" text="Sort by ID" />
+        
     </children>
 </AnchorPane>

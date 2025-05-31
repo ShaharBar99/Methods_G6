@@ -50,6 +50,13 @@ public class BParkClientController {
 	
 	@FXML
 	private Button exportCsvButton;
+	
+	@FXML
+	private Button sortByDateButton;
+	
+	@FXML
+	private Button sortByIdButton;
+
 
 
 
@@ -82,6 +89,13 @@ public class BParkClientController {
 		        }
 		    });
 		}
+		if (sortByDateButton != null) {
+		    sortByDateButton.setOnAction(e -> sortByDate());
+		}
+		if (sortByIdButton != null) {
+		    sortByIdButton.setOnAction(e -> sortById());
+		}
+
 	}
 
 	public void setOrders(List<Order> orders) {
@@ -91,6 +105,19 @@ public class BParkClientController {
 	private void updateOrders() {
 		orderTable.getItems().setAll(orders);
 	}
+	
+	private void sortByDate() {
+	    colDate.setSortType(TableColumn.SortType.ASCENDING);
+	    orderTable.getSortOrder().setAll(colDate);
+	    orderTable.sort();
+	}
+
+	private void sortById() {
+	    colOrderId.setSortType(TableColumn.SortType.ASCENDING);
+	    orderTable.getSortOrder().setAll(colOrderId);
+	    orderTable.sort();
+	}
+
 
 	
 	/**
