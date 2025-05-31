@@ -314,9 +314,10 @@ public class ParkingController {
 			// Reset flags
 			isUsedCode = true;
 			responseReceived = false;
-			waitForServerResponse(15000);
+			
 			// Send to server
 			client.sendToServerSafely("Check new parking code:" + parkingCode);
+			waitForServerResponse(15000);
 		} while (isUsedCode); // if used, repeat
 
 		return parkingCode;
