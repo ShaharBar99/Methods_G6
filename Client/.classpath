@@ -5,7 +5,7 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry excluding="logic/" kind="src" path="src"/>
+	<classpathentry excluding="logic/|client/PickUpScreenControllerVer2.java" kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/JavaFX17"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/bpark"/>
 	<classpathentry kind="output" path="bin"/>

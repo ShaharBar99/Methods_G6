@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
 
+import javax.swing.text.html.HTML.Tag;
+
 import logic.Order;
 import logic.ParkingSpot;
 import logic.Role;
@@ -204,8 +206,8 @@ public class MySQLConnection {
 				int confirmation_code = rs.getInt("confirmation_code");
 				int subscriber_id = rs.getInt("subscriber_id");
 				Date placing_date = rs.getDate("date_of_placing_an_order");
-				subscriber sub = new subscriber(subscriber_id, "", "", "", Role.SUBSCRIBER, null, 0);
-				ParkingSpot spot = new ParkingSpot(parking_space, null, null);
+				subscriber sub = new subscriber(subscriber_id, "", "", "", Role.SUBSCRIBER, null, "", 0);
+				ParkingSpot spot = new ParkingSpot(parking_space, null);
 
 				// Create Order
 				Order temp = new Order(confirmation_code, // code
@@ -251,8 +253,8 @@ public class MySQLConnection {
 				int confirmation_code = rs.getInt("confirmation_code");
 				int subscriber_id = rs.getInt("subscriber_id");
 				Date placing_date = rs.getDate("date_of_placing_an_order");
-				subscriber sub = new subscriber(subscriber_id, "", "", "", Role.SUBSCRIBER, null, 0);
-				ParkingSpot spot = new ParkingSpot(parking_space, null, null);
+				subscriber sub = new subscriber(subscriber_id, "", "", "", Role.SUBSCRIBER, null, "",0);
+				ParkingSpot spot = new ParkingSpot(parking_space, null);
 
 				// Create Order
 				temp = new Order(confirmation_code, // code

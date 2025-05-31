@@ -79,7 +79,7 @@ public class ClientController {
 			}
 
 			// Load next screen
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("PickUpScreen.fxml"));
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("DropOffScreen.fxml"));
 			Parent tableRoot = null;
 			try {
 				tableRoot = loader.load();
@@ -103,7 +103,7 @@ public class ClientController {
 					System.exit(0);
 				}
 			});
-			PickUpScreenController controller = loader.getController();
+			DropOffScreenController controller = loader.getController();
 			controller.setClient(clientConnection);
 			controller.setBackHandler(() -> { // Handle back button action using lambda
 				try { // Load the connection screen again
