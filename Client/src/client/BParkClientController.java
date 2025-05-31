@@ -1,6 +1,8 @@
 package client;
 
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Date;
 import java.util.List;
 
@@ -12,7 +14,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.stage.Stage;
@@ -43,6 +47,10 @@ public class BParkClientController {
 
 	@FXML
 	private Button editButton;
+	
+	@FXML
+	private Button exportCsvButton;
+
 
 
 	private BParkClient client;
@@ -64,7 +72,16 @@ public class BParkClientController {
 
 		colDatePlacingOrder.setCellValueFactory(
 				cellData -> new SimpleObjectProperty<>(cellData.getValue().getdate_of_placing_an_order()));
-
+		if (exportCsvButton != null) { // check if the button exists
+		    exportCsvButton.setOnAction(e -> {
+		        try {
+		            exportToCSV(orderTable, "orders.csv");
+		            showAlert("Exported table to orders.csv!");
+		        } catch (Exception ex) {
+		            showAlert("Failed to export CSV: " + ex.getMessage());
+		        }
+		    });
+		}
 	}
 
 	public void setOrders(List<Order> orders) {
@@ -139,5 +156,40 @@ public class BParkClientController {
 			backHandler.run();
 		}
 	}
+	
+	private void exportToCSV(TableView<?> table, String filename) throws Exception {
+	    try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
+	        // Header
+	        for (int i = 0; i < table.getColumns().size(); i++) {
+	            TableColumn<?, ?> col = table.getColumns().get(i);
+	            writer.print(col.getText());
+	            if (i < table.getColumns().size() - 1)
+	                writer.print(",");
+	        }
+	        writer.println();
+	        // Rows
+	        for (Object item : table.getItems()) {
+	            for (int i = 0; i < table.getColumns().size(); i++) {
+	                TableColumn col = table.getColumns().get(i);
+	                Object cell = col.getCellData(item);
+	                String cellText = (cell != null ? cell.toString() : "");
+	                // Escape commas/quotes
+	                cellText = cellText.replace("\"", "\"\"");
+	                if (cellText.contains(",") || cellText.contains("\""))
+	                    cellText = "\"" + cellText + "\"";
+	                writer.print(cellText);
+	                if (i < table.getColumns().size() - 1)
+	                    writer.print(",");
+	            }
+	            writer.println();
+	        }
+	    }
+	}
+
+	private void showAlert(String msg) {
+	    Alert alert = new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK);
+	    alert.showAndWait();
+	}
+
 
 }

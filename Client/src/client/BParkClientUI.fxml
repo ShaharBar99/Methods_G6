@@ -5,7 +5,7 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="400" prefWidth="1030.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.171" fx:controller="client.BParkClientController">
+<AnchorPane prefHeight="400" prefWidth="1030.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.BParkClientController">
     <children>
         <TableView fx:id="orderTable" layoutX="20" layoutY="20" prefHeight="300" prefWidth="998.0">
             <columns>
@@ -17,7 +17,8 @@
                 <TableColumn fx:id="colDatePlacingOrder" prefWidth="238.0" text="Date of Placing an Order" />
             </columns>
         </TableView>
-        <Button layoutX="457.0" fx:id="editButton" layoutY="340.0" prefWidth="120" text="Edit Order" onAction="#handleEditButton"/>
+        <Button fx:id="editButton" layoutX="457.0" layoutY="340.0" onAction="#handleEditButton" prefWidth="120" text="Edit Order" />
+        <Button fx:id="exportCsvButton" layoutX="881.0" layoutY="340.0" text="Export as CSV" />
         <Button fx:id="backButton" layoutX="20" layoutY="340" onAction="#handleBackButton" text="Back" />
     </children>
 </AnchorPane>
