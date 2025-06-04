@@ -241,7 +241,6 @@ public class ParkingController {
 				// TO DO: send session and subscriber1 to the database for update
 				releaseSpot(mySession.getSpotId()); // release the parking spot
 				client.sendToServerSafely(new SendObject<Parkingsession>("Update Session", mySession));// V
-				client.sendToServerSafely(new SendObject<subscriber>("Update Subscriber", subscriber1));// V
 				// reset the controller for next use
 				mySession = null;
 				spot = null;
