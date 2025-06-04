@@ -3,6 +3,7 @@ package server;
 import logic.*;
 import java.io.Serializable;
 import java.sql.SQLException;
+import java.util.Date;
 
 public class SendObjectHandler {
 	public static <T extends Serializable, T1 extends Serializable> SendObject<T1> sendObjectHandle(SendObject<T> obj)
@@ -12,9 +13,17 @@ public class SendObjectHandler {
 		if (action == null) {
 			throw new Exception("Null Action was recieved");
 		}
-		if (action.contains("Get")) {
+		else if (object instanceof String) {
+			if (action.contains("Get") || action.contains("Check")) {
+				Object genericObject = handleStringType(action, (String) object);
+				return replyDefiner(genericObject);
+			}
+		} else if (object instanceof Integer) {
+			Object genericObject = handleIntegerType(action, (Integer) object);
+			return replyDefiner(genericObject);
+		} else if (action.contains("Get")) {
 			Object genericObject = handleGetAction(object);
-			return new SendObject<T1>("recieved object", (T1) genericObject);
+			return replyDefiner(genericObject);
 		} else if (action.contains("Update")) {
 			handleUpdateAction(object);
 		} else if (action.contains("Create")) {
@@ -26,11 +35,105 @@ public class SendObjectHandler {
 			}
 		} else if (action.contains("Check")) {
 			Boolean isExist = handleCheckAction(object);
-			return new SendObject<T1>("recieved boolean", (T1) isExist);
+			return replyDefiner(isExist);
+		} else if (action.contains("Send")) {
+			if (object instanceof subscriber) {
+				handleSendAction(action, (subscriber) object);
+			} else {
+				System.err.println("Unknown SendObject received: action = " + action + ", object = " + object);
+				throw new Exception("No send option is capable without subscriber object");
+			}
 		} else {
-			return new SendObject<T1>("recieved boolean", null);
+			System.err.println("Unknown SendObject received: action = " + action + ", object = " + object);
+			throw new Exception("No possible classes were chosen");
 		}
-		throw new Exception("No possible classes were chosen");
+		return null;
+	}
+
+	private static <T1 extends Serializable> SendObject<T1> replyDefiner(Object genericObject) {
+		String reply = "recieved object";
+		if (genericObject != null) {
+			if (genericObject instanceof Boolean) {
+				reply = "recieved Boolean";
+			} else if (genericObject instanceof Parkingsession) {
+				reply = "recieved Parkingsession";
+			} else if (genericObject instanceof subscriber) {
+				reply = "recieved subscriber";
+			} else if (genericObject instanceof ParkingSpot) {
+				reply = "recieved ParkingSpot";
+			} else if (genericObject instanceof Reservation) {
+				reply = "recieved Reservation";
+			}else if (genericObject instanceof SendObject) {
+				return (SendObject<T1>) genericObject;
+			}
+
+		}
+		return new SendObject<T1>(reply, (T1) genericObject);
+	}
+
+	private static <T extends Serializable, T1 extends Serializable> SendObject<T1> handleIntegerType(String action,
+			Integer object) {
+		if (action.contains("Check")) {
+			if (action.equals("Check new Parking Code")) {
+				boolean isUsed = false; //fake
+				int code = object;
+				// isUsed = checkParkingCodeInAllActiveSessionsInDatabase(code);			
+				return new SendObject<T1>("isUsed", (T1)(Boolean) isUsed);
+			} else if (action.equals("Check recieved Parking Code")) {
+				Parkingsession mySession = null;
+				mySession = new Parkingsession(0, 0, 0, 0, null, new Date(), false, false, false); // fake
+				int parkingcode = object;
+				// mySession = getActiveParkingsessionWithThatCodeFromDatabase(parkingcode);
+				return new SendObject<T1>("Parkingsession from code", (T1)(Parkingsession) mySession);
+			}
+		} else if (action.contains("Update")) {
+			if (action.contains("Upadte spot to Free")) {
+				int spotId = object;
+				// updateSpotToFreeInDatabase(object);
+			}
+		}
+		return null;
+	}
+
+	private static <T extends Serializable> void handleSendAction(String action, subscriber object) throws Exception {
+		if (action.contains("Email/SMS")) {
+			String to = object.getEmail();
+			if (to == null || !to.contains("@"))
+				throw new Exception("Subscriber doesn't have a legal Email");
+			else if (action.equals("Send late message by Email/SMS")) {
+				SendEmail.sendMail(to, "Late retrivel!",
+						"Hello,\nWe inform you picked up your vehicle later than expected.\n Note that in the future it might incur additional charges.");
+			} else if (action.equals("Send Parking Code by Email/SMS")) {
+				int parkingCode = 99999; // fake
+				// parkingCode = getSubscriberLastParkingCode();
+				// if(parkingCode==99999){throw new Exception("No active parking sessions for
+				// the user");}
+				SendEmail.sendMail(to, "Parking Code reminder", String.format(
+						"Hello,\nYour last Parking Code in your last/current active session is: %d\nPlease enter the code you recieved in the app.",
+						parkingCode));
+			}
+		}
+
+	}
+
+	private static <T extends Serializable, T1 extends Serializable> SendObject<T1> handleStringType(String action, String object)
+			throws Exception {
+		if (action.contains("Check") && object.contains("Availability")) {
+			Boolean isAvailable;
+			isAvailable = true; // fake
+			// isAvailable = getPrecentageAvailableSpaceFromDatabase();
+			return new SendObject<T1>("Availability", (T1)(Boolean) isAvailable);
+		} else if (action.contains("Get") && object.equals("Free spot")) {
+			
+			ParkingSpot spot;
+			spot = new ParkingSpot(0, SpotStatus.OCCUPIED); // fake 
+			// spot = getFreeSpotFromDatabase();
+			spot.setStatus(SpotStatus.OCCUPIED);
+			handleUpdateAction(spot);
+			return new SendObject<T1>("new Spot", (T1)(ParkingSpot) spot);
+		}
+		// Default or fallback return value
+	    return new SendObject<T1>("Invalid request", null);
 	}
 
 	/**

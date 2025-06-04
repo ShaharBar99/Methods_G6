@@ -1,6 +1,7 @@
 package client;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javafx.application.Platform;
@@ -15,6 +16,8 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import logic.Order;
+import logic.Parkingsession;
+import logic.subscriber;
 
 public class ClientController {
 
@@ -60,8 +63,9 @@ public class ClientController {
 			connectButton.setDisable(true);
 			disconnectButton.setDisable(false);
 			clientConnection.start();
-			// Creates the order table 
+			// Creates the order table 			
 			clientConnection.setMessageListener(this::handleServerMessage);
+			
 			
 		} catch (Exception e) {
 			ShowAlert.showAlert("Error", "Failed to connect to the server at " + ipAddress + ":" + port, Alert.AlertType.ERROR);
@@ -71,12 +75,8 @@ public class ClientController {
 
 	private void handleServerMessage(Object msg) {
 		Platform.runLater(() -> {
+			
 			System.out.println("[Server] " + msg);
-			if (msg instanceof List<?>) {
-				orders = (List<Order>) msg;
-				System.out.println(orders);
-				System.out.println("Orders added");
-			}
 
 			// Load next screen
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("DropOffScreen.fxml"));
@@ -105,27 +105,12 @@ public class ClientController {
 			});
 			DropOffScreenController controller = loader.getController();
 			controller.setClient(clientConnection);
+			controller.setSubscriber(new subscriber(0, "bla", "5555555", "avigdor.feldman@e.braude.ac.il", null, new ArrayList<Parkingsession>(), null, 0));//fake
 			controller.setBackHandler(() -> { // Handle back button action using lambda
 				try { // Load the connection screen again
 					FXMLLoader loginLoader = new FXMLLoader(getClass().getResource("client.fxml"));
-					Parent loginRoot = loginLoader.load();
-					stage.setScene(new Scene(loginRoot));
-					stage.setTitle("Connect to Server");
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			});
-			/*BParkClientController controller = loader.getController();
-			controller.setOrders(orders);
-			controller.setClient(clientConnection);
-			controller.setBackHandler(() -> { // Handle back button action using lambda
-				try { // Stop the client connection
+					clientConnection = controller.getClient();
 					clientConnection.stop();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				try { // Load the connection screen again
-					FXMLLoader loginLoader = new FXMLLoader(getClass().getResource("client.fxml"));
 					Parent loginRoot = loginLoader.load();
 					stage.setScene(new Scene(loginRoot));
 					stage.setTitle("Connect to Server");
@@ -133,8 +118,8 @@ public class ClientController {
 					ex.printStackTrace();
 				}
 			});
-			// hand off all future messages to the BParkClientController
-			clientConnection.setMessageListener(controller::handleServerMessage);*/
+			// hand off all future messages to the BParkClientController*/
+			clientConnection.setMessageListener(controller::handleServerMessage);
 		});
 	}
 	

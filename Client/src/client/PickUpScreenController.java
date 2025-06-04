@@ -11,6 +11,8 @@ public class PickUpScreenController {
 	private Runnable backHandler;
 	private subscriber subscriber;
 	private BParkClient client;
+	
+
 	private boolean serverConnection = true;
 	private ParkingController parkingController;
 	@FXML
@@ -27,7 +29,10 @@ public class PickUpScreenController {
 			}
 		});
 	}
-
+	
+	public BParkClient getClient() {
+		return client;
+	}
 	/**
 	 * @param backHandler Sets the backHandler
 	 */

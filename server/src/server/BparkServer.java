@@ -62,6 +62,11 @@ public class BparkServer extends AbstractServer {
 		 * System.out.println("Retrieving an order..."); sendToSingleClient(order,
 		 * client); } }
 		 */
+		if (msg instanceof String) {
+			String msgString = (String) msg; System.out.println(msgString); 
+			if(msgString.equals("Client disconnected"))
+				clientDisconnected(client);
+		}
 		if (msg instanceof SendObject<?>) {
 			SendObject<?> obj = (SendObject<?>) msg;
 			try {
@@ -100,6 +105,10 @@ public class BparkServer extends AbstractServer {
 				SendObject<?> sendObject = (SendObject<?>) msg;
 				client.sendToClient(sendObject);
 			}
+			else if(msg instanceof ArrayList<?>) {
+				ArrayList<?> list = (ArrayList<?>)msg;
+				client.sendToClient(list);
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -134,7 +143,7 @@ public class BparkServer extends AbstractServer {
 			clientInfo.add("Connected");
 			requiredList.add(clientInfo);
 			serverController.recievedServerUpdate(requiredList);
-			sendToSingleClient(con.getallordersfromDB(), client);
+			sendToSingleClient(new SendObject<ArrayList<Order>>("check",con.getallordersfromDB()), client);
 			// Log the connection
 			System.out.println(String.format("Client:%s IP:%s HostName:%s %s", clientInfo.get(0), clientInfo.get(1),
 					clientInfo.get(2), clientInfo.get(3)));
