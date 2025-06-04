@@ -1,7 +1,6 @@
 package client;
 
 import java.io.IOException;
-import java.util.List;
 
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -14,130 +13,111 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import logic.Order;
+import logic.Role;
+import logic.subscriber;
 
 public class ClientController {
 
-	@FXML
-	private TextField ipTextField; // The TextField for entering the IP address
+    @FXML private TextField ipTextField;    // server IP
+    @FXML private TextField portTextField;  // server port
+    @FXML private Button    connectButton;  // “Connect”
+    @FXML private Button    disconnectButton; // “Disconnect/Exit”
 
-	@FXML
-	private TextField portTextField; // The TextField for entering the port number
+    private BParkClient clientConnection;
+    private subscriber subscribe;
 
-	@FXML
-	private Button connectButton; // Connect button
+    // once we swap to the reservation UI, remember its controller here:
+    private boolean reservationScreenLoaded = false;
+    private ReservationScreenController reservationController;
 
-	@FXML
-	private Button disconnectButton; // Exit button (renamed use)
+    @FXML
+    public void handleConnectButton() {
+        String ip   = ipTextField.getText().trim();
+        String port = portTextField.getText().trim();
+        if (ip.isEmpty() || port.isEmpty()) {
+            showAlert("Error", "Please enter both IP and port", Alert.AlertType.ERROR);
+            return;
+        }
+        int p;
+        try { p = Integer.parseInt(port); }
+        catch (NumberFormatException ex) {
+            showAlert("Error", "Port must be a number", Alert.AlertType.ERROR);
+            return;
+        }
+        connectToServer(ip, p);
+        subscribe = new subscriber(1,"temp","1235","@gmail",Role.SUBSCRIBER,null,123546);
+    }
 
-	private BParkClient clientConnection;
-	private List<Order> orders;
+    @FXML
+    public void handleDisconnectButton() {
+        Platform.exit();
+    }
 
-	@FXML
-	public void handleConnectButton() {
-		String ipAddress = ipTextField.getText().trim();
-		String portText = portTextField.getText().trim();
+    private void connectToServer(String ip, int port) {
+        try {
+            clientConnection = new BParkClient(ip, port);
+            connectButton.setDisable(true);
+            disconnectButton.setDisable(false);
+            clientConnection.start();
+            // first messages come here:
+            clientConnection.setMessageListener(this::handleServerMessage);
+        } catch (Exception ex) {
+            showAlert("Error",
+                      "Cannot connect to " + ip + ":" + port,
+                      Alert.AlertType.ERROR);
+            connectButton.setDisable(false);
+        }
+    }
 
-		if (ipAddress.isEmpty() || portText.isEmpty()) {
-			showAlert("Error", "Please enter both IP and port", Alert.AlertType.ERROR);
-			return;
-		}
+    private void handleServerMessage(Object msg) {
+        Platform.runLater(() -> {
+            System.out.println("[Server] " + msg);
 
-		int port;
-		try {
-			port = Integer.parseInt(portText);
-		} catch (NumberFormatException e) {
-			showAlert("Error", "Port must be a valid number", Alert.AlertType.ERROR);
-			return;
-		}
+            if (!reservationScreenLoaded) {
+                // — first server message: load Reservation.fxml —
+                try {
+                    FXMLLoader loader = new FXMLLoader(
+                        getClass().getResource("Reservation.fxml"));
+                    Parent root = loader.load();
 
-		connectToServer(ipAddress, port);
-	}
+                    Stage stage = (Stage) connectButton.getScene().getWindow();
+                    stage.setScene(new Scene(root));
+                    stage.setTitle("Parking Reservations");
+                    stage.setOnCloseRequest((WindowEvent e) -> {
+                        clientConnection.stop();
+                        System.exit(0);
+                    });
 
-	@FXML
-	public void handleDisconnectButton() {
-		// Exit application
-		System.gc();
-		Platform.exit();
+                    // grab and init the screen controller
+                    reservationController = loader.getController();
+                    reservationController.setClient(clientConnection,subscribe);
 
-	}
+                    // now route all future messages to it:
+                    clientConnection.setMessageListener(
+                        reservationController::handleServerMessage
+                    );
 
-	public void connectToServer(String ipAddress, int port) {
-		try {
-			clientConnection = new BParkClient(ipAddress, port);
-			connectButton.setDisable(true);
-			disconnectButton.setDisable(false);
-			clientConnection.start();
-			// Creates the order table 
-			clientConnection.setMessageListener(this::handleServerMessage);
-			
-		} catch (Exception e) {
-			showAlert("Error", "Failed to connect to the server at " + ipAddress + ":" + port, Alert.AlertType.ERROR);
-			connectButton.setDisable(false);
-		}
-	}
+                    // kick off the first data fetch
+                    reservationController.getFutureReservationsFor();
 
-	private void handleServerMessage(Object msg) {
-		Platform.runLater(() -> {
-			System.out.println("[Server] " + msg);
-			if (msg instanceof List<?>) {
-				orders = (List<Order>) msg;
-				System.out.println(orders);
-				System.out.println("Orders added");
-			}
+                    reservationScreenLoaded = true;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                // — after that, delegate every message —
+                reservationController.handleServerMessage(msg);
+            }
+        });
+    }
 
-			// Load next screen (Order Table)
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("BParkClientUI.fxml"));
-			Parent tableRoot = null;
-			try {
-				tableRoot = loader.load();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			// After Connection start the order table
-			Stage stage = (Stage) connectButton.getScene().getWindow();
-			stage.setScene(new Scene(tableRoot));
-			stage.setTitle("Orders Table");
-			// Makes sure when X is pressed it closes the connection to the server
-			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-				@Override
-				public void handle(WindowEvent event) {
-					System.out.println("Closing application...");
-					clientConnection.stop();
-					System.gc();
-					System.exit(0);
-				}
-			});
-			BParkClientController controller = loader.getController();
-			controller.setOrders(orders);
-			controller.setClient(clientConnection);
-			controller.setBackHandler(() -> { // Handle back button action using lambda
-				try { // Stop the client connection
-					clientConnection.stop();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				try { // Load the connection screen again
-					FXMLLoader loginLoader = new FXMLLoader(getClass().getResource("client.fxml"));
-					Parent loginRoot = loginLoader.load();
-					stage.setScene(new Scene(loginRoot));
-					stage.setTitle("Connect to Server");
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			});
-			// hand off all future messages to the BParkClientController
-			clientConnection.setMessageListener(controller::handleServerMessage);
-		});
-	}
-	
-	public static void showAlert(String title, String message, Alert.AlertType alertType) {
-		Alert alert = new Alert(alertType);
-		alert.setTitle(title);
-		alert.setHeaderText(null);
-		alert.setContentText(message);
-		alert.showAndWait();
-	}
+    private static void showAlert(String title,
+                                  String message,
+                                  Alert.AlertType type) {
+        Alert a = new Alert(type);
+        a.setTitle(title);
+        a.setHeaderText(null);
+        a.setContentText(message);
+        a.showAndWait();
+    }
 }

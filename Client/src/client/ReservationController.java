@@ -14,6 +14,9 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.PropertyValueFactory;
+import logic.Reservation;
+import logic.SendObject;
+import logic.subscriber;
 
 public class ReservationController {
 
@@ -29,10 +32,11 @@ public class ReservationController {
     @FXML private TableColumn<Reservation,String> colEnd;
 
     protected BParkClient client;
-
+    protected subscriber subscribe;
     /** Called by ReservationScreenController after load */
-    public void setClient(BParkClient client) {
+    public void setClient(BParkClient client,subscriber subscribe) {
         this.client = client;
+        this.subscribe=subscribe;
     }
 
     @FXML
@@ -77,19 +81,31 @@ public class ReservationController {
     }
 
     /** Called by ReservationScreenController#submitReservationRequest() */
+    /** Called when the user clicks “Reserve”. */
     protected void onReserve() {
         if (!validateReservation()) return;
 
-        // Server will choose an available spot for us:
-        String msg = String.format("RESERVE %s %s %s",
+        // Build a simple payload like "2025-06-10 09:00 11:00"
+        String payload = String.format("%s %s %s",
             datePicker.getValue(),
             startTimeField.getText().trim(),
             endTimeField.getText().trim()
         );
-        client.sendToServerSafely(msg);
-        showAlert(AlertType.INFORMATION, "Reservation request sent:\n" + msg);
+
+        // Wrap <payload, subscriberId> in a SendObject<Integer>
+        SendObject<Integer> req = new SendObject<>(
+            payload, 
+            subscribe.getId()
+        );
+        client.sendToServerSafely(req);
+
+        showAlert(AlertType.INFORMATION,
+            "Reservation request sent for subscriber #" + subscribe.getId() +
+            ":\n" + payload
+        );
+
         clearForm();
-        getFutureReservationsFor();
+        getFutureReservationsFor();  // Immediately refresh the table
     }
 
     /** Called by ReservationScreenController#submitCancellation() */
@@ -103,9 +119,17 @@ public class ReservationController {
         endTimeField.clear();
     }
 
-    /** Fetch the up-to-date list of future reservations */
+    /** Ask the server for this subscriber’s future reservations. */
     protected void getFutureReservationsFor() {
-        client.sendToServerSafely("GET_FUTURE_RESERVATIONS");
+        // The “command” string can be anything your server expects, for example:
+        String command = "GetFreeSpot";
+
+        // Wrap <command, subscriberId> in a SendObject<Integer>
+        SendObject<Integer> req = new SendObject<>(
+            command,
+            subscribe.getId()
+        );
+        client.sendToServerSafely(req);
     }
 
     /** Entry point for all messages from the server */
