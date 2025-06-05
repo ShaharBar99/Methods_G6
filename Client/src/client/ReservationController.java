@@ -99,7 +99,7 @@ public class ReservationController {
 
 		Reservation reservation = new Reservation(0, subscribe.getId(), datePicker.getValue(),
 				startTimeField.getText().trim(), endTimeField.getText().trim());
-		String payload = String.format("Create new reservation:%s %s %s", datePicker.getValue(),
+		String payload = String.format("Create Reservation:%s %s %s", datePicker.getValue(),
 				startTimeField.getText().trim(), endTimeField.getText().trim());
 
 		// Wrap <payload, subscriberId> in a SendObject<Integer>
