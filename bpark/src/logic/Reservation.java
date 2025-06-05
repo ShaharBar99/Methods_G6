@@ -1,32 +1,34 @@
 package logic;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 /**
  * Simple POJO to hold one reservation record.
  */
-public class Reservation {
-	private final int id;
-	private final String spot;
+public class Reservation implements Serializable{
+	private final int subscriberId;
+	private final int spotId;
 	private final LocalDate date;
 	private final String startTime;
 	private final String endTime;
 
-	public Reservation(int id, String spot, LocalDate date, String startTime, String endTime) {
-		this.id = id;
-		this.spot = spot;
+	public Reservation(int spotId,int subscriber_id , LocalDate date, String startTime, String endTime) {
+		this.subscriberId = subscriber_id;
+		this.spotId = spotId;
 		this.date = date;
 		this.startTime = startTime;
 		this.endTime = endTime;
 	}
 
-	
-	public int getId() {
-		return id;
+
+	public int getSubscriberId() {
+		return subscriberId;
 	}
 
-	public String getSpot() {
-		return spot;
+
+	public int getSpot() {
+		return spotId;
 	}
 
 	public LocalDate getDate() {

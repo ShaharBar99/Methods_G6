@@ -33,10 +33,11 @@ public class ClientController {
 	private BParkClient clientConnection;
 	private Stage stage;
 	private List<Order> orders;
-	
+
 	public void setStage(Stage stage) {
-		this.stage=stage;
+		this.stage = stage;
 	}
+
 	@FXML
 	public void handleConnectButton() {
 		String ipAddress = ipTextField.getText().trim();
@@ -63,23 +64,23 @@ public class ClientController {
 			connectButton.setDisable(true);
 			disconnectButton.setDisable(false);
 			clientConnection.start();
-			// Creates the order table 			
+			// Creates the order table
 			clientConnection.setMessageListener(this::handleServerMessage);
-			
-			
+
 		} catch (Exception e) {
-			ShowAlert.showAlert("Error", "Failed to connect to the server at " + ipAddress + ":" + port, Alert.AlertType.ERROR);
+			ShowAlert.showAlert("Error", "Failed to connect to the server at " + ipAddress + ":" + port,
+					Alert.AlertType.ERROR);
 			connectButton.setDisable(false);
 		}
 	}
 
 	private void handleServerMessage(Object msg) {
 		Platform.runLater(() -> {
-			
+
 			System.out.println("[Server] " + msg);
 
 			// Load next screen
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("DropOffScreen.fxml"));
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("Reservation.fxml"));
 			Parent tableRoot = null;
 			try {
 				tableRoot = loader.load();
@@ -91,7 +92,7 @@ public class ClientController {
 			// After Connection start the order table
 			Stage stage = (Stage) connectButton.getScene().getWindow();
 			stage.setScene(new Scene(tableRoot));
-			//stage.setMaximized(true);
+			// stage.setMaximized(true);
 			stage.setMaximized(true);
 			// Makes sure when X is pressed it closes the connection to the server
 			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
@@ -103,10 +104,12 @@ public class ClientController {
 					System.exit(0);
 				}
 			});
-			DropOffScreenController controller = loader.getController();
-			controller.setClient(clientConnection);
-			controller.setSubscriber(new subscriber(0, "bla", "5555555", "avigdor.feldman@e.braude.ac.il", null, new ArrayList<Parkingsession>(), null, 0));//fake
-			controller.setBackHandler(() -> { // Handle back button action using lambda
+			ReservationScreenController controller = loader.getController();
+			controller.setClient(clientConnection, new subscriber(0, "bla", "5555555", "avigdor.feldman@e.braude.ac.il", null,
+					new ArrayList<Parkingsession>(), null, 0));
+			/*controller.setSubscriber(new subscriber(0, "bla", "5555555", "avigdor.feldman@e.braude.ac.il", null,
+					new ArrayList<Parkingsession>(), null, 0));// fake*/
+			/*controller.setBackHandler(() -> { // Handle back button action using lambda
 				try { // Load the connection screen again
 					FXMLLoader loginLoader = new FXMLLoader(getClass().getResource("client.fxml"));
 					clientConnection = controller.getClient();
@@ -117,10 +120,10 @@ public class ClientController {
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
-			});
+			});*/
 			// hand off all future messages to the BParkClientController*/
 			clientConnection.setMessageListener(controller::handleServerMessage);
 		});
 	}
-	
+
 }
