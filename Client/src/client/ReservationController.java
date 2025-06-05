@@ -85,23 +85,16 @@ public class ReservationController {
     protected void onReserve() {
         if (!validateReservation()) return;
 
-        // Build a simple payload like "2025-06-10 09:00 11:00"
-        String payload = String.format("%s %s %s",
-            datePicker.getValue(),
-            startTimeField.getText().trim(),
-            endTimeField.getText().trim()
-        );
-
+        String command = "Create Reservation";
+        Reservation reservation = new Reservation("0",subscribe.getId(),datePicker.getValue(),startTimeField.getText().trim(),endTimeField.getText().trim());
+                
         // Wrap <payload, subscriberId> in a SendObject<Integer>
-        SendObject<Integer> req = new SendObject<>(
-            payload, 
-            subscribe.getId()
-        );
+        SendObject<Reservation> req = new SendObject<>(command ,reservation);
         client.sendToServerSafely(req);
 
         showAlert(AlertType.INFORMATION,
             "Reservation request sent for subscriber #" + subscribe.getId() +
-            ":\n" + payload
+            ":\n" + command
         );
 
         clearForm();
@@ -122,13 +115,9 @@ public class ReservationController {
     /** Ask the server for this subscriber’s future reservations. */
     protected void getFutureReservationsFor() {
         // The “command” string can be anything your server expects, for example:
-        String command = "GetFreeSpot";
-
+        String command = "Get all Reservations for subscriber";
         // Wrap <command, subscriberId> in a SendObject<Integer>
-        SendObject<Integer> req = new SendObject<>(
-            command,
-            subscribe.getId()
-        );
+        SendObject<Integer> req = new SendObject<>(command,subscribe.getId());
         client.sendToServerSafely(req);
     }
 
