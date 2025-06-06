@@ -201,7 +201,7 @@ public class SendObjectHandler {
 						// return getUserUsingTagFromDatabase(user.getTag());
 					}
 				} else {
-					return (T1) new SendObject<T1>("Error", (T1) "Name or code is incorrect");
+					return (T1) new SendObject<T1>("Error", (T1) "Name or Code or Tag is incorrect");
 				}
 			}
 			if (object instanceof Parkingsession) {
