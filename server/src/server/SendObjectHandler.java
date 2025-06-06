@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -97,13 +98,37 @@ public class SendObjectHandler {
 		} else if(action.contains("Get")) {
 			if(action.contains("SubscribersResesrvations")) {
 				List<Reservation> reservationListOfSubscriber = new ArrayList<>();
-				// getReservationListOfSubscriberbyIdFromDatabase(object);
+				// reservationListOfSubscriber = getReservationListOfSubscriberbyIdFromDatabase(object);
 				// fakes to check if a list has been created and transfered to controller
 				reservationListOfSubscriber.add(new Reservation(1, 1001, LocalDate.of(2025, 6, 5), "09:00", "12:00"));
 				reservationListOfSubscriber.add(new Reservation(2, 1002, LocalDate.of(2025, 6, 5), "14:00", "16:00"));
 				reservationListOfSubscriber.add(new Reservation(1, 1003, LocalDate.of(2025, 6, 6), "10:00", "12:00"));
 				reservationListOfSubscriber.add(new Reservation(3, 1004, LocalDate.of(2025, 6, 6), "13:00", "15:00"));
 				return new SendObject<T1>("Reservation list of subscriber", (T1) (List<Reservation>) reservationListOfSubscriber);
+			}
+			if(action.contains("history")) {
+				List<Parkingsession> historyParkingsessionsListOfSubscriber = new ArrayList<>();
+				//historyParkingsessionsListOfSubscriber = gethistoryParkingsessionsListOfSubscriberbyIdFromDatabase(object);
+				// fakes
+				int commonSubscriberId = 101; // same subscriber ID for all sessions
+		        Calendar cal = Calendar.getInstance();
+		        cal.set(2025, Calendar.JUNE, 1, 9, 0);
+		        Date inTime1 = cal.getTime();
+		        cal.set(2025, Calendar.JUNE, 1, 12, 0);
+		        Date outTime1 = cal.getTime();
+		        historyParkingsessionsListOfSubscriber.add(new Parkingsession(1, commonSubscriberId, 10, 1001, inTime1, outTime1, false, false, false));
+		        cal.set(2025, Calendar.JUNE, 2, 14, 30);
+		        Date inTime2 = cal.getTime();
+		        cal.set(2025, Calendar.JUNE, 2, 18, 0);
+		        Date outTime2 = cal.getTime();
+		        historyParkingsessionsListOfSubscriber.add(new Parkingsession(2, commonSubscriberId, 11, 1002, inTime2, outTime2, true, false, false));
+		        cal.set(2025, Calendar.JUNE, 3, 8, 0);
+		        Date inTime3 = cal.getTime();
+		        cal.set(2025, Calendar.JUNE, 3, 11, 15);
+		        Date outTime3 = cal.getTime();
+		        historyParkingsessionsListOfSubscriber.add(new Parkingsession(3, commonSubscriberId, 12, 1003, inTime3, outTime3, false, true, false));
+		        // send back the list
+		        return new SendObject<T1>("Parkingsession list of subscriber", (T1) (List<Parkingsession>) historyParkingsessionsListOfSubscriber);
 			}
 		}
 		return null;
