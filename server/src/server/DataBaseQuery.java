@@ -3,13 +3,16 @@ package server;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import logic.Reservation;
 
 /**
  * DataBaseQuery contains methods for reading from the BPark schema.
  * It extends MySQLConnection to inherit the connection logic.
  */
 public class DataBaseQuery extends MySQLConnection {
-
     /**
      * Constructor: calls parent constructor to ensure the database/tables exist
      * and that `con` (the Connection) is initialized.
@@ -17,7 +20,6 @@ public class DataBaseQuery extends MySQLConnection {
     public DataBaseQuery() {
         super();
     }
-
     /**
      * Checks if the given parking code is currently in use by any active parking session.
      *
@@ -26,25 +28,17 @@ public class DataBaseQuery extends MySQLConnection {
      *         where parking_code = code AND active = TRUE; false otherwise
      */
     protected boolean checkParkingCodeInAllActiveSessionsInDatabase(int code) {
-        // We'll default to false; only set to true if we find a match.
         boolean exists = false;
-
-        // The SQL counts how many active sessions have this parking_code.
-        // If count > 0, then the code is in use.
         String sql = 
             "SELECT COUNT(*) " +
             "FROM parking_sessions " +
             "WHERE parking_code = ? " +
             "  AND active = TRUE";
-
-        // Use try-with-resources so PreparedStatement and ResultSet are closed automatically.
         try (
-            // Prepare the statement on the existing Connection
             PreparedStatement ps = getCon().prepareStatement(sql)
         ) {
             // Bind the integer `code` into the SQL's first parameter (index = 1).
             ps.setInt(1, code);
-
             // Execute the query; it returns a ResultSet with exactly one row and one column (the count).
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -56,12 +50,87 @@ public class DataBaseQuery extends MySQLConnection {
             }
         }
         catch (SQLException e) {
-            // In case of any SQL exception (e.g., connection lost, syntax error),
-            // print stack trace (or log it), but return false by default.
             e.printStackTrace();
         }
-
-        // Return whether we found at least one active session with that code.
         return exists;
+    }
+    protected void updateSpotToFreeInDatabase(int spotId) {
+        //boolean exists = false;
+        String sql =
+        	"UPDATE parking_spots " +
+            "SET active=FALSE" +
+            "WHERE parking_code = ? ";
+        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
+            ps.setInt(1, spotId);
+            int rowsUpdated = ps.executeUpdate();
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    /**
+     * Fetches all reservations for the given subscriber ID.
+     *
+     * @param subscriber_id the ID of the subscriber whose reservations we want
+     * @return a list of Reservation objects (possibly empty if none found)
+     */
+    protected List<Reservation> getReservationListOfSubscriberbyIdFromDatabase(int subscriber_id)
+    {
+    	List<Reservation> reservationListOfSubscriber = new ArrayList<>();
+    	String sql = 
+                "SELECT spot_id,date,start_time,end_time" +
+                "FROM reservations " +
+                "WHERE subscriber_id = ?";
+            try (
+                PreparedStatement ps = getCon().prepareStatement(sql)
+            ) {  
+                ps.setInt(1, subscriber_id);
+                // Execute the query; it returns a ResultSet with exactly one row and one column (the count).
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                    	int spotId       = rs.getInt("spot_id");
+                    	java.time.LocalDate date = rs.getDate("date").toLocalDate();
+                        String startTime   = rs.getString("start_time");
+                        String endTime     = rs.getString("end_time");
+                        Reservation r = new Reservation(spotId, subscriber_id ,date, startTime, endTime);
+
+                        //Add it to our list.
+                        reservationListOfSubscriber.add(r);
+                    }
+                }
+            }
+            catch (SQLException e) {
+                e.printStackTrace();
+            }
+    	return reservationListOfSubscriber;
+    }
+    /**
+     * Retrieves the last parking code for the given subscriber ID.
+     *
+     * @param subscriber_id the ID of the subscriber
+     * @return the code value (or 0 if none found / on error)
+     */
+    protected int getSubscriberLastParkingCode(int subscriber_id) 
+    {
+    	int code = 0;
+    	String sql = 
+                "SELECT code" +
+                "FROM subscribers " +
+                "WHERE subscriber_id = ?";
+            try (
+                PreparedStatement ps = getCon().prepareStatement(sql)
+            ) { 
+            	ps.setInt(1, subscriber_id);
+                // Execute the query; it returns a ResultSet with exactly one row and one column (the count).
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                    	code = rs.getInt("code");
+                    }
+                }
+            }
+            catch (SQLException e) {
+                e.printStackTrace();
+            }
+    	return code;
     }
 }

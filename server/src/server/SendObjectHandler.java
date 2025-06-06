@@ -119,7 +119,7 @@ public class SendObjectHandler {
 				//SendEmail.sendMail(to, "Late retrivel!","Hello,\nWe inform you picked up your vehicle later than expected.\n Note that in the future it might incur additional charges.");
 			} else if (action.equals("Send Parking Code by Email/SMS")) {
 				int parkingCode = 99999; // fake
-				// parkingCode = getSubscriberLastParkingCode();
+				// parkingCode = getSubscriberLastParkingCode(subscriber_id);
 				// if(parkingCode==99999){throw new Exception("No active parking sessions for
 				// the user");}
 				
