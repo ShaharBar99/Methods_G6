@@ -139,14 +139,14 @@ public class MySQLConnection {
 			System.out.println("Using bpark database.");
 
 			// Step 5: Check if the table exists
-			String showOrder = "SHOW TABLES LIKE 'order'";
+			String showOrder = "SHOW TABLES LIKE 'subscribers'";
 			ResultSet rs = useStmt.executeQuery(showOrder);
 			if (!rs.next()) {
-				System.out.println("Table 'order' does not exist. Proceeding with import.");
+				System.out.println("Table 'subscribers' does not exist. Proceeding with import.");
 				// If table does not exist, import the SQL file
 				importSQLFile();
 			} else {
-				System.out.println("Table 'order' already exists. Skipping import.");
+				System.out.println("Table 'subscribers' already exists. Skipping import.");
 			}
 
 			rs.close();
@@ -165,7 +165,7 @@ public class MySQLConnection {
 	 */
 	private void importSQLFile() {
 		try {
-			InputStream is = getClass().getClassLoader().getResourceAsStream("bpark_order.sql");
+			InputStream is = getClass().getClassLoader().getResourceAsStream("DB.sql");
 			if (is == null) {
 				throw new Exception("SQL file not found in classpath.");
 			}
