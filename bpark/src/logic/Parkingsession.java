@@ -7,28 +7,45 @@ public class Parkingsession implements Serializable{
 	    private int sessionId;
 	    private int subscriberId;
 	    private int spotId;
+	    private int parkingCode; // This could be used for a unique session identifier or parking code
 	    private Date inTime;
 	    private Date outTime;
 	    private boolean extended;
 	    private boolean late;
+	    private boolean active;
 
 	    // Constructor
-	    public Parkingsession(int sessionId, int subscriberId, int spotId, Date inTime, Date outTime, boolean extended, boolean late) {
+	    public Parkingsession(int sessionId, int subscriberId, int spotId, int parkingCode, Date inTime, Date outTime, boolean extended, boolean late, boolean active) {
 	        this.sessionId = sessionId;
 	        this.subscriberId = subscriberId;
 	        this.spotId = spotId;
+	        this.parkingCode = parkingCode;
 	        this.inTime = inTime;
 	        this.outTime = outTime;
 	        this.extended = extended;
 	        this.late = late;
+	        this.active = active;
 	    }
 
-	    // Getters
+	    public boolean getActive() {
+			return active;
+		}
+
+		public void setActive(boolean active) {
+			this.active = active;
+		}
+
+		// Getters
 	    public int getSessionId() {
 	        return sessionId;
 	    }
 
-	    public int getSubscriberId() {
+	    public int getParkingCode() {
+			return parkingCode;
+		}
+
+	
+		public int getSubscriberId() {
 	        return subscriberId;
 	    }
 
@@ -64,6 +81,10 @@ public class Parkingsession implements Serializable{
 	    public void setSpotId(int spotId) {
 	        this.spotId = spotId;
 	    }
+
+	    public void setParkingCode(int parkingCode) {
+			this.parkingCode = parkingCode;
+		}
 
 	    public void setInTime(Date inTime) {
 	        this.inTime = inTime;

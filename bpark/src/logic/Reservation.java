@@ -8,13 +8,13 @@ import java.time.LocalDate;
  */
 public class Reservation implements Serializable{
     
-	private final String    spot;
+	private final int    spot;
     private final int    subscriberId;
     private final LocalDate date;
     private final String    startTime;
     private final String    endTime;
 
-    public Reservation(String spot,int subscriberId, LocalDate date, String startTime, String endTime) {
+    public Reservation(int spot,int subscriberId, LocalDate date, String startTime, String endTime) {
         this.spot      = spot;
         this.date      = date;
         this.startTime = startTime;
@@ -22,7 +22,7 @@ public class Reservation implements Serializable{
         this.subscriberId=subscriberId;
     }
 
-    public String getSpot() {
+    public int getSpot() {
         return spot;
     }
 
