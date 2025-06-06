@@ -86,7 +86,7 @@ public class ReservationController {
         if (!validateReservation()) return;
 
         String command = "Create Reservation";
-        Reservation reservation = new Reservation("0",subscribe.getId(),datePicker.getValue(),startTimeField.getText().trim(),endTimeField.getText().trim());
+        Reservation reservation = new Reservation(0,subscribe.getId(),datePicker.getValue(),startTimeField.getText().trim(),endTimeField.getText().trim());
                 
         // Wrap <payload, subscriberId> in a SendObject<Integer>
         SendObject<Reservation> req = new SendObject<>(command ,reservation);
