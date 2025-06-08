@@ -45,7 +45,7 @@ public class ClientController {
             return;
         }
         connectToServer(ip, p);
-        subscribe = new subscriber(1,"temp","1235","@gmail",Role.SUBSCRIBER,null,123546);
+        subscribe = new subscriber(1,"temp","1235","@gmail",Role.SUBSCRIBER,null,"tg",123546);
     }
 
     @FXML
