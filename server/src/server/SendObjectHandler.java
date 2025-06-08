@@ -32,14 +32,6 @@ public class SendObjectHandler {
 		} else if (action.contains("Create")) {
 			Object genericObject = handleCreateAction(object);
 			return replyDefiner(genericObject);
-		} else if (action.contains("Delete")) {
-			Boolean isExist = (Boolean) handleCheckAction(object);
-			if (isExist) {
-				handleDeleteAction(object);
-			}
-		} else if (action.contains("Check")) {
-			Boolean isExist = handleCheckAction(object);
-			return replyDefiner(isExist);
 		} else if (action.contains("Send")) {
 			if (object instanceof subscriber) {
 				handleSendAction(action, (subscriber) object);
@@ -76,29 +68,30 @@ public class SendObjectHandler {
 	}
 
 	private static <T extends Serializable, T1 extends Serializable> SendObject<T1> handleIntegerType(String action,
-			Integer object) {
+			Integer intObject) {
 		if (action.contains("Check")) {
 			if (action.equals("Check new Parking Code")) {
 				boolean isUsed = false; // fake
-				int code = object;
+				int code = intObject;
 				// isUsed = checkParkingCodeInAllActiveSessionsInDatabase(code);
 				return new SendObject<T1>("isUsed", (T1) (Boolean) isUsed);
 			} else if (action.equals("Check recieved Parking Code")) {
 				Parkingsession mySession = null;
 				mySession = new Parkingsession(0, 0, 0, 0, null, new Date(), false, false, false); // fake
-				int parkingcode = object;
+				int parkingcode = intObject;
 				// mySession = getActiveParkingsessionWithThatCodeFromDatabase(parkingcode);
 				return new SendObject<T1>("Parkingsession from code", (T1) (Parkingsession) mySession);
 			}
 		} else if (action.contains("Update")) {
 			if (action.contains("Upadte spot to Free")) {
-				int spotId = object;
-				// updateSpotToFreeInDatabase(object);
+				int spotId = intObject;
+				// updateSpotToFreeInDatabase(spotId);
 			}
 		} else if (action.contains("Get")) {
 			if (action.contains("SubscribersResesrvations")) {
 				List<Reservation> reservationListOfSubscriber = new ArrayList<>();
-				// reservationListOfSubscriber = getReservationListOfSubscriberbyIdFromDatabase(object);
+				// reservationListOfSubscriber =
+				// getReservationListOfSubscriberbyIdFromDatabase(intObject);
 				// fakes to check if a list has been created and transfered to controller
 				reservationListOfSubscriber.add(new Reservation(1, 1001, LocalDate.of(2025, 6, 5), "09:00", "12:00"));
 				reservationListOfSubscriber.add(new Reservation(2, 1002, LocalDate.of(2025, 6, 5), "14:00", "16:00"));
@@ -106,10 +99,11 @@ public class SendObjectHandler {
 				reservationListOfSubscriber.add(new Reservation(3, 1004, LocalDate.of(2025, 6, 6), "13:00", "15:00"));
 				return new SendObject<T1>("Reservation list of subscriber",
 						(T1) (List<Reservation>) reservationListOfSubscriber);
-			}
-			if (action.contains("history")) {
+			} else if (action.contains("history")) {
 				List<Parkingsession> historyParkingsessionsListOfSubscriber = new ArrayList<>();
-				// historyParkingsessionsListOfSubscriber = gethistoryParkingsessionsListOfSubscriberbyIdFromDatabase(object);
+				int subscriberId = intObject;
+				// historyParkingsessionsListOfSubscriber =
+				// gethistoryParkingsessionsListOfSubscriberbyIdFromDatabase(subscriberId);
 				// fakes
 				int commonSubscriberId = 101; // same subscriber ID for all sessions
 				Calendar cal = Calendar.getInstance();
@@ -148,7 +142,7 @@ public class SendObjectHandler {
 				//SendEmail.sendMail(to, "Late retrivel!","Hello,\nWe inform you picked up your vehicle later than expected.\n Note that in the future it might incur additional charges.");
 			} else if (action.equals("Send Parking Code by Email/SMS")) {
 				int parkingCode = 99999; // fake
-				// parkingCode = getSubscriberLastParkingCode();
+				// parkingCode = getSubscriberLastActiveParkingsessionParkingCode();
 				// if(parkingCode==99999){throw new Exception("No active parking sessions for
 				// the user");}
 				//SendEmail.sendMail(to, "Parking Code reminder", String.format("Hello,\nYour last Parking Code in your last/current active session is: %d\nPlease enter the code you recieved in the app.",parkingCode));
@@ -160,18 +154,22 @@ public class SendObjectHandler {
 	private static <T extends Serializable, T1 extends Serializable> SendObject<T1> handleStringType(String action,
 			String object) throws Exception {
 		if (action.contains("Check") && object.contains("Availability")) {
-			Boolean  isAvailable;
-			isAvailable = false; // fake
-			// isAvailable = getPrecentageAvailableSpaceFromDatabase();
-			return new SendObject<T1>("Availability", (T1) (Boolean) isAvailable);
+			double availablePrecentage = 0;
+			// availablePrecentage = getPrecentageAvailableSpaceFromDatabase();
+			if (availablePrecentage > 0.4)
+				return new SendObject<T1>("Availability", (T1) (Boolean) true);
+			else
+				return new SendObject<T1>("Availability", (T1) (Boolean) false);
 		} else if (action.contains("Get") && object.equals("Free spot")) {
 
 			ParkingSpot spot;
-			spot = new ParkingSpot(0, SpotStatus.OCCUPIED); // fake
-			// spot = getFreeSpotFromDatabase();
-			spot.setStatus(SpotStatus.OCCUPIED);
-			handleUpdateAction(spot);
-			return new SendObject<T1>("new Spot", (T1) (ParkingSpot) spot);
+			spot = new ParkingSpot(0, SpotStatus.FREE); // fake
+			// spot = getFreeParkingSpotFromDatabase(date, startTime, endTime);
+			if (spot != null) {
+				spot.setStatus(SpotStatus.OCCUPIED);
+				handleUpdateAction(spot);
+				return new SendObject<T1>("new Spot", (T1) (ParkingSpot) spot);
+			}
 		}
 		// Default or fallback return value
 		return new SendObject<T1>("Invalid request", null);
@@ -185,31 +183,19 @@ public class SendObjectHandler {
 	private static <T extends Serializable, T1 extends Serializable> T1 handleGetAction(T object) throws Exception {
 		try {
 			if (object instanceof subscriber) {
-				boolean isUser = handleCheckAction((subscriber) object);
 				subscriber user = (subscriber) object;
-				if (isUser) {
-					if (user.getCode() > 100000 && user.getName() != null) {
-						// Retrieve User from the database using Code
-						 //return getUserUsingCodeFromDatabase(user.getCode(),user.getName());
-					} else if (user.getTag() != null) {
-						// Retrieve User from the database using Tag
-						// return getUserUsingTagFromDatabase(user.getTag());
-					}
-				} else {
-					return (T1) new SendObject<T1>("Error", (T1) "Name or Code or Tag is incorrect");
+				subscriber subscriber = null;
+				if (user.getCode() > 100000 && user.getName() != null) {
+					// Retrieve User from the database using Code
+					// subscriber = getUserUsingCodeFromDatabase(user.getCode(),user.getName());
+				} else if (user.getTag() != null) {
+					// Retrieve User from the database using Tag
+					// subscriber = getUserUsingTagFromDatabase(user.getTag());
 				}
-			}
-			if (object instanceof Parkingsession) {
-				// Retrieve Parkingsession from the database using ID
-				// return getParkingsessionFromDatabase(session.getSessionId());
-			}
-			if (object instanceof ParkingSpot) {
-				// Retrieve ParkingSpot from the database using ID
-				// return getParkingSpotFromDatabase(spot.SpotId());
-			}
-			if (object instanceof Reservation) {
-				// Retrieve Reservation from the database using ID
-				// return getReservationFromDatabase(reservation.getId());
+				if (subscriber != null)
+					return (T1) subscriber;
+			} else {
+				return (T1) new SendObject<T1>("Error", (T1) "Name or Code or Tag is incorrect");
 			}
 			return null;
 		} catch (Exception e) {// SQLException e
@@ -223,22 +209,15 @@ public class SendObjectHandler {
 				subscriber user = (subscriber) object;
 				// Update User In the database using recieved object
 				// updateUserInDatabase(user);
-			}
-			if (object instanceof Parkingsession) {
+			} else if (object instanceof Parkingsession) {
 				Parkingsession session = (Parkingsession) object;
 				// Update Parkingsession In the database recieved object
 				// updateParkingsessionInDatabase(session);
-			}
-			if (object instanceof ParkingSpot) {
+			} else if (object instanceof ParkingSpot) {
 				ParkingSpot spot = (ParkingSpot) object;
-				// Update Parkingsession In the database recieved object
+				// Update ParkingSpot In the database recieved object
 				// updateParkingSpotInDatabase(spot);
 			}
-			/*if (object instanceof Reservation) {
-				Reservation reservation = (Reservation) object;
-				// update Reservation in the database using recieved object
-				// updateReservationInDatabase(reservation)
-			}*/
 		} catch (Exception e) { // SQLException e
 			throw new Exception("Error updating data to database", e);
 		}
@@ -263,14 +242,10 @@ public class SendObjectHandler {
 				// create Reservation in the database using recieved object
 				ParkingSpot spot;
 				spot = new ParkingSpot(0, SpotStatus.FREE); // fake
-				// spot = getFreeSpotFromDatabase();
+				// spot = getFreeParkingSpotFromDatabase(date, startTime, endTime);
 				spot.setStatus(SpotStatus.RESERVED);
 				// updateParkingSpotInDatabase(spot);
-				List<Reservation> reservationList = new ArrayList<>();
-				// reservationList = getAllReservationsFromDatabase();
-
-				boolean isOverlapping = isReservationOverlapping(reservation, reservationList);
-				if (!isOverlapping) {
+				if (spot != null) {
 					Reservation reservationToBeSent = new Reservation(spot.getSpotId(), reservation.getSubscriberId(),
 							reservation.getDate(), reservation.getStartTime(), reservation.getEndTime());
 					// createReservationInDatabase(reservationToBeSent);
@@ -284,124 +259,5 @@ public class SendObjectHandler {
 
 		}
 		return new SendObject<String>("Error", "creating data in database");
-	}
-
-	/**
-	 * Check if a reservation overlaps with existing reservations for the same spot
-	 * and date.
-	 *
-	 * @param reservation     the reservation to check
-	 * @param reservationList the list of existing reservations
-	 * @return true if the reservation overlaps with an existing one, false
-	 *         otherwise
-	 */
-	public static boolean isReservationOverlapping(Reservation reservation, List<Reservation> reservationList) {
-		try {
-			int startTime[] = convertTimeToIntegers(reservation.getStartTime());
-			int endTime[] = convertTimeToIntegers(reservation.getEndTime());
-			int startMinutes = convertToMinutes(startTime);
-			int endMinutes = convertToMinutes(endTime);
-			for (Reservation reservation2 : reservationList) {
-				int startTime2[] = convertTimeToIntegers(reservation2.getStartTime());
-				int endTime2[] = convertTimeToIntegers(reservation2.getEndTime());
-				int existingStartMinutes = convertToMinutes(startTime2);
-				int existingEndMinutes = convertToMinutes(endTime2);
-				if (reservation2.getDate().equals(reservation.getDate())
-						&& reservation2.getSpot() == reservation.getSpot()) {
-					// Check if times overlap: start and end time should not overlap
-					if ((startMinutes >= existingStartMinutes && startMinutes < existingEndMinutes)
-							|| (endMinutes > existingStartMinutes && endMinutes <= existingEndMinutes)
-							|| (startMinutes <= existingStartMinutes && endMinutes >= existingEndMinutes)) {
-						return true; // Overlap detected
-					}
-				}
-			}
-		} catch (Exception e) {
-			System.out.println("isReservationOverlapping Error");
-		}
-		return false;
-	}
-
-	public static int[] convertTimeToIntegers(String timeString) {
-		// Split the time string at the colon ":"
-		String[] parts = timeString.split(":");
-
-		// Parse hours and minutes as integers
-		int hour = Integer.parseInt(parts[0]);
-		int minute = Integer.parseInt(parts[1]);
-
-		// Return the integers as an array
-		return new int[] { hour, minute };
-	}
-
-	/**
-	 * Convert hours and minutes into the total number of minutes since midnight.
-	 * This allows for easier comparison.
-	 *
-	 * @param timeArray the array of integers [hour, minute]
-	 * @return the total number of minutes since midnight
-	 */
-	public static int convertToMinutes(int[] timeArray) {
-		return timeArray[0] * 60 + timeArray[1];
-	}
-
-	private static <T extends Serializable> void handleDeleteAction(T object) throws Exception {
-		try {
-			if (object instanceof subscriber) {
-				subscriber user = (subscriber) object;
-				// Delete User In the database using recieved object
-				// deleteUserInDatabase(user);
-			}
-			if (object instanceof Parkingsession) {
-				Parkingsession session = (Parkingsession) object;
-				// Delete Parkingsession In the database recieved object
-				// deleteParkingsessionInDatabase(session);
-			}
-			if (object instanceof Reservation) {
-				Reservation reservation = (Reservation) object;
-				// Delete Reservation in the database using recieved object
-				// deleteReservationInDatabase(reservation);
-			}
-		} catch (Exception e) {// SQLException e
-			throw new Exception("Error deleting data from database", e);
-		}
-	}
-
-	private static <T extends Serializable> Boolean handleCheckAction(T object) throws Exception {
-		try {
-			if (object instanceof subscriber) {
-				subscriber user = (subscriber) object;
-				boolean isUser = false;
-				if (user.getCode() > 100000 && user.getName() != null) {
-					// Retrieve User from the database using Code
-					// return checkUserUsingCodeFromDatabase(user.getCode(),user.getName());
-				} else if (user.getTag() != null) {
-					// Retrieve User from the database using Tag
-					// return checkUserUsingTagFromDatabase(user.getTag());
-				}
-				return isUser;
-			}
-			if (object instanceof Parkingsession) {
-				Parkingsession session = (Parkingsession) object;
-				// check Parkingsession In the database recieved object
-				// checkParkingsessionInDatabase(session.getId());
-				return true;
-			}
-			if (object instanceof ParkingSpot) {
-				ParkingSpot spot = (ParkingSpot) object;
-				// check Parkingsession In the database recieved object
-				// checkParkingsessionInDatabase(spot.getId());
-				return true;
-			}
-			if (object instanceof Reservation) {
-				Reservation reservation = (Reservation) object;
-				// check Reservation in the database using recieved object
-				// checkReservationInDatabase(reservation.getId());
-				return true;
-			}
-			return false;
-		} catch (Exception e) {// SQLException e
-			throw new Exception("Error checking data from database", e);
-		}
 	}
 }
