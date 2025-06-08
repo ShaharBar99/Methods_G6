@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -94,16 +95,45 @@ public class SendObjectHandler {
 				int spotId = object;
 				// updateSpotToFreeInDatabase(object);
 			}
-		} else if(action.contains("Get")) {
-			if(action.contains("SubscribersResesrvations")) {
+		} else if (action.contains("Get")) {
+			if (action.contains("SubscribersResesrvations")) {
 				List<Reservation> reservationListOfSubscriber = new ArrayList<>();
-				// getReservationListOfSubscriberbyIdFromDatabase(object);
+				// reservationListOfSubscriber = getReservationListOfSubscriberbyIdFromDatabase(object);
 				// fakes to check if a list has been created and transfered to controller
 				reservationListOfSubscriber.add(new Reservation(1, 1001, LocalDate.of(2025, 6, 5), "09:00", "12:00"));
 				reservationListOfSubscriber.add(new Reservation(2, 1002, LocalDate.of(2025, 6, 5), "14:00", "16:00"));
 				reservationListOfSubscriber.add(new Reservation(1, 1003, LocalDate.of(2025, 6, 6), "10:00", "12:00"));
 				reservationListOfSubscriber.add(new Reservation(3, 1004, LocalDate.of(2025, 6, 6), "13:00", "15:00"));
-				return new SendObject<T1>("Reservation list of subscriber", (T1) (List<Reservation>) reservationListOfSubscriber);
+				return new SendObject<T1>("Reservation list of subscriber",
+						(T1) (List<Reservation>) reservationListOfSubscriber);
+			}
+			if (action.contains("history")) {
+				List<Parkingsession> historyParkingsessionsListOfSubscriber = new ArrayList<>();
+				// historyParkingsessionsListOfSubscriber = gethistoryParkingsessionsListOfSubscriberbyIdFromDatabase(object);
+				// fakes
+				int commonSubscriberId = 101; // same subscriber ID for all sessions
+				Calendar cal = Calendar.getInstance();
+				cal.set(2025, Calendar.JUNE, 1, 9, 0);
+				Date inTime1 = cal.getTime();
+				cal.set(2025, Calendar.JUNE, 1, 12, 0);
+				Date outTime1 = cal.getTime();
+				historyParkingsessionsListOfSubscriber.add(
+						new Parkingsession(1, commonSubscriberId, 10, 1001, inTime1, outTime1, false, false, false));
+				cal.set(2025, Calendar.JUNE, 2, 14, 30);
+				Date inTime2 = cal.getTime();
+				cal.set(2025, Calendar.JUNE, 2, 18, 0);
+				Date outTime2 = cal.getTime();
+				historyParkingsessionsListOfSubscriber.add(
+						new Parkingsession(2, commonSubscriberId, 11, 1002, inTime2, outTime2, true, false, false));
+				cal.set(2025, Calendar.JUNE, 3, 8, 0);
+				Date inTime3 = cal.getTime();
+				cal.set(2025, Calendar.JUNE, 3, 11, 15);
+				Date outTime3 = cal.getTime();
+				historyParkingsessionsListOfSubscriber.add(
+						new Parkingsession(3, commonSubscriberId, 12, 1003, inTime3, outTime3, false, true, false));
+				// send back the list
+				return new SendObject<T1>("Parkingsession list of subscriber",
+						(T1) (List<Parkingsession>) historyParkingsessionsListOfSubscriber);
 			}
 		}
 		return null;
@@ -115,14 +145,12 @@ public class SendObjectHandler {
 			if (to == null || !to.contains("@"))
 				throw new Exception("Subscriber doesn't have a legal Email");
 			else if (action.equals("Send late message by Email/SMS")) {
-				
 				//SendEmail.sendMail(to, "Late retrivel!","Hello,\nWe inform you picked up your vehicle later than expected.\n Note that in the future it might incur additional charges.");
 			} else if (action.equals("Send Parking Code by Email/SMS")) {
 				int parkingCode = 99999; // fake
-				// parkingCode = getSubscriberLastParkingCode(subscriber_id);
+				// parkingCode = getSubscriberLastParkingCode();
 				// if(parkingCode==99999){throw new Exception("No active parking sessions for
 				// the user");}
-				
 				//SendEmail.sendMail(to, "Parking Code reminder", String.format("Hello,\nYour last Parking Code in your last/current active session is: %d\nPlease enter the code you recieved in the app.",parkingCode));
 			}
 		}
@@ -132,8 +160,8 @@ public class SendObjectHandler {
 	private static <T extends Serializable, T1 extends Serializable> SendObject<T1> handleStringType(String action,
 			String object) throws Exception {
 		if (action.contains("Check") && object.contains("Availability")) {
-			Boolean isAvailable;
-			isAvailable = true; // fake
+			Boolean  isAvailable;
+			isAvailable = false; // fake
 			// isAvailable = getPrecentageAvailableSpaceFromDatabase();
 			return new SendObject<T1>("Availability", (T1) (Boolean) isAvailable);
 		} else if (action.contains("Get") && object.equals("Free spot")) {
@@ -157,8 +185,19 @@ public class SendObjectHandler {
 	private static <T extends Serializable, T1 extends Serializable> T1 handleGetAction(T object) throws Exception {
 		try {
 			if (object instanceof subscriber) {
-				// Retrieve User from the database using ID
-				// return getUserFromDatabase(user.getId());
+				boolean isUser = handleCheckAction((subscriber) object);
+				subscriber user = (subscriber) object;
+				if (isUser) {
+					if (user.getCode() > 100000 && user.getName() != null) {
+						// Retrieve User from the database using Code
+						 //return getUserUsingCodeFromDatabase(user.getCode(),user.getName());
+					} else if (user.getTag() != null) {
+						// Retrieve User from the database using Tag
+						// return getUserUsingTagFromDatabase(user.getTag());
+					}
+				} else {
+					return (T1) new SendObject<T1>("Error", (T1) "Name or Code or Tag is incorrect");
+				}
 			}
 			if (object instanceof Parkingsession) {
 				// Retrieve Parkingsession from the database using ID
@@ -193,13 +232,13 @@ public class SendObjectHandler {
 			if (object instanceof ParkingSpot) {
 				ParkingSpot spot = (ParkingSpot) object;
 				// Update Parkingsession In the database recieved object
-				// updateParkingsessionInDatabase(spot);
+				// updateParkingSpotInDatabase(spot);
 			}
-			if (object instanceof Reservation) {
+			/*if (object instanceof Reservation) {
 				Reservation reservation = (Reservation) object;
 				// update Reservation in the database using recieved object
-				// updateReservationInDatabase(reservation);
-			}
+				// updateReservationInDatabase(reservation)
+			}*/
 		} catch (Exception e) { // SQLException e
 			throw new Exception("Error updating data to database", e);
 		}
@@ -222,10 +261,9 @@ public class SendObjectHandler {
 			if (object instanceof Reservation) {
 				Reservation reservation = (Reservation) object;
 				// create Reservation in the database using recieved object
-				// int resId = getLastReservationId() + 1;
 				ParkingSpot spot;
-				spot = new ParkingSpot(0,SpotStatus.FREE); // fake
-				// spot = getFreeParkingSpotFromDatabase();
+				spot = new ParkingSpot(0, SpotStatus.FREE); // fake
+				// spot = getFreeSpotFromDatabase();
 				spot.setStatus(SpotStatus.RESERVED);
 				// updateParkingSpotInDatabase(spot);
 				List<Reservation> reservationList = new ArrayList<>();
@@ -333,9 +371,15 @@ public class SendObjectHandler {
 		try {
 			if (object instanceof subscriber) {
 				subscriber user = (subscriber) object;
-				// check User In the database using recieved object Id
-				// checkUserInDatabase(user.getId());
-				return true;
+				boolean isUser = false;
+				if (user.getCode() > 100000 && user.getName() != null) {
+					// Retrieve User from the database using Code
+					// return checkUserUsingCodeFromDatabase(user.getCode(),user.getName());
+				} else if (user.getTag() != null) {
+					// Retrieve User from the database using Tag
+					// return checkUserUsingTagFromDatabase(user.getTag());
+				}
+				return isUser;
 			}
 			if (object instanceof Parkingsession) {
 				Parkingsession session = (Parkingsession) object;

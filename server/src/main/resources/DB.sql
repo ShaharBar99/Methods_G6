@@ -8,26 +8,32 @@ USE bpark;
 --
 DROP TABLE IF EXISTS `subscribers`;
 CREATE TABLE IF NOT EXISTS `subscribers` (
-  `subscriber_id`    INT            NOT NULL AUTO_INCREMENT,
-  `name`             VARCHAR(100)   NOT NULL,
-  `phone`            VARCHAR(20)    DEFAULT NULL,
-  `email`            VARCHAR(100)   DEFAULT NULL,
-  `role`             VARCHAR(50)    DEFAULT 'USER',
-  `code`             INT            DEFAULT NULL,
+  `subscriber_id` INT           NOT NULL AUTO_INCREMENT,
+  `name`          VARCHAR(100)  NOT NULL,
+  `phone`         VARCHAR(20)   DEFAULT NULL,
+  `email`         VARCHAR(100)  DEFAULT NULL,
+  `role`          VARCHAR(50)   DEFAULT 'USER',
+  `tag`           VARCHAR(50)   DEFAULT NULL,
+  `code`          INT           DEFAULT NULL,
   PRIMARY KEY (`subscriber_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB 
+  DEFAULT CHARSET=utf8mb4 
+  COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `subscribers`
 --
 LOCK TABLES `subscribers` WRITE;
-INSERT INTO `subscribers` (`subscriber_id`,`name`,`phone`,`email`,`role`,`code`) VALUES
-  (2001,'Alice','050-1234567','alice@example.com','USER',111111),
-  (2002,'Bob','050-2345678','bob@example.com','USER',222222),
-  (2003,'Carol','050-3456789','carol@example.com','USER',333333),
-  (2004,'Dave','050-4567890','dave@example.com','USER',444444),
-  (2005,'Eve','050-5678901','eve@example.com','ADMIN',555555);
+INSERT INTO `subscribers` 
+  (`subscriber_id`,`name`,`phone`,`email`,`role`,`tag`,`code`) 
+VALUES
+  (2001,'Alice','050-1234567','alice@example.com','USER',NULL,111111),
+  (2002,'Bob'  ,'050-2345678','bob@example.com'  ,'USER',NULL,222222),
+  (2003,'Carol','050-3456789','carol@example.com','USER',NULL,333333),
+  (2004,'Dave' ,'050-4567890','dave@example.com' ,'USER',NULL,444444),
+  (2005,'Eve'  ,'050-5678901','eve@example.com'  ,'ADMIN',NULL,555555);
 UNLOCK TABLES;
+
 
 --
 -- Table structure for table `parking_spots`

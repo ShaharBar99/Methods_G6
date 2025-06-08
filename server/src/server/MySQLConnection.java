@@ -204,7 +204,7 @@ public class MySQLConnection {
 				int confirmation_code = rs.getInt("confirmation_code");
 				int subscriber_id = rs.getInt("subscriber_id");
 				Date placing_date = rs.getDate("date_of_placing_an_order");
-				subscriber sub = new subscriber(subscriber_id, "", "", "", Role.SUBSCRIBER, null, 0);
+				subscriber sub = new subscriber(subscriber_id, "", "", "", Role.SUBSCRIBER, null, "",0);
 				ParkingSpot spot = new ParkingSpot(parking_space, null);
 
 				// Create Order
@@ -251,7 +251,7 @@ public class MySQLConnection {
 				int confirmation_code = rs.getInt("confirmation_code");
 				int subscriber_id = rs.getInt("subscriber_id");
 				Date placing_date = rs.getDate("date_of_placing_an_order");
-				subscriber sub = new subscriber(subscriber_id, "", "", "", Role.SUBSCRIBER, null, 0);
+				subscriber sub = new subscriber(subscriber_id, "", "", "", Role.SUBSCRIBER, null,"", 0);
 				ParkingSpot spot = new ParkingSpot(parking_space, null);
 
 				// Create Order

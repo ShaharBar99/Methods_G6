@@ -105,32 +105,99 @@ public class DataBaseQuery extends MySQLConnection {
     	return reservationListOfSubscriber;
     }
     /**
-     * Retrieves the last parking code for the given subscriber ID.
+     * Retrieves the most recent parking_code for the given subscriber, based on the latest in_time.
      *
      * @param subscriber_id the ID of the subscriber
-     * @return the code value (or 0 if none found / on error)
+     * @return the last parking_code used by that subscriber, or 0 if none found / on error
      */
-    protected int getSubscriberLastParkingCode(int subscriber_id) 
+    protected int getSubscriberLastParkingCode(int subscriber_id) {
+        int code = 0;
+
+        // Select the parking_code of the most recent session for this subscriber
+        String sql =
+            "SELECT parking_code " +
+            "FROM parking_sessions " +
+            "WHERE subscriber_id = ? " +
+            "ORDER BY in_time DESC " +
+            "LIMIT 1";
+
+        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
+            ps.setInt(1, subscriber_id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    code = rs.getInt("parking_code");
+                }
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return code;
+    }
+    /**
+     * Finds and returns one free parking‐spot ID, or -1 if none available.
+     *
+     * @return a free spot_id, or -1 if there are no FREE spots / on error
+     */
+    protected Object getFreeSpotFromDatabase() {
+        Integer spot = -1;
+
+        // Note spaces around keywords, quote the FREE status, and limit to 1 row.
+        String sql =
+            "SELECT spot_id " +
+            "FROM parking_spots " +
+            "WHERE status = 'FREE' " +
+            "LIMIT 1";
+
+        // One try-with-resources block for both PreparedStatement and ResultSet
+        try (
+            PreparedStatement ps = getCon().prepareStatement(sql);
+            ResultSet rs       = ps.executeQuery()
+        ) {
+            if (rs.next()) {
+                // Read the spot_id column
+                spot = rs.getInt("spot_id");
+            }
+           /* else
+            {getReservedSpotFromDatabase();}*/
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return spot;
+    }
+    /*protected List<Reservation> getReservedSpotFromDatabase()
     {
-    	int code = 0;
+    	List<Reservation> reservationListOfSubscriber = new ArrayList<>();
     	String sql = 
-                "SELECT code" +
-                "FROM subscribers " +
-                "WHERE subscriber_id = ?";
+                "SELECT subscriber_id,spot_id,date,start_time,end_time" +
+                "FROM reservations " ;
             try (
                 PreparedStatement ps = getCon().prepareStatement(sql)
-            ) { 
-            	ps.setInt(1, subscriber_id);
+            ) {  
                 // Execute the query; it returns a ResultSet with exactly one row and one column (the count).
                 try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                    	code = rs.getInt("code");
+                    while (rs.next()) {
+                    	int subscriberId = rs.getInt("subscriber_id");
+                    	int spotId       = rs.getInt("spot_id");
+                    	java.time.LocalDate date = rs.getDate("date").toLocalDate();
+                        String startTime   = rs.getString("start_time");
+                        String endTime     = rs.getString("end_time");
+                        Reservation r = new Reservation(spotId, subscriberId,date, startTime, endTime);
+
+                        //Add it to our list.
+                        reservationListOfSubscriber.add(r);
                     }
                 }
             }
             catch (SQLException e) {
                 e.printStackTrace();
             }
-    	return code;
-    }
+    	return reservationListOfSubscriber;
+    }*/
+
+    
 }
