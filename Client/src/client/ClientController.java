@@ -66,7 +66,7 @@ public class ClientController {
 			clientConnection = new BParkClient(ipAddress, port);
 			connectButton.setDisable(true);
 			disconnectButton.setDisable(false);
-			clientConnection.start();
+			//clientConnection.start();
 			// Creates the order table 
 			clientConnection.setMessageListener(this::handleServerMessage);
 			

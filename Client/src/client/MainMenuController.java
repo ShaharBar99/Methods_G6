@@ -83,7 +83,8 @@ public class MainMenuController extends Controller{
             	HistoryScreenController controller = loader.getController();
             	c = controller;
             }
-            c.setClient(client);
+            c.setClient(client,sub);
+            client.setMessageListener(c::handleServerMessage);
             c.setBackHandler(() -> {
                 try {    
                     FXMLLoader loginLoader = new FXMLLoader(getClass().getResource("MainMenuScreen.fxml"));
@@ -92,7 +93,7 @@ public class MainMenuController extends Controller{
                     currentStage.setTitle(screen_name);
                     currentStage.show();
                     MainMenuController controller = loginLoader.getController();
-                    controller.setClient(client);
+                    controller.setClient(client,sub);
                     stage.close();
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -101,6 +102,10 @@ public class MainMenuController extends Controller{
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("cant");
-	}
+        }
     }
+    protected void handleMessageFromServer(Object msg) {
+		
+		
+	}
 }

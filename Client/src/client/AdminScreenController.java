@@ -63,7 +63,7 @@ public class AdminScreenController extends Controller{
             ReportController controller = loader.getController();
             //add orders to report controller
             //controller.setOrders(orders);
-            controller.setClient(client);
+            controller.setClient(client,sub);
 
             // Back handler – החזרת admin וסגירת דוח
             controller.setBackHandler(() -> {

@@ -105,7 +105,7 @@ public class EditOrderController {
             int spotId = Integer.parseInt(spotText);
             System.out.println("Updating order with date: " + date);
             loadedOrder.setorder_date(java.sql.Date.valueOf(date));
-            loadedOrder.set_ParkingSpot(new ParkingSpot(spotId, null, null));
+            //loadedOrder.set_ParkingSpot(new ParkingSpot(spotId, null, null));
             client.sendToServerSafely(loadedOrder);
         } catch (NumberFormatException e) {
             statusLabel.setText("Invalid spot ID");

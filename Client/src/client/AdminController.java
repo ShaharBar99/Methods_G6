@@ -32,11 +32,11 @@ public class AdminController {
                 Role.SUBSCRIBER, new ArrayList<>(), 5678);
 		*/
         // יצירת מקומות חניה
-        ParkingSpot spot1 = new ParkingSpot(101, SpotStatus.FREE, null);
-        ParkingSpot spot2 = new ParkingSpot(102, SpotStatus.OCCUPIED, null);
-        ParkingSpot spot3 = new ParkingSpot(103, SpotStatus.RESERVED, null);
-        ParkingSpot spot4 = new ParkingSpot(104, SpotStatus.FREE, null);
-
+        //ParkingSpot spot1 = new ParkingSpot(101, SpotStatus.FREE, null);
+        //ParkingSpot spot2 = new ParkingSpot(102, SpotStatus.OCCUPIED, null);
+        //ParkingSpot spot3 = new ParkingSpot(103, SpotStatus.RESERVED, null);
+        // spot4 = new ParkingSpot(104, SpotStatus.FREE, null);
+//
         // יצירת הזמנות וקישור
         //Order order1 = new Order(123456, sub1, new Date(), new Date(), spot2, 1);
         //Order order2 = new Order(234567, sub2, new Date(), new Date(), spot3, 2);
@@ -44,10 +44,10 @@ public class AdminController {
         //spot3.setCurrentReservation(order2);
 
         // הוספה לרשימה
-        spots.add(spot1);
-        spots.add(spot2);
-        spots.add(spot3);
-        spots.add(spot4);
+        //spots.add(spot1);
+        //spots.add(spot2);
+        //spots.add(spot3);
+        //spots.add(spot4);
 
         return spots;
     }
@@ -59,14 +59,14 @@ public class AdminController {
         List<subscriber> subs = new ArrayList<>();
 
         // היסטוריות חניה לדוגמה
-        List<Parkingsession> history1 = Arrays.asList(
+        /*List<Parkingsession> history1 = Arrays.asList(
                 new Parkingsession(1, 2001, 101, new Date(), new Date(), false, false),
                 new Parkingsession(2, 2001, 102, new Date(), new Date(), true, false)
         );
 
         List<Parkingsession> history2 = Arrays.asList(
                 new Parkingsession(3, 2002, 103, new Date(), new Date(), false, true)
-        );
+        );*/
 
         // יצירת מנויים
         //subscriber sub1 = new subscriber(2001, "Alice", "050-1234567", "alice@example.com",
@@ -87,9 +87,9 @@ public class AdminController {
     public List<Parkingsession> getAllActiveSessions() {
         List<Parkingsession> allSessions = new ArrayList<>();
 
-        allSessions.add(new Parkingsession(10, 2001, 101, new Date(), null, false, false)); // פעיל
-        allSessions.add(new Parkingsession(11, 2002, 102, new Date(), new Date(), false, false)); // הסתיים
-        allSessions.add(new Parkingsession(12, 2003, 103, new Date(), null, true, false)); // פעיל
+        ////allSessions.add(new Parkingsession(10, 2001, 101, new Date(), null, false, false)); // פעיל
+        //allSessions.add(new Parkingsession(11, 2002, 102, new Date(), new Date(), false, false)); // הסתיים
+        //allSessions.add(new Parkingsession(12, 2003, 103, new Date(), null, true, false)); // פעיל
 
         List<Parkingsession> activeSessions = new ArrayList<>();
         for (Parkingsession session : allSessions) {

@@ -21,7 +21,8 @@ public abstract class Controller {
 		return client;
 	}
 
-	public void setClient(BParkClient client) {
+	public void setClient(BParkClient client,subscriber sub) {
+		this.sub = sub;
 		this.client = client;
 	}
 
@@ -29,9 +30,6 @@ public abstract class Controller {
 		return sub;
 	}
 
-	public void setSub(subscriber sub) {
-		this.sub = sub;
-	}
 	@FXML private void handleBackButton() {
 		// swap the TableView scene back to the connect screen
 		if (backHandler != null) {
@@ -45,4 +43,8 @@ public abstract class Controller {
 			System.err.println("Failed to send message to server: " + e.getMessage());
 		}
 	}
+	protected void handleServerMessage(Object msg) {
+		System.err.println("test");
+	}
+	
 }

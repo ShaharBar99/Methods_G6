@@ -12,8 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import logic.Role;
-import logic.subscriber;
+import logic.*;
 
 public class LoginController {
 
@@ -79,7 +78,6 @@ public class LoginController {
 			ShowAlert.showAlert("Error", "Please enter both IP and port", Alert.AlertType.ERROR);
 			return;
 		}
-
 		int port;
 		try {
 			port = Integer.parseInt(portText);
@@ -87,7 +85,6 @@ public class LoginController {
 			ShowAlert.showAlert("Error", "Port must be a valid number", Alert.AlertType.ERROR);
 			return;
 		}
-		
 		connectToServer(ipAddress, port);
     }
     
@@ -95,6 +92,7 @@ public class LoginController {
     	String box1 = loginMethodComboBox.getValue();
 		String box2 = roleComboBox.getValue();
 		subscriber sub = null;
+		try {
 		if(box2.equals("Admin")) {
 			String passwordText = passwordField.getText().trim();
 			int passwordInt = Integer.parseInt(passwordText);
@@ -119,18 +117,21 @@ public class LoginController {
 						null,null,subint);
 			}
 		}
+	    } catch (Exception e) {
+			ShowAlert.showAlert("Error", "The type of the fields is wrong", Alert.AlertType.ERROR);
+
+		}
     	return sub;	
     }
     
     public void connectToServer(String ipAddress, int port) {
 		try {
 			client = new BParkClient(ipAddress, port);
-			connectButton.setDisable(true);
+			//connectButton.setDisable(true);
 			exitButton.setDisable(false);
-			client.start();
-			
-			//subscriber sub1 = createsubfromlogin();
-			//client.start(sub1);
+			//client.start();
+			subscriber sub1 = createsubfromlogin();
+			client.start(sub1);
 			
 			// Creates the order table 
 			client.setMessageListener(this::handleServerMessage);
@@ -140,21 +141,14 @@ public class LoginController {
 			connectButton.setDisable(false);
 		}
 	}
-    /*
-     
-     
-     
-     
-     */
+
     private void handleServerMessage(Object msg) {
-    	/*
-    	//if(msg instaceof subscriber):
-		//connect to server
-		 else{
-		 	ShowAlert.showAlert("Error", "Wrong details, Alert.AlertType.ERROR);
-		 }
-    	*/
     	Platform.runLater(() -> {
+    		if(msg instanceof SendObject) {
+    			SendObject send = (SendObject)msg;
+    			if(send.getObj() instanceof subscriber) {
+		//connect to server
+    			
 			System.out.println("[Server] " + msg);
 
 			// Load next screen (Order Table)
@@ -190,7 +184,7 @@ public class LoginController {
 			MainMenuController controller = loader.getController();
 			//controller.setOrders(orders);
 			//controller.setClient(clientConnection);
-			controller.setClient(client);
+			controller.setClient(client,(subscriber)send.getObj());
 			//controller.setSub(msg);
 			controller.setBackHandler(() -> { // Handle back button action using lambda
 				try { // Stop the client connection
@@ -208,12 +202,16 @@ public class LoginController {
 				}
 			});
 			// hand off all future messages to the BParkClientController
-			//clientConnection.setMessageListener(controller::handleServerMessage);
-		});
-		/*else{
+			client.setMessageListener(controller::handleServerMessage);
+		}
+ 
+		else{
+		client.stop();
 		ShowAlert.showAlert("Error", "Cant login to server wrong account", Alert.AlertType.ERROR);
-		*/
-	}
+		}
+    		}
+	});
+    }
     @FXML
 	public void handleExit() {
 		// Exit application
