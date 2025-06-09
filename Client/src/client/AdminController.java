@@ -69,14 +69,14 @@ public class AdminController {
         );
 
         // יצירת מנויים
-        subscriber sub1 = new subscriber(2001, "Alice", "050-1234567", "alice@example.com",
-                Role.SUBSCRIBER, history1, 1234);
+        //subscriber sub1 = new subscriber(2001, "Alice", "050-1234567", "alice@example.com",
+         //       Role.SUBSCRIBER, history1, 1234);
 
-        subscriber sub2 = new subscriber(2002, "Bob", "052-9876543", "bob@example.com",
-                Role.SUBSCRIBER, history2, 5678);
+        //subscriber sub2 = new subscriber(2002, "Bob", "052-9876543", "bob@example.com",
+         //       Role.SUBSCRIBER, history2, 5678);
 
-        subs.add(sub1);
-        subs.add(sub2);
+        //subs.add(sub1);
+        //subs.add(sub2);
 
         return subs;
     }

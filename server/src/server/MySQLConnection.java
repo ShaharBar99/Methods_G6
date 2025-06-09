@@ -204,18 +204,18 @@ public class MySQLConnection {
 				int confirmation_code = rs.getInt("confirmation_code");
 				int subscriber_id = rs.getInt("subscriber_id");
 				Date placing_date = rs.getDate("date_of_placing_an_order");
-				subscriber sub = new subscriber(subscriber_id, "", "", "", Role.SUBSCRIBER, null, 0);
+				//subscriber sub = new subscriber(subscriber_id, "", "", "", Role.SUBSCRIBER, null, 0);
 				ParkingSpot spot = new ParkingSpot(parking_space, null, null);
 
 				// Create Order
-				Order temp = new Order(confirmation_code, // code
+				/*Order temp = new Order(confirmation_code, // code
 						sub, // subscriber
 						order_date, // order_date
 						placing_date, // date_of_placing_an_order
 						spot, // parking_space
 						order_number // order_id
-				);
-				orderslist.add(temp);
+				);*/
+				//orderslist.add(temp);
 			}
 			rs.close();
 			stmt.close();
@@ -251,11 +251,11 @@ public class MySQLConnection {
 				int confirmation_code = rs.getInt("confirmation_code");
 				int subscriber_id = rs.getInt("subscriber_id");
 				Date placing_date = rs.getDate("date_of_placing_an_order");
-				subscriber sub = new subscriber(subscriber_id, "", "", "", Role.SUBSCRIBER, null, 0);
+				//subscriber sub = new subscriber(subscriber_id, "", "", "", Role.SUBSCRIBER, null, 0);
 				ParkingSpot spot = new ParkingSpot(parking_space, null, null);
-
+			}
 				// Create Order
-				temp = new Order(confirmation_code, // code
+				/*temp = new Order(confirmation_code, // code
 						sub, // subscriber
 						order_date, // order_date
 						placing_date, // date_of_placing_an_order
@@ -266,7 +266,7 @@ public class MySQLConnection {
 			rs.close();
 			stmt.close();
 			System.out.println("got order: " + id);
-		} catch (SQLException e) {
+		}*/ }catch (SQLException e) {
 			System.out.println("Failed to get order");
 		} finally {
 			disconnectFromDB(con);

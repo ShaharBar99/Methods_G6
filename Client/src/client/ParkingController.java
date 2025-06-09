@@ -167,10 +167,10 @@ public class ParkingController {
 
 			// subscriber1 != null for testing/checking
 			if (subscriber1 != null) {
-				Parkingsession session = new Parkingsession(0, subscriber1.getId(), spot.getSpotId(), parkingCode,
-						inTime, outTime, false, false, true);
+				//Parkingsession session = new Parkingsession(0, subscriber1.getId(), spot.getSpotId(), parkingCode,
+					//	inTime, outTime, false, false, true);
 				// TO DO: send session to database
-				client.sendToServerSafely(new SendObject<Parkingsession>("Create new", session));
+				//client.sendToServerSafely(new SendObject<Parkingsession>("Create new", session));
 				int spotId = spot.getSpotId();
 				Platform.runLater(() -> {
 					dropOffScreen.showParkingSuccess(); // show success message
@@ -226,7 +226,7 @@ public class ParkingController {
 				if (mySession.getOutTime().before(new Date())) {
 					markLateArrival(mySession); // if the session is late, mark it
 				}
-				mySession.setActive(false);
+				//mySession.setActive(false);
 				subscriber1.getHistory().add(mySession); // add session to subscriber's history
 				// TO DO: send session and subscriber1 to the database for update
 				releaseSpot(mySession.getSpotId()); // release the parking spot
