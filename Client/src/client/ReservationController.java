@@ -15,6 +15,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.PropertyValueFactory;
 import logic.Reservation;
+import logic.SendObject;
 
 public class ReservationController extends Controller{
 
@@ -29,13 +30,6 @@ public class ReservationController extends Controller{
     @FXML private TableColumn<Reservation,String> colStart;
     @FXML private TableColumn<Reservation,String> colEnd;
 
-    protected BParkClient client;
-
-    /** Called by ReservationScreenController after load */
-    public void setClient(BParkClient client) {
-        this.client = client;
-    }
-
     @FXML
     public void initialize() {
         // configure table columns
@@ -46,84 +40,104 @@ public class ReservationController extends Controller{
         // DON'T call getFutureReservationsFor() here, client is still null
     }
 
-    /** Validate date, times (HH:MM), start < end, date ≥ today */
-    protected boolean validateReservation() {
-        LocalDate date = datePicker.getValue();
-        String start = startTimeField.getText().trim();
-        String end   = endTimeField.getText().trim();
-
-        if (date == null || start.isEmpty() || end.isEmpty()) {
-            showAlert(AlertType.ERROR, "Date, start time and end time are required.");
-            return false;
-        }
-
-        try {
-            LocalTime s = LocalTime.parse(start);
-            LocalTime e = LocalTime.parse(end);
-            if (!s.isBefore(e)) {
-                showAlert(AlertType.ERROR, "Start time must be before end time.");
-                return false;
-            }
-        } catch (DateTimeParseException ex) {
-            showAlert(AlertType.ERROR, "Time must be in HH:MM format.");
-            return false;
-        }
-
-        if (date.isBefore(LocalDate.now())) {
-            showAlert(AlertType.ERROR, "Date cannot be in the past.");
-            return false;
-        }
-
-        return true;
-    }
-
     /** Called by ReservationScreenController#submitReservationRequest() */
-    protected void onReserve() {
-        if (!validateReservation()) return;
+    /** Validate date, times (HH:MM), start < end, date ≥ today */
+	protected boolean validateReservation() {
+		LocalDate date = datePicker.getValue();
+		String start = startTimeField.getText().trim();
+		String end = endTimeField.getText().trim();
 
-        // Server will choose an available spot for us:
-        String msg = String.format("RESERVE %s %s %s",
-            datePicker.getValue(),
-            startTimeField.getText().trim(),
-            endTimeField.getText().trim()
-        );
-        client.sendToServerSafely(msg);
-        showAlert(AlertType.INFORMATION, "Reservation request sent:\n" + msg);
-        clearForm();
-        getFutureReservationsFor();
-    }
+		if (date == null || start.isEmpty() || end.isEmpty()) {
+			showAlert(AlertType.ERROR, "Date, start time and end time are required.");
+			return false;
+		}
 
-    /** Called by ReservationScreenController#submitCancellation() */
-    protected void onCancel() {
-        clearForm();
-    }
+		try {
+			LocalTime s = LocalTime.parse(start);
+			LocalTime e = LocalTime.parse(end);
+			if (!s.isBefore(e)) {
+				showAlert(AlertType.ERROR, "Start time must be before end time.");
+				return false;
+			}
+		} catch (DateTimeParseException ex) {
+			showAlert(AlertType.ERROR, "Time must be in HH:MM format.");
+			return false;
+		}
 
-    private void clearForm() {
-        datePicker.setValue(LocalDate.now());
-        startTimeField.clear();
-        endTimeField.clear();
-    }
+		if (date.isBefore(LocalDate.now())) {
+			showAlert(AlertType.ERROR, "Date cannot be in the past.");
+			return false;
+		}
 
-    /** Fetch the up-to-date list of future reservations */
-    protected void getFutureReservationsFor() {
-        client.sendToServerSafely("GET_FUTURE_RESERVATIONS");
-    }
+		return true;
+	}
 
-    /** Entry point for all messages from the server */
-    public void handleServerMessage(Object message) {
-        if (message instanceof List<?>) {
-            @SuppressWarnings("unchecked")
-            List<Reservation> list = (List<Reservation>) message;
-            Platform.runLater(() ->
-                futureReservationsTable.getItems().setAll(list)
-            );
-        } else {
-            Platform.runLater(() ->
-                showAlert(AlertType.INFORMATION, message.toString())
-            );
-        }
-    }
+	/** Called by ReservationScreenController#submitReservationRequest() */
+	/** Called when the user clicks “Reserve”. */
+	protected void onReserve() {
+		if (!validateReservation())
+			return;
 
+		// Build a simple payload like "2025-06-10 09:00 11:00"
+
+		Reservation reservation = new Reservation(0, sub.getId(), datePicker.getValue(),
+				startTimeField.getText().trim(), endTimeField.getText().trim());
+		String payload = String.format("Create Reservation:%s %s %s", datePicker.getValue(),
+				startTimeField.getText().trim(), endTimeField.getText().trim());
+
+		// Wrap <payload, subscriberId> in a SendObject<Integer>
+		SendObject<Reservation> req = new SendObject<>(payload, reservation
+		// subscribe.getId()
+		);
+		client.sendToServerSafely(req);
+
+		showAlert(AlertType.INFORMATION,
+				"Reservation request sent for subscriber #" + sub.getId() + ":\n" + payload);
+
+		clearForm();
+		getFutureReservationsFor(); // Immediately refresh the table
+	}
+
+	/** Called by ReservationScreenController#submitCancellation() */
+	protected void onCancel() {
+		clearForm();
+	}
+
+	private void clearForm() {
+		datePicker.setValue(LocalDate.now());
+		startTimeField.clear();
+		endTimeField.clear();
+	}
+
+	/** Ask the server for this subscriber’s future reservations. */
+	protected void getFutureReservationsFor() {
+		// The “command” string can be anything your server expects, for example:
+		String command = "GetSubscribersResesrvations";
+
+		// Wrap <command, subscriberId> in a SendObject<Integer>
+		SendObject<Integer> req = new SendObject<>(command, sub.getId());
+		client.sendToServerSafely(req);
+	}
+
+	/** Entry point for all messages from the server */
+	public void handleServerMessage(Object message) {
+		if (message instanceof List<?>) {
+			@SuppressWarnings("unchecked")
+			List<Reservation> list = (List<Reservation>) message;
+			Platform.runLater(() -> futureReservationsTable.getItems().setAll(list));
+		} else if (message instanceof SendObject<?>) {
+			SendObject<?> sendObject = (SendObject<?>)message;
+			if(sendObject.getObj() instanceof String)
+				Platform.runLater(() -> showAlert(AlertType.INFORMATION, sendObject.getObjectMessage()+" "+sendObject.getObj()));
+			else if(sendObject.getObj() instanceof List<?>) {
+				@SuppressWarnings("unchecked")
+				List<Reservation> list = (List<Reservation>) sendObject.getObj();
+				Platform.runLater(() -> futureReservationsTable.getItems().setAll(list));
+			}
+		} else {
+			Platform.runLater(() -> showAlert(AlertType.INFORMATION, message.toString()));
+		}
+	}
     /** Utility alert pop-up */
     protected void showAlert(AlertType type, String text) {
         Alert a = new Alert(type);

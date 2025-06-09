@@ -18,7 +18,6 @@ public class BparkServer extends AbstractServer {
 	private List<ConnectionToClient> clientConnections = new ArrayList<>(); // Current connections
 	private List<List<String>> requiredList = new ArrayList<>(); // Log of current and former connections
 	private ServerController serverController;
-	private int counter = 0;
 
 	/**
 	 * @param port
@@ -74,7 +73,6 @@ public class BparkServer extends AbstractServer {
 				client.sendToClient(msg);
 			else if (msg instanceof SendObject<?>) {
 				SendObject<?> sendObject = (SendObject<?>) msg;
-				System.out.println(++counter);
 				client.sendToClient(sendObject);
 			} else if (msg instanceof ArrayList<?>) {
 				ArrayList<?> list = (ArrayList<?>) msg;

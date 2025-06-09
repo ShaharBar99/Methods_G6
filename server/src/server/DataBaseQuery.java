@@ -127,7 +127,7 @@ public class DataBaseQuery extends MySQLConnection {
     {
     	List<Reservation> reservationListOfSubscriber = new ArrayList<>();
     	String sql = 
-                "SELECT spot_id,date,start_time,end_time" +
+                "SELECT spot_id,date,start_time,end_time " +
                 "FROM reservations " +
                 "WHERE subscriber_id = ?";
             try (
@@ -412,6 +412,45 @@ public class DataBaseQuery extends MySQLConnection {
             e.printStackTrace();
         }
     }
+    
+    /**
+     * Updates the given subscriber’s data in the database.
+     *
+     * @param user the subscriber object containing updated fields
+     */
+    protected void updateUserInDatabase(subscriber user) {
+        // 1) Prepare UPDATE statement for subscribers (see table definition) :contentReference[oaicite:0]{index=0}
+        String sql =
+            "UPDATE subscribers " +
+            "SET name   = ?, " +
+            "    phone  = ?, " +
+            "    email  = ?, " +
+            "    role   = ?, " +
+            "    tag    = ?, " +
+            "    code   = ? " +
+            "WHERE subscriber_id = ?";
+
+        // 2) Use try-with-resources to ensure the PreparedStatement is closed
+        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
+            // 3) Bind each field from the subscriber object in the same order
+            ps.setString(1, user.getName());
+            ps.setString(2, user.getPhone());
+            ps.setString(3, user.getEmail());
+            ps.setString(4, user.getRole().name());
+            ps.setString(5, user.getTag());
+            ps.setInt   (6, user.getCode());
+            // 4) Bind the WHERE clause parameter
+            ps.setInt   (7, user.getId());
+
+            // 5) Execute the update
+            int rowsAffected = ps.executeUpdate();
+            // (Optional) you can log or check rowsAffected to ensure one row was updated
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    
     /**
      * Updates the status of a parking spot in the database.
      *
@@ -563,7 +602,35 @@ public class DataBaseQuery extends MySQLConnection {
         return availableSpots;
     }
 
+    /**
+     * Inserts a new reservation into the database.
+     *
+     * @param reservation the Reservation to persist
+     */
+    protected void createReservationInDatabase(Reservation reservation) {
+        // SQL inserts subscriber_id, spot_id, date, start_time, end_time; reservation_id is AUTO_INCREMENT
+        String sql =
+            "INSERT INTO reservations " +
+            "  (subscriber_id, spot_id, date, start_time, end_time) " +
+            "VALUES (?, ?, ?, ?, ?)";
 
+        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
+            // Bind subscriber_id then spot_id (Reservation.getSpot() returns the spot_id) :contentReference[oaicite:0]{index=0}
+            ps.setInt(1, reservation.getSubscriberId());
+            ps.setInt(2, reservation.getSpot());
+            // Convert LocalDate → java.sql.Date for the DATE column
+            ps.setDate(3, java.sql.Date.valueOf(reservation.getDate()));
+            // Convert String ("HH:mm:ss") → java.sql.Time for the TIME columns
+            ps.setTime(4, java.sql.Time.valueOf(reservation.getStartTime()+ ":00"));
+            ps.setTime(5, java.sql.Time.valueOf(reservation.getEndTime()+ ":00"));
+            
+            // Execute the INSERT
+            ps.executeUpdate();
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
 
 }

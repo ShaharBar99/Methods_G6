@@ -95,15 +95,6 @@ public class SendObjectHandler {
 			if (action.contains("SubscribersResesrvations")) {
 				List<Reservation> reservationListOfSubscriber = new ArrayList<>();
 				reservationListOfSubscriber = con.getReservationListOfSubscriberbyIdFromDatabase(intObject);
-				/*
-				 * fakes to check if a list has been created and transfered to controller
-				 * reservationListOfSubscriber.add(new Reservation(1, 1001, LocalDate.of(2025,
-				 * 6, 5), "09:00", "12:00")); reservationListOfSubscriber.add(new Reservation(2,
-				 * 1002, LocalDate.of(2025, 6, 5), "14:00", "16:00"));
-				 * reservationListOfSubscriber.add(new Reservation(1, 1003, LocalDate.of(2025,
-				 * 6, 6), "10:00", "12:00")); reservationListOfSubscriber.add(new Reservation(3,
-				 * 1004, LocalDate.of(2025, 6, 6), "13:00", "15:00"));
-				 */
 				return new SendObject<T1>("Reservation list of subscriber",
 						(T1) (List<Reservation>) reservationListOfSubscriber);
 			} else if (action.contains("history")) {
@@ -204,7 +195,7 @@ public class SendObjectHandler {
 			if (object instanceof subscriber) {
 				subscriber user = (subscriber) object;
 				// Update User In the database using recieved object
-				// con.updateUserInDatabase(user);
+				con.updateUserInDatabase(user);
 			} else if (object instanceof Parkingsession) {
 				Parkingsession session = (Parkingsession) object;
 				// Update Parkingsession In the database recieved object
@@ -246,7 +237,7 @@ public class SendObjectHandler {
 					con.updateParkingSpotInDatabase(spot);
 					Reservation reservationToBeSent = new Reservation(spot.getSpotId(), reservation.getSubscriberId(),
 							reservation.getDate(), reservation.getStartTime(), reservation.getEndTime());
-					// con.createReservationInDatabase(reservationToBeSent); // needs to be implemented
+					con.createReservationInDatabase(reservationToBeSent); // needs to be implemented
 					return new SendObject<String>("Reservation", "Created");
 				} else {
 					return new SendObject<String>("Reservation", "Not Created");
