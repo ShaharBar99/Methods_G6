@@ -16,28 +16,20 @@ import javafx.stage.Stage;
 import logic.Parkingsession;
 import javafx.scene.Node;
 
-public class HistoryScreenController {
-	private Runnable backHandler;
-
+public class HistoryScreenController  extends Controller {
     @FXML private TableView<Parkingsession> parkingTable;
     @FXML private TableColumn<Parkingsession, Integer> colSessionId;
     @FXML private TableColumn<Parkingsession, Integer> colSpotId;
     @FXML private TableColumn<Parkingsession, String> colInTime;
     @FXML private TableColumn<Parkingsession, String> colOutTime;
     @FXML private TableColumn<Parkingsession, String> colLate;
-
-    /**
-     * נטען אוטומטית בעת פתיחת המסך
-     */
-    
-    public void setBackHandler(Runnable backHandler) {
-		this.backHandler = backHandler;
-
-	}
+    //from server DB sessions
+    //private List<Parkingsession> sessions;
     @FXML
     public void initialize() {
         // קונפיגורציית עמודות
-        colSessionId.setCellValueFactory(new PropertyValueFactory<>("sessionId"));
+    	//this.sendToServerSafely(new SendObject<Integer>("history",subscriber.getId()));
+    	colSessionId.setCellValueFactory(new PropertyValueFactory<>("sessionId"));
         colSpotId.setCellValueFactory(new PropertyValueFactory<>("spotId"));
 
         // עמודות עם פורמט תאריך
@@ -71,14 +63,4 @@ public class HistoryScreenController {
         ObservableList<Parkingsession> data = FXCollections.observableArrayList(sessions);
         parkingTable.setItems(data);
     }
-
-    /**
-     * פעולה שסוגרת את החלון הנוכחי
-     */
-    @FXML private void handleBackButton() {
-		// swap the TableView scene back to the connect screen
-		if (backHandler != null) {
-			backHandler.run();
-		}
-	}
 }

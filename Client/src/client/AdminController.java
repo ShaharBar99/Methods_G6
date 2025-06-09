@@ -24,12 +24,13 @@ public class AdminController {
     public List<ParkingSpot> getCurrentParkingStatus() {
         List<ParkingSpot> spots = new ArrayList<>();
 
-        // יצירת מנויים מדומים
+        // 
+        /*יצירת מנויים מדומים
         subscriber sub1 = new subscriber(2001, "Alice", "050-1234567", "alice@example.com",
                 Role.SUBSCRIBER, new ArrayList<>(), 1234);
         subscriber sub2 = new subscriber(2002, "Bob", "052-9876543", "bob@example.com",
                 Role.SUBSCRIBER, new ArrayList<>(), 5678);
-
+		*/
         // יצירת מקומות חניה
         ParkingSpot spot1 = new ParkingSpot(101, SpotStatus.FREE, null);
         ParkingSpot spot2 = new ParkingSpot(102, SpotStatus.OCCUPIED, null);
@@ -37,10 +38,10 @@ public class AdminController {
         ParkingSpot spot4 = new ParkingSpot(104, SpotStatus.FREE, null);
 
         // יצירת הזמנות וקישור
-        Order order1 = new Order(123456, sub1, new Date(), new Date(), spot2, 1);
-        Order order2 = new Order(234567, sub2, new Date(), new Date(), spot3, 2);
-        spot2.setCurrentReservation(order1);
-        spot3.setCurrentReservation(order2);
+        //Order order1 = new Order(123456, sub1, new Date(), new Date(), spot2, 1);
+        //Order order2 = new Order(234567, sub2, new Date(), new Date(), spot3, 2);
+        //spot2.setCurrentReservation(order1);
+        //spot3.setCurrentReservation(order2);
 
         // הוספה לרשימה
         spots.add(spot1);

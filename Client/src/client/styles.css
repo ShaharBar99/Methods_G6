@@ -1,12 +1,21 @@
+
 .main-pane {
     -fx-background-color: linear-gradient(to bottom right, #dbeafe, #90caf9);
 }
 
 .title-label {
-    -fx-font-size: 56px;
+    -fx-font-size: 72px;
     -fx-font-weight: bold;
     -fx-text-fill: #0d47a1;
     -fx-padding: 0 0 20 0;
+    -fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.25), 8, 0, 0, 3);
+}
+
+.reg-label {
+    -fx-font-size: 36px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0d47a1;
+    -fx-padding: 10 0 20 0;
     -fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.25), 8, 0, 0, 3);
 }
 
@@ -25,7 +34,28 @@
     -fx-border-color: rgba(255,255,255,0.2);
     -fx-border-width: 1px;
 }
+/* Matching TextField Style */
+.text-field {
+    -fx-font-size: 36px; /* Slightly smaller font for the TextField */
+    -fx-font-weight: bold;
+    -fx-pref-width: 480px;
+    -fx-pref-height: 50px; /* Slightly shorter than the button */
+    -fx-text-fill: black;
+    -fx-alignment: center;
+    -fx-background-radius: 20; /* Rounded corners to match the buttons */
+   	-fx-padding: 10 15 10 15;
+    
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.3, 0, 5); /* Subtle shadow */
+    -fx-border-width: 0px; /* No border */
+    -fx-cursor: text; /* Show text cursor when focused */
+    -fx-margin: 0 0 20 0; /* Bottom margin for spacing between button */
+}
 
+/* Remove focus border */
+.text-field:focused {
+    -fx-border-color: transparent; /* Removes the default focus border */
+  
+}
 .menu-button:hover {
     -fx-background-color: linear-gradient(to right, #1e88e5, #1565c0);
     -fx-scale-x: 1.03;
@@ -59,4 +89,3 @@
     -fx-background-color: #b71c1c;
     -fx-translate-y: 1;
 }
-

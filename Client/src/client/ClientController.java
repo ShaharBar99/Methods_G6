@@ -1,28 +1,16 @@
 package client;
 
-import java.awt.Dimension;
-import java.awt.DisplayMode;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.Toolkit;
-import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.List;
-
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import javafx.scene.transform.Scale;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import logic.Order;
@@ -47,7 +35,7 @@ public class ClientController {
 	@FXML
 	public void handleConnectButton() {
 		String ipAddress = ipTextField.getText().trim();
-		String portText = portTextField.getText().trim();
+		String portText = "5555";
 
 		if (ipAddress.isEmpty() || portText.isEmpty()) {
 			showAlert("Error", "Please enter both IP and port", Alert.AlertType.ERROR);
@@ -103,19 +91,7 @@ public class ClientController {
 				e.printStackTrace();
 			}
 			// After Connection start the order table
-         // Create a group and apply scale
-            /*Group scaledGroup = new Group(tableRoot);
-
-            // Calculate scale
-            Dimension logicalSize = Toolkit.getDefaultToolkit().getScreenSize();
-            GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-            DisplayMode dm = gd.getDisplayMode();
-            double scaleX = dm.getWidth() / logicalSize.getWidth();
-            double scaleY = dm.getHeight() / logicalSize.getHeight();
-
-            Scale scale = new Scale(1/scaleX, 1/scaleY, 0, 0);
-            scaledGroup.getTransforms().add(scale);*/
-
+   
             Stage stage = (Stage) connectButton.getScene().getWindow();
             Scene scene = new Scene(tableRoot);
             stage.setScene(scene);
