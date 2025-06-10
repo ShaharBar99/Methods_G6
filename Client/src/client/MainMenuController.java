@@ -90,7 +90,7 @@ public class MainMenuController extends Controller{
                     FXMLLoader loginLoader = new FXMLLoader(getClass().getResource("MainMenuScreen.fxml"));
                     Parent loginRoot = loginLoader.load();
                     currentStage.setScene(new Scene(loginRoot));
-                    currentStage.setTitle(screen_name);
+                    currentStage.setTitle("Main");
                     currentStage.show();
                     MainMenuController controller = loginLoader.getController();
                     controller.setClient(client,sub);
