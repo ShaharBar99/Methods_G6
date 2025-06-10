@@ -7,7 +7,7 @@ public class SendObject<T extends Serializable> implements Serializable {
         super();
         this.obj = obj;
         this.objectMessage = objectMessage;
-    }
+    }  
     public T getObj() {
         return obj;
     }

@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class ParkingSpot implements Serializable{
     private int spotId;
     private SpotStatus status;
-
+    //test
     // Constructor
     public ParkingSpot(int spotId, SpotStatus status) {
         this.spotId = spotId;

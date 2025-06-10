@@ -13,7 +13,7 @@ public class Parkingsession implements Serializable{
 	    private boolean extended;
 	    private boolean late;
 	    private boolean active;
-
+	    //test
 	    // Constructor
 	    public Parkingsession(int sessionId, int subscriberId, int spotId, int parkingCode, Date inTime, Date outTime, boolean extended, boolean late, boolean active) {
 	        this.sessionId = sessionId;

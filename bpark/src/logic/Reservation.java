@@ -12,7 +12,7 @@ public class Reservation implements Serializable{
 	private final LocalDate date;
 	private final String startTime;
 	private final String endTime;
-
+ 
 	public Reservation(int spotId,int subscriber_id , LocalDate date, String startTime, String endTime) {
 		this.subscriberId = subscriber_id;
 		this.spotId = spotId;
