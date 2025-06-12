@@ -4,6 +4,7 @@ import logic.*;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -30,7 +31,18 @@ public class SendObjectHandler {
 			Object genericObject = handleGetAction(object, con);
 			return replyDefiner(genericObject);
 		} else if (action.contains("Update")) {
-			handleUpdateAction(object, con);
+			if (action.contains("time in session")) {
+				/*
+				 * if(checkExtendTimeParkingsessionWithAllReservations((Parkingsession)session)){ handleUpdateAction(object,
+				 * con); return new SendObject<T1>("Time Extension",(T1)"Accapted"); }else{
+				 * return new SendObject<T1>("Time Extension",(T1)"Not Accapted"); }
+				 */
+				handleUpdateAction(object, con);
+				return new SendObject<T1>("Time Extension", (T1) "Accapted");// fake
+
+			} else {
+				handleUpdateAction(object, con);
+			}
 		} else if (action.contains("Create")) {
 			Object genericObject = handleCreateAction(object, con);
 			return replyDefiner(genericObject);
@@ -80,8 +92,6 @@ public class SendObjectHandler {
 				return new SendObject<T1>("isUsed", (T1) (Boolean) isUsed);
 			} else if (action.equals("Check recieved Parking Code")) {
 				Parkingsession mySession = null;
-				// mySession = new Parkingsession(0, 0, 0, 0, null, new Date(), false, false,
-				// false); // fake
 				int parkingcode = intObject;
 				mySession = con.getActiveParkingsessionWithThatCodeFromDatabase(parkingcode);
 				return new SendObject<T1>("Parkingsession from code", (T1) (Parkingsession) mySession);
@@ -100,13 +110,42 @@ public class SendObjectHandler {
 			} else if (action.contains("history")) {
 				List<Parkingsession> historyParkingsessionsListOfSubscriber = new ArrayList<>();
 				int subscriberId = intObject;
-				historyParkingsessionsListOfSubscriber = con.gethistoryParkingsessionsListOfSubscriberbyIdFromDatabase(subscriberId);
-				if(historyParkingsessionsListOfSubscriber == null) {
+				historyParkingsessionsListOfSubscriber = con
+						.gethistoryParkingsessionsListOfSubscriberbyIdFromDatabase(subscriberId);
+				if (historyParkingsessionsListOfSubscriber == null) {
 					System.out.println("history is null");
 				}
 				// send back the list
 				return new SendObject<T1>("Parkingsession list of subscriber",
 						(T1) (List<Parkingsession>) historyParkingsessionsListOfSubscriber);
+			} else if (action.contains("Active Parkingsessions")) {
+				List<Parkingsession> activeParkingsessionsListOfSubscriber = new ArrayList<>();
+				int subscriberId = intObject;
+				// activeParkingsessionsListOfSubscriber =
+				// con.getActiveParkingsessionsListOfSubscriberbyIdFromDatabase(subscriberId);
+				// fake
+				Date outTime = new Date(System.currentTimeMillis() + 4L * 60 * 60 * 1000); // 4 hours later
+		        Parkingsession activeSession = new Parkingsession(1001, 1, 101, 111111, new Date(), outTime, false, false, true);
+		        activeParkingsessionsListOfSubscriber.add(activeSession);
+		        // end fake
+				// send back the list
+				return new SendObject<T1>("Active Sessions",
+						(T1) (List<Parkingsession>) activeParkingsessionsListOfSubscriber);
+			}
+			else if(action.contains("Parkingsession")) {
+				Parkingsession session = null;
+				/*Parkingsession fakeSession = new Parkingsession(6, 2001, 104, 387139, 
+					    new java.util.Date("2025/06/11 18:59:32"), 
+					    new java.util.Date("2025/06/11 22:59:32"), 
+					    false, false, true);*/
+				int sessionId = intObject;
+				//session = con.getParkingsessionById(sessionId);
+				if(session !=null) {
+					return new SendObject<T1>("Session found",(T1)session);
+				}
+				else {
+					return new SendObject<T1>("Session found:",(T1)"False");
+				}
 			}
 		}
 		return null;
@@ -229,7 +268,6 @@ public class SendObjectHandler {
 				Reservation reservation = (Reservation) object;
 				// create Reservation in the database using recieved object
 				ParkingSpot spot;
-				spot = new ParkingSpot(0, SpotStatus.FREE); // fake
 				spot = con.getFreeParkingSpotFromDatabase(reservation.getDate(), reservation.getStartTime(),
 						reservation.getEndTime()).get(0);
 				if (spot != null) {

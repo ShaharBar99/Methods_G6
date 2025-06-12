@@ -48,6 +48,9 @@ public class MainMenuController extends Controller{
     @FXML public void admin() {
     	this.setscreen("AdminScreen","AdminScreen.fxml");
     }
+    @FXML public void openTimeExtensionScreen() {
+    	this.setscreen("TimeExtensionScreen", "TimeExtensionScreen.fxml");
+    }
     private  void setscreen(String screen_name,String fxml) {
 		try {
             // reload next screen
@@ -77,6 +80,10 @@ public class MainMenuController extends Controller{
             }
             else if(screen_name.equals("ReservationScreen")){
             	ReservationScreenController controller = loader.getController();
+            	c = controller;
+            }
+            else if(screen_name.equals("TimeExtensionScreen")) {
+            	TimeExtensionScreenController controller = loader.getController();
             	c = controller;
             }
             else {

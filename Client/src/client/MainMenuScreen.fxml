@@ -45,7 +45,9 @@
                 fx:id="adminbutton"
                 styleClass="menu-button"
                 text="🛠️ Admin Panel"/>
-
+		<Button onAction="#openTimeExtensionScreen"
+                styleClass="menu-button"
+                text="⏰ Time Extension Request"/>
     </VBox>
 
     <Button fx:id="disconnectButton"

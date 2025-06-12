@@ -1,7 +1,10 @@
 package client;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
+
 import javafx.application.Platform;
 import javafx.scene.control.Alert.AlertType;
 import logic.*;
@@ -22,50 +25,12 @@ public class ParkingController {
 	private Parkingsession mySession;
 	private DropOffScreenController dropOffScreen;
 	private BParkClient client;
-	/*
-	 * public ParkingController(subscriber subscriber1, DropOffScreen dropOffScreen)
-	 * { this.subscriber1 = subscriber1; this.dropOffScreen = dropOffScreen; }
-	 */
-
-	/*
-	 * this method is used to handle messages from the server
-	 */
-//	private void handleServerMessage(Object msg) {
-//		Platform.runLater(() -> {
-//			System.out.println("[Server] " + msg);
-//			if (msg instanceof subscriber) {
-//				setSubscriber1((subscriber) msg);
-//				if (parkingControllerObject == null) {
-//					initializeParkingController();
-//				}
-//			} else if (msg instanceof ParkingSpot) {
-//				setSpot((ParkingSpot) msg);
-//			} else if (msg instanceof Parkingsession) {
-//				setMySession((Parkingsession) msg);
-//			} else if (msg instanceof String) {
-//				String str = (String) msg;
-//				if (str.startsWith("The Availablity is:")) {
-//					String parts[] = str.split(":");
-//					if (parts[1].equals("True")) // Note! should make sure what database returns True/False or
-//													// true/false
-//						isAvailable = true;
-//					else
-//						isAvailable = false;
-//				} else if (str.startsWith("The suggested Parking Code is:")) {
-//					String parts[] = str.split(":");
-//					if (parts[1].equals("Used")) // Note! should make sure what database returns True/False or
-//													// true/false
-//						isUsedCode = true;
-//					else
-//						isUsedCode = false;
-//				}
-//			}
-//		});
-//	}
+	private TimeExtensionScreenController TimeExtensionScreen;
+	private String respond = null;
+	private List<Parkingsession> sessions;
+	private Parkingsession timeExtendSession;
 
 	public void handleServerResponse(Object message) {
-		counter++;
-		System.out.println(counter);
 		if (message instanceof SendObject<?>) {
 			SendObject<?> msg = (SendObject<?>) message;
 			String action = msg.getObjectMessage();
@@ -74,7 +39,6 @@ public class ParkingController {
 			if (action.equals("Availability")) {
 				isAvailable = (Boolean) obj;
 			} else if (action.equals("Parkingsession from code")) {
-				System.out.println("2");
 				setMySession((Parkingsession) obj);
 			} else if (action.equals("isUsed")) {
 				System.out.println("isused");
@@ -82,17 +46,15 @@ public class ParkingController {
 			} else if (action.equals("new Spot")) {
 				System.out.println("last");
 				setSpot((ParkingSpot) obj);
+			} else if (action.equals("Time Extension")) {
+				respond = (String) obj;
+			} else if (action.equals("Active Sessions")) {
+				setSessions((List<Parkingsession>) obj);
+			} else if (action.equals("Session found")) {
+				if (obj instanceof Parkingsession)
+					timeExtendSession = (Parkingsession) obj;
 			}
 			responseReceived = true;
-			/*
-			 * if (msg.startsWith("Code status:")) { isUsedCode =
-			 * Boolean.parseBoolean(msg.split(":")[1]); // true = used responseReceived =
-			 * true; // signal main thread } if (msg.startsWith("The Availablity is:")) {
-			 * String parts[] = msg.split(":"); if (parts[1].equals("True")) // Note! should
-			 * make sure what database returns True/False or true/false isAvailable = true;
-			 * else { isAvailable = false; } responseReceived = true; // signal main thread
-			 * }
-			 */
 		}
 	}
 
@@ -112,12 +74,20 @@ public class ParkingController {
 		this.mySession = mySession;
 	}
 
+	public void setSessions(List<Parkingsession> sessions) {
+		this.sessions = sessions;
+	}
+
 	public void setPickUpScreen(PickUpScreenController pickUpScreen) {
 		this.pickUpScreen = pickUpScreen;
 	}
 
 	public void setDropOffScreen(DropOffScreenController dropOffScreen) {
 		this.dropOffScreen = dropOffScreen;
+	}
+
+	public void setTimeExtensionScreen(TimeExtensionScreenController TimeExtensionScreen) {
+		this.TimeExtensionScreen = TimeExtensionScreen;
 	}
 
 	// Initialize the ParkingController only after receiving the subscriber
@@ -179,7 +149,7 @@ public class ParkingController {
 			Date inTime = new Date();
 			Date outTime = new Date(inTime.getTime() + 4 * 60 * 60 * 1000); // 4 hour later
 			ParkingSpot spot = assignParkingSpot();
-			if(spot != null)
+			if (spot != null)
 				System.out.println(spot.getSpotId());
 			int parkingCode = generateParkingCode(); // generate parking code
 			System.out.println("gen");
@@ -190,9 +160,9 @@ public class ParkingController {
 				// TO DO: send session to database
 				client.sendToServerSafely(new SendObject<Parkingsession>("Create new", session));// V
 				int spotId = spot.getSpotId();
-				System.out.println(spotId+", "+parkingCode);
+				System.out.println(spotId + ", " + parkingCode);
 				Platform.runLater(() -> {
-					System.out.println(spotId+", "+parkingCode);
+					System.out.println(spotId + ", " + parkingCode);
 					dropOffScreen.showParkingSuccess(); // show success message
 					dropOffScreen.displayAssignedSpot(spotId);
 					dropOffScreen.displayParkingCode(parkingCode);
@@ -347,6 +317,25 @@ public class ParkingController {
 		return parkingCode;
 	}
 
+	public List<Parkingsession> getActiveParkingSessions() throws Exception {
+		responseReceived = false;
+		client.sendToServerSafely(new SendObject<Integer>("Get Active Parkingsessions", subscriber1.getId()));
+		waitForServerResponse(20000);
+		List<Parkingsession> activeSessions = new ArrayList<>();
+		activeSessions.addAll(sessions);
+		setSessions(null);
+		return activeSessions;
+	}
+
+	public String ExtendTime(Parkingsession session) throws Exception {
+		responseReceived = false;
+		client.sendToServerSafely(new SendObject<Parkingsession>("Update time in session", session));
+		waitForServerResponse(20000);
+		String TimeExtensionRespond = respond;
+		respond = null;
+		return TimeExtensionRespond;
+	}
+
 	private boolean waitForServerResponse(long timeoutMillis) throws Exception {
 		long startTime = System.currentTimeMillis();
 		while (!responseReceived) {
@@ -367,6 +356,27 @@ public class ParkingController {
 			}
 		}
 		return true;
+	}
+
+	public Parkingsession getSessionById(int parkingId) throws Exception {
+		// TODO Auto-generated method stub
+		responseReceived = false;
+		client.sendToServerSafely(new SendObject<Integer>("Get Parkingsession", parkingId));
+		waitForServerResponse(20000);
+		Parkingsession session = null;
+		if (timeExtendSession != null) {
+			if (timeExtendSession.getSubscriberId() == subscriber1.getId()) {
+				session = new Parkingsession(timeExtendSession.getSessionId(), timeExtendSession.getSubscriberId(),
+						timeExtendSession.getSpotId(), timeExtendSession.getParkingCode(),
+						timeExtendSession.getInTime(), timeExtendSession.getOutTime(), true, false, true);
+				timeExtendSession = null;
+			}else {
+			timeExtendSession = null;
+			TimeExtensionScreen.ShowFail("Session was not found");
+			}
+		} else
+			TimeExtensionScreen.ShowFail("Session was not found");
+		return session;
 	}
 
 }
