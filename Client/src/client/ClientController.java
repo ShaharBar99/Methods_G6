@@ -31,8 +31,8 @@ public class ClientController {
 
 	@FXML
 	public void handleConnectButton() {
-		//String ipAddress = ipTextField.getText().trim();
-		String ipAddress = "10.0.0.4"; // TOM'S IP, REMOVE IF YOU SEE THIS
+		String ipAddress = ipTextField.getText().trim();
+		//String ipAddress = "10.0.0.4"; // TOM'S IP, REMOVE IF YOU SEE THIS, I was just lazy to put it in every time
 		String portText = "5555";
 
 		if (ipAddress.isEmpty() || portText.isEmpty()) {
