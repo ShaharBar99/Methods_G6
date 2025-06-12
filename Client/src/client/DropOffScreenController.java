@@ -2,56 +2,50 @@ package client;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import logic.*;
 
-public class DropOffScreenController {
+public class DropOffScreenController extends Controller{
 	// subscriber for the parking controller
-	private subscriber subscriber1;
-	
-	//testing
-	//private subscriber subscriber1 = new subscriber(0, "", "", "", Role.SUBSCRIBER, null, 0);
-	
-	
-	private BParkClient client;
+	// testing
+	// private subscriber subscriber1 = new subscriber(0, "", "", "",
+	// Role.SUBSCRIBER, null, 0);
+	//
 	private ParkingController parkingController;
-	private Runnable backHandler; // to handle the "back" button
+
 	@FXML
-	TextField parkingCode; // TextField to display the parking code
-	
-	
+	private Label assignedSpotLabel;
+
+	@FXML
+	private Label parkingCodeLabel;
+
 	/////////////////////////////////////////////////
 	/*----------SET AND INITIALIZE THINGS----------*/
 	////////////////////////////////////////////////
-	
-	public void setSubscriber(subscriber subscriber1) {
-		this.subscriber1 = subscriber1; // set the subscriber for the parking controller
-	}
-	
-	public void setClient(BParkClient client) {
-		this.client = client;
-	}
-	
+
+
 	public void setParkingController(ParkingController parkingController) {
 		this.parkingController = parkingController;
 	}
-	
-	/* this method initializes the parking controller if it is null*/
+
+	/* this method initializes the parking controller if it is null */
 	public void initilizeParkingControllerIfNeeded() {
 		if (parkingController == null) {
-			parkingController = parkingController.getInstance(client); // get the singleton instance of ParkingController
+			parkingController = ParkingController.getInstance(client); // get the singleton instance of
+																		// ParkingController
 			parkingController.setDropOffScreen(this); // set the DropOffScreenController for the ParkingController
-			parkingController.setSubscriber1(subscriber1); // set the subscriber for the ParkingController
-		}	
+			parkingController.setSubscriber1(sub); // set the subscriber for the ParkingController
+		}
 	}
-	
+
 	/*
 	 * @param backHandler Sets the backHandler
 	 */
 	public void setBackHandler(Runnable backHandler) {
 		this.backHandler = backHandler;
 	}
-	
+
 	/*
 	 * swap the DropOffScreen back to the MainMenuScreen
 	 */
@@ -62,13 +56,10 @@ public class DropOffScreenController {
 		}
 	}
 
-	
-	
-	
-	  //////////////////////////////////////////////
-	 /*-------------------ACTIONS----------------*/
 	//////////////////////////////////////////////
-	
+	/*-------------------ACTIONS----------------*/
+	//////////////////////////////////////////////
+
 	/*
 	 * operates the Confirm Drop Off button
 	 */
@@ -78,33 +69,30 @@ public class DropOffScreenController {
 		initilizeParkingControllerIfNeeded(); // make sure the parking controller is initialized);
 		try {
 			parkingController.confirmDropOff();
-			}
-		catch (Exception e) {  // if subscriber1 is null, throw an exception
+		} catch (Exception e) { // if subscriber1 is null, throw an exception
 			ShowAlert.showAlert("Error", "An error occurred while processing your request: ", Alert.AlertType.ERROR);
 			e.printStackTrace();
 		}
 	}
-	
+
 	/*
 	 * displays the assigned parking spot in the text field
 	 */
-	public void displayAssignedSpot(ParkingSpot spot) {
-		//זה אמור להיות Alert או setText?
-		parkingCode.setText("Your parking spot is " + spot.getSpotId());
-		ShowAlert.showAlert("Assigned Spot", "Your parking spot is: " + spot.getSpotId(), Alert.AlertType.INFORMATION);
+	public void displayAssignedSpot(int spotId) {
+		// זה אמור להיות Alert או setText?
+		assignedSpotLabel.setText("Your parking spot is " + spotId);
+		ShowAlert.showAlert("Assigned Spot", "Your parking spot is: " + spotId, Alert.AlertType.INFORMATION);
 	}
 
 	/*
 	 * gets the parking code from ParkingController and displays it
 	 */
-	public void displayParkingCode() {
-		int parkingCode = parkingController.generateParkingCode();
-		
-		//זה אמור להיות Alert או setText?
-		this.parkingCode.setText(String.valueOf(parkingCode)); // display the parking code in the text field
+	public void displayParkingCode(int parkingCode) {
+		// זה אמור להיות Alert או setText?
+		parkingCodeLabel.setText("Your parking code is " + String.valueOf(parkingCode)); // display the parking code in
+																							// the text field
 		ShowAlert.showAlert("Parking Code", "Your parking code is: " + parkingCode, Alert.AlertType.INFORMATION);
 	}
-	
 
 	/*
 	 * Shows success message when parking is successful
@@ -118,12 +106,10 @@ public class DropOffScreenController {
 	 */
 	public void showNoAvailability() {
 		System.out.println("inside showNoAvailability");
-		//ShowAlert.showAlert("Error", "No parking spots available at the moment.", Alert.AlertType.ERROR);
+		 ShowAlert.showAlert("Error", "No parking spots available at the moment.",
+		 Alert.AlertType.ERROR);
 	}
-	
-	
-	
-	
+
 	public void handleServerMessage(Object message) {
 		initilizeParkingControllerIfNeeded();
 		parkingController.handleServerResponse(message);

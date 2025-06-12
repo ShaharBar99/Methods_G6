@@ -6,10 +6,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import logic.*;
 
-public class PickUpScreenController {
+public class PickUpScreenController extends Controller{
 
-	private Runnable backHandler;
-	private BParkClient client;
 	private boolean serverConnection = true;
 	private ParkingController parkingController;
 	@FXML
@@ -27,35 +25,28 @@ public class PickUpScreenController {
 		});
 	}
 
-	/**
-	 * @param backHandler Sets the backHandler
-	 */
-	public void setBackHandler(Runnable backHandler) {
-		this.backHandler = backHandler;
-	}
-
 	public void setParkingController(ParkingController parkingController) {
 		this.parkingController = parkingController;
 	}
-	
-	public void setClient(BParkClient client) {
-		this.client = client;
-	}
 
-	private void initializeParkingControllerIfNeeded() {
+	/* this method initializes the parking controller if it is null */
+	public void initilizeParkingControllerIfNeeded() {
 		if (parkingController == null) {
-			parkingController = ParkingController.getInstance(client);
+			parkingController = ParkingController.getInstance(client); // get the singleton instance of
+																		// ParkingController
+			parkingController.setPickUpScreen(this); // set the DropOffScreenController for the ParkingController
+			parkingController.setSubscriber1(sub); // set the  for the ParkingController
 		}
 	}
 
 	/**
-	 * Sends a message to server to send Email and sms to the subscriber, shows a
+	 * Sends a message to server to send Email and sms to the , shows a
 	 * popup
 	 */
 	@FXML
 	public void handleLostCodeRequest() {
 		parkingCode.setText("");
-		initializeParkingControllerIfNeeded();
+		initilizeParkingControllerIfNeeded();
 		try {
 			parkingController.handleLostCode();
 		} catch (Exception e) {
@@ -64,8 +55,8 @@ public class PickUpScreenController {
 			e.printStackTrace();
 			serverConnection = false;
 		}
-		if(serverConnection)
-		ShowAlert.showAlert("Code sent!", "Code was sent to Email and phone", Alert.AlertType.INFORMATION);
+		if (serverConnection)
+			ShowAlert.showAlert("Code sent!", "Code was sent to Email and phone", Alert.AlertType.INFORMATION);
 	}
 
 	/**
@@ -79,19 +70,16 @@ public class PickUpScreenController {
 		} else {
 			parkingCode.setText("");
 			try {
-				int parkingCode = Integer.parseInt(code);
-				initializeParkingControllerIfNeeded();
-				try {
-					parkingController.requestCarPickUp(parkingCode);
-				} catch (Exception e) {
-					ShowAlert.showAlert("Error", "Server communication failure.", AlertType.ERROR);
-					serverConnection = false;
+				int parkingCodeInt = Integer.parseInt(code);
+				initilizeParkingControllerIfNeeded();
+				parkingController.requestCarPickUp(parkingCodeInt);
+				if (serverConnection) {
+					showPickUpSuccess();
 				}
 			} catch (Exception e) {
-				ShowAlert.showAlert("Error", "Entered wrong code!", Alert.AlertType.ERROR);
+				ShowAlert.showAlert("Error", "Server communication failure.", AlertType.ERROR);
+				serverConnection = false;
 			}
-			if(serverConnection)
-			showPickUpSuccess();
 		}
 	}
 
@@ -100,7 +88,7 @@ public class PickUpScreenController {
 	 */
 	public void showPickUpSuccess() {
 		ShowAlert.showAlert("Success",
-				"Pickup Success! Please wait while your vehicle moves to the vehicle collection point",
+				"Pickup Success!\nPlease wait while your vehicle moves to the vehicle collection point",
 				Alert.AlertType.INFORMATION);
 	}
 
@@ -114,10 +102,9 @@ public class PickUpScreenController {
 	/**
 	 * swap the PickUpScreen back to the MainMenuScreen
 	 */
-	@FXML
-	private void handleBackButton() {
-		if (backHandler != null) {
-			backHandler.run();
-		}
+
+	public void handleServerMessage(Object message) {
+		initilizeParkingControllerIfNeeded();
+		parkingController.handleServerResponse(message);
 	}
 }

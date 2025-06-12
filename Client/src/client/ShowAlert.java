@@ -1,5 +1,6 @@
 package client;
 
+
 import javafx.scene.control.Alert;
 
 public class ShowAlert {
@@ -12,3 +13,5 @@ public class ShowAlert {
 		alert.showAndWait();
 	}
 }
+
+

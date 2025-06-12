@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
 
+import javax.swing.text.html.HTML.Tag;
+
 import logic.Order;
 import logic.ParkingSpot;
 import logic.Role;
@@ -28,6 +30,7 @@ public class MySQLConnection {
 	 */
 	protected MySQLConnection() {
 		createDatabaseAndTable();
+		con = connectToDB();
 	}
 
 	/**
@@ -137,14 +140,14 @@ public class MySQLConnection {
 			System.out.println("Using bpark database.");
 
 			// Step 5: Check if the table exists
-			String showOrder = "SHOW TABLES LIKE 'order'";
+			String showOrder = "SHOW TABLES LIKE 'subscribers'";
 			ResultSet rs = useStmt.executeQuery(showOrder);
 			if (!rs.next()) {
-				System.out.println("Table 'order' does not exist. Proceeding with import.");
+				System.out.println("Table 'subscribers' does not exist. Proceeding with import.");
 				// If table does not exist, import the SQL file
 				importSQLFile();
 			} else {
-				System.out.println("Table 'order' already exists. Skipping import.");
+				System.out.println("Table 'subscribers' already exists. Skipping import.");
 			}
 
 			rs.close();
@@ -163,7 +166,7 @@ public class MySQLConnection {
 	 */
 	private void importSQLFile() {
 		try {
-			InputStream is = getClass().getClassLoader().getResourceAsStream("bpark_order.sql");
+			InputStream is = getClass().getClassLoader().getResourceAsStream("DB.sql");
 			if (is == null) {
 				throw new Exception("SQL file not found in classpath.");
 			}
@@ -204,8 +207,8 @@ public class MySQLConnection {
 				int confirmation_code = rs.getInt("confirmation_code");
 				int subscriber_id = rs.getInt("subscriber_id");
 				Date placing_date = rs.getDate("date_of_placing_an_order");
-				subscriber sub = new subscriber(subscriber_id, "", "", "", Role.SUBSCRIBER, null, 0);
-				ParkingSpot spot = new ParkingSpot(parking_space, null, null);
+				subscriber sub = new subscriber(subscriber_id, "", "", "", Role.SUBSCRIBER, null, "", 0);
+				ParkingSpot spot = new ParkingSpot(parking_space, null);
 
 				// Create Order
 				Order temp = new Order(confirmation_code, // code
@@ -251,8 +254,8 @@ public class MySQLConnection {
 				int confirmation_code = rs.getInt("confirmation_code");
 				int subscriber_id = rs.getInt("subscriber_id");
 				Date placing_date = rs.getDate("date_of_placing_an_order");
-				subscriber sub = new subscriber(subscriber_id, "", "", "", Role.SUBSCRIBER, null, 0);
-				ParkingSpot spot = new ParkingSpot(parking_space, null, null);
+				subscriber sub = new subscriber(subscriber_id, "", "", "", Role.SUBSCRIBER, null, "", 0);
+				ParkingSpot spot = new ParkingSpot(parking_space, null);
 
 				// Create Order
 				temp = new Order(confirmation_code, // code

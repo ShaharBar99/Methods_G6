@@ -12,6 +12,7 @@ public class ClientApp extends Application {
     /**
      *	The main entry point for the JavaFX application (start the GUI)
      */
+	
     @Override
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("client.fxml"));

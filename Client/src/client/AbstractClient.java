@@ -24,8 +24,8 @@ public abstract class AbstractClient implements Runnable {
    public final void openConnection() throws IOException {
       if (!this.isConnected()) {
          try {
-            this.clientSocket = new Socket(this.host, this.port);
-            this.output = new ObjectOutputStream(this.clientSocket.getOutputStream());
+            this.clientSocket = new Socket(this.host, this.port);             
+            this.output = new ObjectOutputStream(this.clientSocket.getOutputStream());   
             this.input = new ObjectInputStream(this.clientSocket.getInputStream());
          } catch (IOException var4) {
             try {
@@ -43,6 +43,7 @@ public abstract class AbstractClient implements Runnable {
    }
 
    public final void sendToServer(Object msg) throws IOException {
+
       if (this.clientSocket != null && this.output != null) {
          this.output.writeObject(msg);
          this.output.reset();

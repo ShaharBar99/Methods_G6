@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="client.LoginController"
+            prefWidth="400.0" prefHeight="500.0">
+
+    <VBox alignment="CENTER" spacing="12.0"
+          AnchorPane.topAnchor="20.0"
+          AnchorPane.leftAnchor="20.0"
+          AnchorPane.rightAnchor="20.0"
+          AnchorPane.bottomAnchor="20.0">
+
+        <Label text="🔐 Login" />
+
+        <TextField fx:id="ipField" promptText="Server IP Address" />
+
+        <ComboBox fx:id="loginMethodComboBox" promptText="Select login method" />
+        <ComboBox fx:id="roleComboBox" promptText="Select your role" />
+
+        <!-- Subscriber fields -->
+        <TextField fx:id="nameField" promptText="Enter name" />
+        <TextField fx:id="subscriberIdField" promptText="Enter subscriber ID" />
+        <TextField fx:id="tagField" promptText="Enter tag" visible="false" managed="false" />
+
+        <!-- Admin/Attendant fields -->
+        <TextField fx:id="usernameField" promptText="Enter username" visible="false" managed="false" />
+        <PasswordField fx:id="passwordField" promptText="Enter password" visible="false" managed="false" />
+
+        <Button fx:id="connectButton" text="Connect" onAction="#handleLogin"/>
+        <Button fx:id="exitButton" text="Exit" onAction="#handleExit" />
+    </VBox>
+</AnchorPane>

@@ -10,7 +10,7 @@ public class Order implements Serializable{
     private Date date_of_placing_an_order;
     private ParkingSpot parking_space;
     private int order_id;
- // Constructor
+ // Constructor 
     public Order(int code, subscriber subscriber, Date order_date, Date date_of_placing_an_order,ParkingSpot parking_space,int order_id) {
         this.code = code;
         this.subscriber = subscriber;

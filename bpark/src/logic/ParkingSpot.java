@@ -5,13 +5,11 @@ import java.io.Serializable;
 public class ParkingSpot implements Serializable{
     private int spotId;
     private SpotStatus status;
-    private Order currentorder;
-
+    //test
     // Constructor
-    public ParkingSpot(int spotId, SpotStatus status, Order currentReservation) {
+    public ParkingSpot(int spotId, SpotStatus status) {
         this.spotId = spotId;
         this.status = status;
-        this.currentorder = currentorder;
     }
 
     // Getters
@@ -22,11 +20,7 @@ public class ParkingSpot implements Serializable{
     public SpotStatus getStatus() {
         return status;
     }
-
-    public Order getCurrentReservation() {
-        return currentorder;
-    }
-
+    
     // Setters
     public void setSpotId(int spotId) {
         this.spotId = spotId;
@@ -36,8 +30,4 @@ public class ParkingSpot implements Serializable{
         this.status = status;
     }
 
-    public void setCurrentReservation(Order order) {
-        this.currentorder = order;
-    }
 }
-

@@ -2,6 +2,8 @@ package client;
 
 import java.io.IOException;
 
+import logic.*;
+
 /**
  * The class handles clients of BPark
  */
@@ -49,9 +51,11 @@ public class BParkClient extends ObservableClient {
 	 * Starts the client connection
 	 * @throws Exception 
 	 */
-	public void start() throws Exception {
+	//start getting subs public void start(subscriber sub) throws Exception {
+	public void start(subscriber sub) throws Exception {
 		try {
 			openConnection();
+			this.sendToServerSafely(new SendObject<subscriber>("connect",sub));
 		} catch (IOException e) {
 			System.err.println("Failed to open connection: " + e.getMessage());
 			throw new Exception();
@@ -70,4 +74,6 @@ public class BParkClient extends ObservableClient {
 
 		}
 	}
+
+
 }

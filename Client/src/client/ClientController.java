@@ -2,7 +2,6 @@ package client;
 
 import java.io.IOException;
 import java.util.List;
-
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -20,27 +19,34 @@ public class ClientController {
 
 	@FXML
 	private TextField ipTextField; // The TextField for entering the IP address
-
+	@FXML
+	private TextField portTextField; // The TextField for entering the port number
 	@FXML
 	private Button connectButton; // Connect button
-
 	@FXML
 	private Button disconnectButton; // Exit button (renamed use)
 
 	private BParkClient clientConnection;
-	private Stage stage;
 	private List<Order> orders;
 
 	@FXML
 	public void handleConnectButton() {
-		String ipAddress = ipTextField.getText().trim();
+		//String ipAddress = ipTextField.getText().trim();
+		String ipAddress = "10.0.0.4"; // TOM'S IP, REMOVE IF YOU SEE THIS
+		String portText = "5555";
 
-		if (ipAddress.isEmpty()) {
-			ShowAlert.showAlert("Error", "Please enter IP Address", Alert.AlertType.ERROR);
+		if (ipAddress.isEmpty() || portText.isEmpty()) {
+			showAlert("Error", "Please enter both IP and port", Alert.AlertType.ERROR);
 			return;
 		}
-
-		connectToServer(ipAddress, 5555); // Connect to the server on port 5555);
+		int port;
+		try {
+			port = Integer.parseInt(portText);
+		} catch (NumberFormatException e) {
+			showAlert("Error", "Port must be a valid number", Alert.AlertType.ERROR);
+			return;
+		}
+		connectToServer(ipAddress, port);
 	}
 
 	@FXML
@@ -56,12 +62,12 @@ public class ClientController {
 			clientConnection = new BParkClient(ipAddress, port);
 			connectButton.setDisable(true);
 			disconnectButton.setDisable(false);
-			clientConnection.start();
+			clientConnection.start(null);
 			// Creates the order table 
 			clientConnection.setMessageListener(this::handleServerMessage);
 			
 		} catch (Exception e) {
-			ShowAlert.showAlert("Error", "Failed to connect to the server at " + ipAddress + ":" + port, Alert.AlertType.ERROR);
+			showAlert("Error", "Failed to connect to the server at " + ipAddress + ":" + port, Alert.AlertType.ERROR);
 			connectButton.setDisable(false);
 		}
 	}
@@ -69,26 +75,28 @@ public class ClientController {
 	private void handleServerMessage(Object msg) {
 		Platform.runLater(() -> {
 			System.out.println("[Server] " + msg);
-			if (msg instanceof List<?>) {
-				orders = (List<Order>) msg;
-				System.out.println(orders);
-				System.out.println("Orders added");
-			}
 
 			// Load next screen (Order Table)
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("DropOffScreen.fxml"));
+			//FXMLLoader loader = new FXMLLoader(getClass().getResource("MainMenuScreen.fxml"));
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("AttendantScreen.fxml"));
+			//FXMLLoader loader = new FXMLLoader(getClass().getResource("RegistrationScreen.fxml"));
 			Parent tableRoot = null;
 			try {
 				tableRoot = loader.load();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				System.out.println("can't load main menu screen");
 				e.printStackTrace();
 			}
-
 			// After Connection start the order table
-			Stage stage = (Stage) connectButton.getScene().getWindow();
-			stage.setScene(new Scene(tableRoot));
-			stage.setTitle("Orders Table");
+   
+            Stage stage = (Stage) connectButton.getScene().getWindow();
+            Scene scene = new Scene(tableRoot);
+            stage.setScene(scene);
+            stage.sizeToScene();
+            stage.centerOnScreen();
+			stage.setTitle("Main Menu");
+			stage.setMaximized(true);
+
 			// Makes sure when X is pressed it closes the connection to the server
 			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 				@Override
@@ -99,9 +107,9 @@ public class ClientController {
 					System.exit(0);
 				}
 			});
-			stage.setMaximized(true); // Maximize the window
-			DropOffScreenController controller = loader.getController();
-			controller.setClient(clientConnection);
+			MainMenuController controller = loader.getController();
+			//controller.setOrders(orders);
+			//controller.setClient(clientConnection);
 			controller.setBackHandler(() -> { // Handle back button action using lambda
 				try { // Stop the client connection
 					clientConnection.stop();
@@ -118,8 +126,15 @@ public class ClientController {
 				}
 			});
 			// hand off all future messages to the BParkClientController
-			clientConnection.setMessageListener(controller::handleServerMessage);
+			//clientConnection.setMessageListener(controller::handleServerMessage);
 		});
 	}
 	
+	public static void showAlert(String title, String message, Alert.AlertType alertType) {
+		Alert alert = new Alert(alertType);
+		alert.setTitle(title);
+		alert.setHeaderText(null);
+		alert.setContentText(message);
+		alert.showAndWait();
+	}
 }

@@ -12,9 +12,10 @@ public class Parkingsession implements Serializable{
 	    private Date outTime;
 	    private boolean extended;
 	    private boolean late;
-
+	    private boolean active;
+	    //test
 	    // Constructor
-	    public Parkingsession(int sessionId, int subscriberId, int spotId, int parkingCode, Date inTime, Date outTime, boolean extended, boolean late) {
+	    public Parkingsession(int sessionId, int subscriberId, int spotId, int parkingCode, Date inTime, Date outTime, boolean extended, boolean late, boolean active) {
 	        this.sessionId = sessionId;
 	        this.subscriberId = subscriberId;
 	        this.spotId = spotId;
@@ -23,9 +24,18 @@ public class Parkingsession implements Serializable{
 	        this.outTime = outTime;
 	        this.extended = extended;
 	        this.late = late;
+	        this.active = active;
 	    }
 
-	    // Getters
+	    public boolean getActive() {
+			return active;
+		}
+
+		public void setActive(boolean active) {
+			this.active = active;
+		}
+
+		// Getters
 	    public int getSessionId() {
 	        return sessionId;
 	    }

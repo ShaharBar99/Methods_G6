@@ -22,25 +22,18 @@ public class BParkClientController {
 
 	@FXML
 	private TableView<Order> orderTable;
-
 	@FXML
 	private TableColumn<Order, Integer> colOrderId;
-
 	@FXML
 	private TableColumn<Order, Date> colDate;
-
 	@FXML
 	private TableColumn<Order, Integer> colSpot;
-
 	@FXML
 	private TableColumn<Order, Integer> colCode;
-
 	@FXML
 	private TableColumn<Order, Integer> colSubscriberID;
-
 	@FXML
 	private TableColumn<Order, Date> colDatePlacingOrder;
-
 	@FXML
 	private Button editButton;
 

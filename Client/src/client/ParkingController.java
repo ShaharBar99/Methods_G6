@@ -3,6 +3,7 @@ package client;
 import java.util.Date;
 import java.util.Random;
 import javafx.application.Platform;
+import javafx.scene.control.Alert.AlertType;
 import logic.*;
 
 public class ParkingController {
@@ -11,12 +12,13 @@ public class ParkingController {
 	private PickUpScreenController pickUpScreen;
 	private static final Object lock = new Object();
 	private ParkingSpot spot;
-	//private ParkingSpot spot = new ParkingSpot(0, SpotStatus.FREE, null); // testin
+	// private ParkingSpot spot = new ParkingSpot(0, SpotStatus.FREE, null); //
+	// testin
 	private boolean isAvailable = false;
-	//private boolean isUsedCode = false;
+	// private boolean isUsedCode = false;
 	private volatile boolean isUsedCode = true;
 	private volatile boolean responseReceived = false;
-
+	private int counter = 0;
 	private Parkingsession mySession;
 	private DropOffScreenController dropOffScreen;
 	private BParkClient client;
@@ -24,7 +26,7 @@ public class ParkingController {
 	 * public ParkingController(subscriber subscriber1, DropOffScreen dropOffScreen)
 	 * { this.subscriber1 = subscriber1; this.dropOffScreen = dropOffScreen; }
 	 */
-	
+
 	/*
 	 * this method is used to handle messages from the server
 	 */
@@ -60,26 +62,39 @@ public class ParkingController {
 //			}
 //		});
 //	}
-	
-	public void handleServerResponse(Object message) {
-		if (message instanceof String) {
-			        String msg = (String) message;
-	    if (msg.startsWith("Code status:")) {
-	        isUsedCode = Boolean.parseBoolean(msg.split(":")[1]); // true = used
-	        responseReceived = true; // signal main thread
-	    	}
-	    if( msg.startsWith("The Availablity is:")) {
-            String parts[] = msg.split(":");
-            if (parts[1].equals("True")) // Note! should make sure what database returns True/False or true/false
-                isAvailable = true;
-            else {
-                isAvailable = false;
-            }
-            responseReceived = true; // signal main thread
-        	}
-	    }
-	}
 
+	public void handleServerResponse(Object message) {
+		counter++;
+		System.out.println(counter);
+		if (message instanceof SendObject<?>) {
+			SendObject<?> msg = (SendObject<?>) message;
+			String action = msg.getObjectMessage();
+			System.out.println(action);
+			Object obj = msg.getObj();
+			if (action.equals("Availability")) {
+				isAvailable = (Boolean) obj;
+			} else if (action.equals("Parkingsession from code")) {
+				System.out.println("2");
+				setMySession((Parkingsession) obj);
+			} else if (action.equals("isUsed")) {
+				System.out.println("isused");
+				isUsedCode = (Boolean) obj;
+			} else if (action.equals("new Spot")) {
+				System.out.println("last");
+				setSpot((ParkingSpot) obj);
+			}
+			responseReceived = true;
+			/*
+			 * if (msg.startsWith("Code status:")) { isUsedCode =
+			 * Boolean.parseBoolean(msg.split(":")[1]); // true = used responseReceived =
+			 * true; // signal main thread } if (msg.startsWith("The Availablity is:")) {
+			 * String parts[] = msg.split(":"); if (parts[1].equals("True")) // Note! should
+			 * make sure what database returns True/False or true/false isAvailable = true;
+			 * else { isAvailable = false; } responseReceived = true; // signal main thread
+			 * }
+			 */
+		}
+	}
 
 	private ParkingController(BParkClient client) {
 		this.client = client;
@@ -96,11 +111,11 @@ public class ParkingController {
 	private void setMySession(Parkingsession mySession) {
 		this.mySession = mySession;
 	}
-	
+
 	public void setPickUpScreen(PickUpScreenController pickUpScreen) {
 		this.pickUpScreen = pickUpScreen;
 	}
-	
+
 	public void setDropOffScreen(DropOffScreenController dropOffScreen) {
 		this.dropOffScreen = dropOffScreen;
 	}
@@ -121,7 +136,7 @@ public class ParkingController {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/*
 	 * Singleton pattern to ensure only one instance of ParkingController
 	 */
@@ -138,22 +153,16 @@ public class ParkingController {
 	}
 
 	/*
-	 * ?רק לעכשיו public void setClient(BParkClient client) { // this method is used
-	 * to set the client for the controller // it can be used to send messages to
-	 * the server // this.client = client; }
-	 */
-
-	/*
 	 * this method only assigns and returns a spot
 	 */
-	public ParkingSpot assignParkingSpot() {
-		/*
-		 * Happens in the server for (ParkingSpot spot : ParkingLot) { if
-		 * (spot.getStatus() == SpotStatus.FREE) { spot.setStatus(SpotStatus.OCCUPIED);
-		 * return spot; } }
-		 */
-		if (checkParkingSpotAvailability())
-			client.sendToServerSafely("get free spot");
+	public ParkingSpot assignParkingSpot() throws Exception {
+		responseReceived = false;
+		// Send to server
+		client.sendToServerSafely(new SendObject<String>("Get", "Free spot")); // V
+		// Poll until response is received
+		System.out.println("waiting");
+		waitForServerResponse(20000);
+		System.out.println("ended waiting from server");
 		return spot;
 	}
 
@@ -163,84 +172,89 @@ public class ParkingController {
 	public void confirmDropOff() throws Exception {
 		// if there's no available parking spot
 		if (!checkParkingSpotAvailability()) {
-			dropOffScreen.showNoAvailability(); // show no availability message
-			// it stops the code here
-		}
-		else {
-			System.out.println("else");
+			Platform.runLater(() -> {
+				dropOffScreen.showNoAvailability(); // show no availability message
+			});
+		} else {
 			Date inTime = new Date();
 			Date outTime = new Date(inTime.getTime() + 4 * 60 * 60 * 1000); // 4 hour later
 			ParkingSpot spot = assignParkingSpot();
-			System.out.println("assignParkingSpot");
+			if(spot != null)
+				System.out.println(spot.getSpotId());
 			int parkingCode = generateParkingCode(); // generate parking code
-			System.out.println("generateParkingCode");
-			
+			System.out.println("gen");
 			// subscriber1 != null for testing/checking
 			if (subscriber1 != null) {
 				Parkingsession session = new Parkingsession(0, subscriber1.getId(), spot.getSpotId(), parkingCode,
-						inTime, outTime, false, false);
+						inTime, outTime, false, false, true);
 				// TO DO: send session to database
-				client.sendToServerSafely(session);
-				dropOffScreen.showParkingSuccess(); // show success message	
+				client.sendToServerSafely(new SendObject<Parkingsession>("Create new", session));// V
+				int spotId = spot.getSpotId();
+				System.out.println(spotId+", "+parkingCode);
+				Platform.runLater(() -> {
+					System.out.println(spotId+", "+parkingCode);
+					dropOffScreen.showParkingSuccess(); // show success message
+					dropOffScreen.displayAssignedSpot(spotId);
+					dropOffScreen.displayParkingCode(parkingCode);
+				});
+				// reset the controller for next use
+				mySession = null;
+				spot = null;
+				isAvailable = false;
+				isUsedCode = true;
 			}
-			
+
 			else { // if subscriber1 is null, throw an exception
 				throw new Exception("Subscriber is null, cannot create parking session.");
 			}
 		}
 	}
 
-	
 	/*
 	 * checks if there's any free parking spot returns true if it finds one
 	 */
-	public boolean checkParkingSpotAvailability() {
+	public boolean checkParkingSpotAvailability() throws Exception {
 		/*
 		 * Happens in the server for (ParkingSpot spot : ParkingLot) { if
 		 * (spot.getStatus() == SpotStatus.FREE) return true; } return false;
 		 */
-		
+
 		// Reset flags
 		isAvailable = false; // Assume no availability initially;
-	    responseReceived = false;
-		
-		client.sendToServerSafely("Check Availability");
-		
+		responseReceived = false;
+
+		client.sendToServerSafely(new SendObject<String>("Check", "Availability")); // V
+
 		// Poll until response is received
-	    while (!responseReceived) {
-	        try {
-	            Thread.sleep(10); // sleep briefly to avoid busy-waiting
-	        } catch (InterruptedException e) {
-	            e.printStackTrace();
-	        }
-	    }
-		
-		//isAvailable = true; // For testing
+		waitForServerResponse(20000);
+		// isAvailable = true; // For testing
 		return isAvailable;
 		// TO DO: maybe we should get this information from the server
 	}
-	
-	
-	
+
 	public void requestCarPickUp(int code) throws Exception {
 		// the client enters the parking code so they can find the session
 		try {
+			responseReceived = false;
 			sendParkingCode(code);
+			// Poll until response is received
+			waitForServerResponse(20000);
 			if (mySession != null) { // this should be retrieved from the database using the parking code
 
 				// TO DO: get session from database using the parking code
 				if (mySession.getOutTime().before(new Date())) {
 					markLateArrival(mySession); // if the session is late, mark it
 				}
+				mySession.setActive(false);
 				subscriber1.getHistory().add(mySession); // add session to subscriber's history
-				// TO DO: send session and subscriber1 to the database for update/deletion
+				// TO DO: send session and subscriber1 to the database for update
 				releaseSpot(mySession.getSpotId()); // release the parking spot
-				client.sendToServerSafely(subscriber1);
+				client.sendToServerSafely(new SendObject<Parkingsession>("Update Session", mySession));// V
 				// reset the controller for next use
 				mySession = null;
 				spot = null;
 				isAvailable = false;
-				isUsedCode = false;
+				isUsedCode = true;
 			} else
 				throw new Exception();
 		} catch (Exception e) {
@@ -256,15 +270,16 @@ public class ParkingController {
 		session.setLate(true);
 		// TO DO: update session in the database/send message to client about being late
 		try {
-			client.sendToServerSafely("Send late message by Email/SMS to:" + subscriber1.getId());
+			client.sendToServerSafely(new SendObject<subscriber>("Send late message by Email/SMS", subscriber1));// V
 		} catch (Exception e) {
 			System.err.println("Error getting parking code from server: " + e.getMessage());
 
 			e.printStackTrace();
 			throw new Exception();
 		}
-		pickUpScreen.showLateArrivalMessage(); // show late arrival message
-
+		Platform.runLater(() -> {
+			pickUpScreen.showLateArrivalMessage(); // show late arrival message
+		});
 	}
 
 	public void handleLostCode() throws Exception {
@@ -274,7 +289,7 @@ public class ParkingController {
 		// should send the code to the user via email
 		// בDB שולח לסרבר ומצליב בין הסאבסקראייבר לבין הסשן הכי עדכני שלו
 		try {
-			client.sendToServerSafely("Send code by Email/SMS to:" + subscriber1.getId());
+			client.sendToServerSafely(new SendObject<subscriber>("Send Parking Code by Email/SMS", subscriber1));// V
 		} catch (Exception e) {
 			System.err.println("Error getting parking code from server: " + e.getMessage());
 
@@ -290,8 +305,14 @@ public class ParkingController {
 	public void sendParkingCode(int parkingCode) throws Exception {
 		// should we move code from reservation to Parkingsession???
 		try {
-			client.sendToServerSafely(parkingCode); // Should return the Parkingsession from the db and delete it from
-													// there
+			client.sendToServerSafely(new SendObject<Integer>("Check recieved Parking Code", parkingCode)); // V Should
+																											// return
+																											// the
+																											// Parkingsession
+																											// from the
+																											// db and
+																											// setActive(false)
+
 		} catch (Exception e) {
 			System.err.println("Error sending parking code to server: " + e.getMessage());
 			e.printStackTrace();
@@ -300,41 +321,52 @@ public class ParkingController {
 	}
 
 	/*
-	 * This method is called when the car is picked up gets the parking spot and releases it
+	 * This method is called when the car is picked up gets the parking spot and
+	 * releases it
 	 */
 	public void releaseSpot(int spotId) {
-		client.sendToServerSafely("Free spot:" + spotId);
+		client.sendToServerSafely(new SendObject<Integer>("Upadte spot to Free", spotId)); // V
 		// TO DO: update the parking spot in the database
 	}
 
-	
-	public int generateParkingCode() {
-	    int parkingCode;
+	public int generateParkingCode() throws Exception {
+		int parkingCode;
 
-	    do {
-	        Random random = new Random(); // Generate code
-	        parkingCode = 100000 + random.nextInt(900000);
+		do {
+			Random random = new Random(); // Generate code
+			parkingCode = 100000 + random.nextInt(900000);
 
-	        // Reset flags
-	        isUsedCode = true;
-	        responseReceived = false;
+			// Reset flags
+			isUsedCode = true;
+			responseReceived = false;
 
-	        // Send to server
-	        client.sendToServerSafely("Check new parking code:" + parkingCode);
-
-	        // Poll until response is received
-	        while (!responseReceived) {
-	            try {
-	                Thread.sleep(10); // sleep briefly to avoid busy-waiting
-	            } catch (InterruptedException e) {
-	                e.printStackTrace();
-	            }
-	        }
-
-	    } while (isUsedCode); // if used, repeat
-
-	    return parkingCode;
+			// Send to server
+			client.sendToServerSafely(new SendObject<Integer>("Check new Parking Code", parkingCode));// V
+			waitForServerResponse(20000);
+		} while (isUsedCode); // if used, repeat
+		return parkingCode;
 	}
 
+	private boolean waitForServerResponse(long timeoutMillis) throws Exception {
+		long startTime = System.currentTimeMillis();
+		while (!responseReceived) {
+			try {
+				Thread.sleep(10); // sleep briefly to avoid busy-waiting
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			// responseReceived = false;
+			// Check if we've exceeded the timeout
+			if (System.currentTimeMillis() - startTime > timeoutMillis) {
+
+				ShowAlert.showAlert("Timeout Error",
+						"The server did not respond within the expected time. Please try again later.",
+						AlertType.ERROR);
+
+				throw new Exception("Server response timed out after " + timeoutMillis + " milliseconds");
+			}
+		}
+		return true;
+	}
 
 }

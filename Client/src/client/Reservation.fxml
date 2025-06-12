@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="mainPane"
+            styleClass="main-pane"
+            stylesheets="@styles.css"
+            xmlns="http://javafx.com/javafx/8"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="client.ReservationScreenController">
+
+  <children>
+    <!-- center container holding form + table -->
+    <VBox fx:id="contentVBox"
+          styleClass="menu-container"
+          spacing="20.0"
+          alignment="TOP_CENTER"
+          AnchorPane.topAnchor="40.0"
+          AnchorPane.leftAnchor="40.0"
+          AnchorPane.rightAnchor="40.0"
+          AnchorPane.bottomAnchor="40.0">
+
+      <!-- Page title -->
+      <Label text="🚗 Make a Parking Reservation"
+             styleClass="title-label"/>
+
+      <!-- Reservation form -->
+      <GridPane hgap="10" vgap="10"
+                styleClass="menu-container"
+                GridPane.rowIndex="0" GridPane.columnIndex="0">
+        <columnConstraints>
+            <ColumnConstraints halignment="RIGHT"/>
+            <ColumnConstraints hgrow="ALWAYS"/>
+        </columnConstraints>
+
+        <Label text="Date:"       GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <DatePicker fx:id="datePicker"
+                    GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="Start Time:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="startTimeField"
+                   promptText="HH:MM"
+                   GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <Label text="End Time:"   GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextField fx:id="endTimeField"
+                   promptText="HH:MM"
+                   GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+      </GridPane>
+
+      <!-- Action buttons -->
+      <HBox spacing="20.0" alignment="CENTER">
+        <Button text="Reserve"
+                fx:id="reserveButton"
+                onAction="#submitReservationRequest"
+                styleClass="menu-button"/>
+        <Button text="Clear"
+                fx:id="cancelButton"
+                onAction="#submitCancellation"
+                styleClass="menu-button"/>
+      </HBox>
+
+      <!-- Future Reservations table -->
+      <Label text="Future Reservations"
+             styleClass="title-label"/>
+      <TableView fx:id="futureReservationsTable"
+                 prefHeight="250.0" prefWidth="600.0"
+                 VBox.vgrow="ALWAYS"
+                 styleClass="menu-container">
+        <columns>
+          <TableColumn fx:id="colSpot"  text="Spot"  prefWidth="100"/>
+          <TableColumn fx:id="colDate"  text="Date"  prefWidth="150"/>
+          <TableColumn fx:id="colStart" text="Start" prefWidth="150"/>
+          <TableColumn fx:id="colEnd"   text="End"   prefWidth="150"/>
+        </columns>
+      </TableView>
+    </VBox>
+
+    <!-- Back button in the bottom-right corner -->
+    <Button fx:id="backButton"
+            text="Back"
+            onAction="#handleBackButton"
+            styleClass="disconnect-button"
+            AnchorPane.bottomAnchor="20.0"
+            AnchorPane.rightAnchor="20.0"/>
+  </children>
+</AnchorPane>
