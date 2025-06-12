@@ -7,6 +7,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
+import logic.*;
 
 
 
@@ -48,6 +49,9 @@ public class MainMenuController extends Controller{
     @FXML public void admin() {
     	this.setscreen("AdminScreen","AdminScreen.fxml");
     }
+    @FXML public void openTimeExtensionScreen() {
+    	this.setscreen("TimeExtensionScreen", "TimeExtensionScreen.fxml");
+    }
     private  void setscreen(String screen_name,String fxml) {
 		try {
             // reload next screen
@@ -79,6 +83,10 @@ public class MainMenuController extends Controller{
             	ReservationScreenController controller = loader.getController();
             	c = controller;
             }
+            else if(screen_name.equals("TimeExtensionScreen")) {
+            	TimeExtensionScreenController controller = loader.getController();
+            	c = controller;
+            }
             else {
             	HistoryScreenController controller = loader.getController();
             	c = controller;
@@ -108,4 +116,15 @@ public class MainMenuController extends Controller{
 		
 		
 	}
+    @Override
+    public void setClient(BParkClient client, subscriber sub) {
+        super.setClient(client, sub); // קריאה למתודה המקורית במחלקת Controller
+
+        // הסתר את כפתור המנהל אם המשתמש אינו מנהל
+        if (sub.getRole() != Role.MANAGER) {
+            adminbutton.setVisible(false);
+            adminbutton.setManaged(false); // כדי שלא יתפוס מקום בלייאאוט
+        }
+    }
+
 }
