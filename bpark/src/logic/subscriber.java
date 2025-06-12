@@ -2,7 +2,7 @@ package logic;
 
 import java.io.Serializable;
 import java.util.List;
-
+ 
 public class subscriber  extends user implements Serializable{
 	    private List<Parkingsession> history;
 	    private String tag;

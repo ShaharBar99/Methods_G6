@@ -1,7 +1,7 @@
 package logic;
 
 import java.io.Serializable;
-
+ 
 public class user implements Serializable{
 	private int id;
     private String name;

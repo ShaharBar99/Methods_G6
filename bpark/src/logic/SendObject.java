@@ -1,4 +1,4 @@
-package logic;
+package logic; 
 import java.io.Serializable;
 public class SendObject<T extends Serializable> implements Serializable {
     private T obj;
