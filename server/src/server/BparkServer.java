@@ -1,9 +1,7 @@
 package server;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import gui.ServerController;
@@ -16,7 +14,7 @@ import ocsf.server.*;
 public class BparkServer extends AbstractServer {
 
 	final public static int DEFAULT_PORT = 5555;
-	private MySQLConnection con; // Will be used any time an SQL Query is needed
+	private DataBaseQuery con; // Will be used any time an SQL Query is needed
 	private List<ConnectionToClient> clientConnections = new ArrayList<>(); // Current connections
 	private List<List<String>> requiredList = new ArrayList<>(); // Log of current and former connections
 	private ServerController serverController;
@@ -29,7 +27,7 @@ public class BparkServer extends AbstractServer {
 
 		super(DEFAULT_PORT);
 		this.serverController = controller;
-		con = new MySQLConnection();
+		con = new DataBaseQuery();
 		// TODO Auto-generated constructor stub
 	}
 
@@ -38,43 +36,22 @@ public class BparkServer extends AbstractServer {
 	 * @param client Handles objects that are sent to the server
 	 */
 	public void handleMessageFromClient(Object msg, ConnectionToClient client) {
-		/*
-		 * if (msg instanceof Order) { // An updated order from the client, checks if
-		 * the change is valid and if so // updates the DB List<Order> orders; orders =
-		 * con.getallordersfromDB(); Order order = (Order) msg; int spot =
-		 * order.get_ParkingSpot().getSpotId(); String date =
-		 * order.getorder_date().toString(); int index = -1; for (int i = 0; i <
-		 * orders.size(); i++) { if (orders.get(i).get_order_id() ==
-		 * order.get_order_id()) index = i; else if
-		 * (orders.get(i).get_ParkingSpot().getSpotId() == spot &&
-		 * orders.get(i).getorder_date().toString().equals(date)) { // Invalid order
-		 * System.out.println("can't place order!!!!!!!!!");
-		 * sendToSingleClient("can't place order!!!!!!!!!", client); return; } } //
-		 * Valid order con.updateDB(order); orders.remove(index); orders.add(index,
-		 * order); sendToAllClients(orders); System.out.println("order placed");
-		 * sendToSingleClient("order placed", client); } else if (msg instanceof String)
-		 * { String msgString = (String) msg; System.out.println(msgString); if
-		 * (msgString.equals("Client disconnected")) // Note, make sure client sends a
-		 * message before it disconnects clientDisconnected(client);
-		 * 
-		 * if (msgString.startsWith("get_order: ")) { String parts[] =
-		 * msgString.split("get_order: "); Order order = con.getOrderFromDB(parts[1]);
-		 * System.out.println("Retrieving an order..."); sendToSingleClient(order,
-		 * client); } }
-		 */
+
 		if (msg instanceof String) {
-			String msgString = (String) msg; System.out.println(msgString); 
-			if(msgString.equals("Client disconnected"))
+			String msgString = (String) msg;
+			System.out.println(msgString);
+			if (msgString.equals("Client disconnected"))
 				clientDisconnected(client);
 		}
 		if (msg instanceof SendObject<?>) {
 			SendObject<?> obj = (SendObject<?>) msg;
 			try {
 				// Call the handler, which could return any type
-				Object result = SendObjectHandler.sendObjectHandle(obj);
+				Object result = SendObjectHandler.sendObjectHandle(obj, con);
 
 				// If the result is a SendObject, you can send it directly
 				if (result instanceof SendObject<?>) {
+
 					SendObject<?> sendObjectResult = (SendObject<?>) result;
 					sendToSingleClient(sendObjectResult, client);
 				}
@@ -88,25 +65,17 @@ public class BparkServer extends AbstractServer {
 	/**
 	 * @param msg
 	 * @param client Sends a object msg to a client
+	 * @return
 	 */
 	public void sendToSingleClient(Object msg, ConnectionToClient client) {
 		try {
 			if (msg instanceof String) // Sends a String
 				client.sendToClient(msg);
-			/*
-			 * else if (msg instanceof List) { // Sends a list of orders List<Order>
-			 * orderList = (List<Order>) msg;
-			 * 
-			 * client.sendToClient(orderList); System.out.println(orderList); } else if (msg
-			 * instanceof Order) { // Sends one order Order order = (Order) msg;
-			 * client.sendToClient(order); System.out.println(order); }
-			 */
 			else if (msg instanceof SendObject<?>) {
 				SendObject<?> sendObject = (SendObject<?>) msg;
 				client.sendToClient(sendObject);
-			}
-			else if(msg instanceof ArrayList<?>) {
-				ArrayList<?> list = (ArrayList<?>)msg;
+			} else if (msg instanceof ArrayList<?>) {
+				ArrayList<?> list = (ArrayList<?>) msg;
 				client.sendToClient(list);
 			}
 		} catch (IOException e) {
@@ -143,7 +112,8 @@ public class BparkServer extends AbstractServer {
 			clientInfo.add("Connected");
 			requiredList.add(clientInfo);
 			serverController.recievedServerUpdate(requiredList);
-			sendToSingleClient(new SendObject<ArrayList<Order>>("check",con.getallordersfromDB()), client);
+			// sendToSingleClient(new
+			// SendObject<ArrayList<Order>>("check",con.getallordersfromDB()), client);
 			// Log the connection
 			System.out.println(String.format("Client:%s IP:%s HostName:%s %s", clientInfo.get(0), clientInfo.get(1),
 					clientInfo.get(2), clientInfo.get(3)));

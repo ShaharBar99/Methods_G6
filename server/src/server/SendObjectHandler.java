@@ -4,6 +4,7 @@ import logic.*;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -30,7 +31,18 @@ public class SendObjectHandler {
 			Object genericObject = handleGetAction(object, con);
 			return replyDefiner(genericObject);
 		} else if (action.contains("Update")) {
-			handleUpdateAction(object, con);
+			if (action.contains("time in session")) {
+				/*
+				 * if(checkExtendTimeParkingsessionWithAllReservations((Parkingsession)session)){ handleUpdateAction(object,
+				 * con); return new SendObject<T1>("Time Extension",(T1)"Accapted"); }else{
+				 * return new SendObject<T1>("Time Extension",(T1)"Not Accapted"); }
+				 */
+				handleUpdateAction(object, con);
+				return new SendObject<T1>("Time Extension", (T1) "Accapted");// fake
+
+			} else {
+				handleUpdateAction(object, con);
+			}
 		} else if (action.contains("Create")) {
 			Object genericObject = handleCreateAction(object, con);
 			return replyDefiner(genericObject);
@@ -80,8 +92,6 @@ public class SendObjectHandler {
 				return new SendObject<T1>("isUsed", (T1) (Boolean) isUsed);
 			} else if (action.equals("Check recieved Parking Code")) {
 				Parkingsession mySession = null;
-				// mySession = new Parkingsession(0, 0, 0, 0, null, new Date(), false, false,
-				// false); // fake
 				int parkingcode = intObject;
 				mySession = con.getActiveParkingsessionWithThatCodeFromDatabase(parkingcode);
 				return new SendObject<T1>("Parkingsession from code", (T1) (Parkingsession) mySession);
@@ -95,27 +105,47 @@ public class SendObjectHandler {
 			if (action.contains("SubscribersResesrvations")) {
 				List<Reservation> reservationListOfSubscriber = new ArrayList<>();
 				reservationListOfSubscriber = con.getReservationListOfSubscriberbyIdFromDatabase(intObject);
-				/*
-				 * fakes to check if a list has been created and transfered to controller
-				 * reservationListOfSubscriber.add(new Reservation(1, 1001, LocalDate.of(2025,
-				 * 6, 5), "09:00", "12:00")); reservationListOfSubscriber.add(new Reservation(2,
-				 * 1002, LocalDate.of(2025, 6, 5), "14:00", "16:00"));
-				 * reservationListOfSubscriber.add(new Reservation(1, 1003, LocalDate.of(2025,
-				 * 6, 6), "10:00", "12:00")); reservationListOfSubscriber.add(new Reservation(3,
-				 * 1004, LocalDate.of(2025, 6, 6), "13:00", "15:00"));
-				 */
 				return new SendObject<T1>("Reservation list of subscriber",
 						(T1) (List<Reservation>) reservationListOfSubscriber);
 			} else if (action.contains("history")) {
 				List<Parkingsession> historyParkingsessionsListOfSubscriber = new ArrayList<>();
 				int subscriberId = intObject;
-				historyParkingsessionsListOfSubscriber = con.gethistoryParkingsessionsListOfSubscriberbyIdFromDatabase(subscriberId);
-				if(historyParkingsessionsListOfSubscriber == null) {
+				historyParkingsessionsListOfSubscriber = con
+						.gethistoryParkingsessionsListOfSubscriberbyIdFromDatabase(subscriberId);
+				if (historyParkingsessionsListOfSubscriber == null) {
 					System.out.println("history is null");
 				}
 				// send back the list
 				return new SendObject<T1>("Parkingsession list of subscriber",
 						(T1) (List<Parkingsession>) historyParkingsessionsListOfSubscriber);
+			} else if (action.contains("Active Parkingsessions")) {
+				List<Parkingsession> activeParkingsessionsListOfSubscriber = new ArrayList<>();
+				int subscriberId = intObject;
+				// activeParkingsessionsListOfSubscriber =
+				// con.getActiveParkingsessionsListOfSubscriberbyIdFromDatabase(subscriberId);
+				// fake
+				Date outTime = new Date(System.currentTimeMillis() + 4L * 60 * 60 * 1000); // 4 hours later
+		        Parkingsession activeSession = new Parkingsession(1001, 1, 101, 111111, new Date(), outTime, false, false, true);
+		        activeParkingsessionsListOfSubscriber.add(activeSession);
+		        // end fake
+				// send back the list
+				return new SendObject<T1>("Active Sessions",
+						(T1) (List<Parkingsession>) activeParkingsessionsListOfSubscriber);
+			}
+			else if(action.contains("Parkingsession")) {
+				Parkingsession session = null;
+				/*Parkingsession fakeSession = new Parkingsession(6, 2001, 104, 387139, 
+					    new java.util.Date("2025/06/11 18:59:32"), 
+					    new java.util.Date("2025/06/11 22:59:32"), 
+					    false, false, true);*/
+				int sessionId = intObject;
+				//session = con.getParkingsessionById(sessionId);
+				if(session !=null) {
+					return new SendObject<T1>("Session found",(T1)session);
+				}
+				else {
+					return new SendObject<T1>("Session found:",(T1)"False");
+				}
 			}
 		}
 		return null;
@@ -128,7 +158,7 @@ public class SendObjectHandler {
 			if (to == null || !to.contains("@"))
 				throw new Exception("Subscriber doesn't have a legal Email");
 			else if (action.equals("Send late message by Email/SMS")) {
-			//	SendEmail.sendMail(to, "Late retrivel!","Hello,\nWe inform you picked up your vehicle later than expected.\n Note that in the future it might incur additional charges.");
+				//SendEmail.sendMail(to, "Late retrivel!","Hello,\nWe inform you picked up your vehicle later than expected.\n Note that in the future it might incur additional charges.");
 			} else if (action.equals("Send Parking Code by Email/SMS")) {
 				int parkingCode = 99999; // fake
 				parkingCode = con.getSubscriberLastActiveParkingsessionParkingCode(object.getId());
@@ -235,7 +265,6 @@ public class SendObjectHandler {
 				Reservation reservation = (Reservation) object;
 				// create Reservation in the database using recieved object
 				ParkingSpot spot;
-				spot = new ParkingSpot(0, SpotStatus.FREE); // fake
 				spot = con.getFreeParkingSpotFromDatabase(reservation.getDate(), reservation.getStartTime(),
 						reservation.getEndTime()).get(0);
 				if (spot != null) {
@@ -243,7 +272,7 @@ public class SendObjectHandler {
 					con.updateParkingSpotInDatabase(spot);
 					Reservation reservationToBeSent = new Reservation(spot.getSpotId(), reservation.getSubscriberId(),
 							reservation.getDate(), reservation.getStartTime(), reservation.getEndTime());
-					 con.createReservationInDatabase(reservationToBeSent); 
+					con.createReservationInDatabase(reservationToBeSent); // needs to be implemented
 					return new SendObject<String>("Reservation", "Created");
 				} else {
 					return new SendObject<String>("Reservation", "Not Created");
