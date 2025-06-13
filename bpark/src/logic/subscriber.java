@@ -17,12 +17,34 @@ public class subscriber  extends user implements Serializable{
 	    }
 
 	    // Getters
+	    public int getId() {
+            return super.getId();
+	    }
+
+		public String getName() {
+			return super.getName();
+		}
+		
+        public String getPhone() {
+            return super.getPhone();
+        }
+        
+		public String getEmail() {
+			return super.getEmail();
+		}
+		
+        public Role getRole() {
+			return super.getRole();
+        }
+	    
 	    public List<Parkingsession> getHistory() { return history; }
+	    
 	    public int getCode() { return code; }
 	    
 	    public String getTag() {
 			return tag;
 		}
+
 
 		public void setTag(String tag) {
 			this.tag = tag;
