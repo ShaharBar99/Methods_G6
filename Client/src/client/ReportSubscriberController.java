@@ -11,7 +11,10 @@ import java.util.stream.Collectors;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.chart.PieChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -20,7 +23,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import logic.Role;
 import logic.subscriber;
-import logic.user;
 
 public class ReportSubscriberController extends Controller {
 
@@ -42,6 +44,10 @@ public class ReportSubscriberController extends Controller {
 
     @FXML
     private ComboBox<String> roleComboBox;
+    
+    @FXML
+    private PieChart rolePieChart;
+
     @FXML
     private Button sortBySubscriberIdButton;
     @FXML
@@ -106,6 +112,7 @@ public class ReportSubscriberController extends Controller {
             return sub.getRole().name().equals(selectedRole);
         }).collect(Collectors.toList());
         subscriberTable.getItems().setAll(filteredSubscribers);
+        updatePieChart(); // Update pie chart with filtered data
     }
 
     private void sortBySubscriberId() {
@@ -122,6 +129,28 @@ public class ReportSubscriberController extends Controller {
             }
         }
     }
+    
+    private void updatePieChart() {
+        // Count roles
+        long subscriberCount = filteredSubscribers.stream()
+            .filter(sub -> sub.getRole() == Role.SUBSCRIBER)
+            .count();
+        long attendantCount = filteredSubscribers.stream()
+            .filter(sub -> sub.getRole() == Role.ATTENDANT)
+            .count();
+        long managerCount = filteredSubscribers.stream()
+            .filter(sub -> sub.getRole() == Role.MANAGER)
+            .count();
+
+        ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList(
+            new PieChart.Data("Subscriber", subscriberCount),
+            new PieChart.Data("Attendant", attendantCount),
+            new PieChart.Data("Manager", managerCount)
+        );
+        rolePieChart.setData(pieChartData);
+        rolePieChart.setTitle("Subscribers by Role");
+    }
+
 
     private void exportToCSV(TableView<?> table, String filename) throws Exception {
         try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {

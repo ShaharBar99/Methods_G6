@@ -13,7 +13,6 @@
 <AnchorPane xmlns="http://javafx.com/javafx/23.0.1" 
             xmlns:fx="http://javafx.com/fxml"
             styleClass="main-pane"
-            fx:id="mainPane"
             stylesheets="@ReportScreen.css"
             fx:controller="client.ReportController">
 
@@ -35,6 +34,16 @@
                 <TableColumn fx:id="colEndTime" text="End Time" prefWidth="120.0"/>
             </columns>
         </TableView>
+        
+        <LineChart fx:id="reservationsLineChart" prefHeight="240.0" prefWidth="800.0">
+    		<xAxis>
+        		<NumberAxis label="Day of Month"/>
+    		</xAxis>
+    		<yAxis>
+        		<NumberAxis label="Reservations"/>
+    		</yAxis>
+		</LineChart>
+        
 
         <HBox spacing="15.0" alignment="CENTER">
         	<Label text="Month:" />

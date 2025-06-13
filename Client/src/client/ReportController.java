@@ -13,6 +13,8 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -56,6 +58,9 @@ public class ReportController extends Controller {
 
     @FXML
     private ComboBox<Integer> yearComboBox;
+    
+    @FXML
+    private LineChart<Number, Number> reservationsLineChart;
 
     // Store all and filtered reservations
     private List<Reservation> allReservations = new ArrayList<>();
@@ -154,6 +159,7 @@ public class ReportController extends Controller {
             return monthOk && yearOk;
         }).collect(Collectors.toList());
         reservationTable.getItems().setAll(filteredReservations);
+        updateLineChart(); // Update line chart with filtered data
     }
 
     private void sortByDate() {
@@ -177,6 +183,51 @@ public class ReportController extends Controller {
             }
         }
     }
+    
+    // Update the line chart based on selected month and year
+    private void updateLineChart() {
+        // Only show when a specific month and year are selected
+        String selectedMonth = monthComboBox.getValue();
+        Integer selectedYear = yearComboBox.getValue();
+
+        // Clear chart data
+        reservationsLineChart.getData().clear();
+
+        if (selectedMonth == null || "All".equals(selectedMonth) ||
+            selectedYear == null || selectedYear == 0) {
+            reservationsLineChart.setTitle("Select specific month and year to see daily reservation count");
+            return;
+        }
+
+        int monthIndex = months.indexOf(selectedMonth); // January=1
+        int daysInMonth = java.time.Month.of(monthIndex).length(
+            java.time.Year.isLeap(selectedYear)
+        );
+
+        // Prepare daily counts
+        int[] counts = new int[daysInMonth + 1]; // 1-based indexing
+
+        filteredReservations.stream()
+            .filter(res -> res.getDate().getMonthValue() == monthIndex &&
+                           res.getDate().getYear() == selectedYear)
+            .forEach(res -> {
+                int day = res.getDate().getDayOfMonth();
+                counts[day]++;
+            });
+
+        XYChart.Series<Number, Number> series = new XYChart.Series<>();
+        series.setName("Reservations per Day");
+
+        for (int day = 1; day <= daysInMonth; day++) {
+            series.getData().add(new XYChart.Data<>(day, counts[day]));
+        }
+
+        reservationsLineChart.getData().add(series);
+        reservationsLineChart.setTitle(
+            "Reservations in " + selectedMonth + " " + selectedYear
+        );
+    }
+
 
     private void exportToCSV(TableView<?> table, String filename) throws Exception {
         try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
