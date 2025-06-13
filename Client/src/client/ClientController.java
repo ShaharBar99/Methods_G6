@@ -77,8 +77,8 @@ public class ClientController {
 			System.out.println("[Server] " + msg);
 
 			// Load next screen (Order Table)
-			//FXMLLoader loader = new FXMLLoader(getClass().getResource("MainMenuScreen.fxml"));
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("AttendantScreen.fxml"));
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("MainMenuScreen.fxml"));
+			//FXMLLoader loader = new FXMLLoader(getClass().getResource("AttendantScreen.fxml"));
 			//FXMLLoader loader = new FXMLLoader(getClass().getResource("RegistrationScreen.fxml"));
 			Parent tableRoot = null;
 			try {

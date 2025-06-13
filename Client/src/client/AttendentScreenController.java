@@ -63,7 +63,6 @@ public class AttendentScreenController extends Controller{
 
     @FXML
     public void registerNewSubscriber() {
-    	//
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("RegistrationScreen.fxml"));
             Parent root = loader.load();
@@ -72,16 +71,6 @@ public class AttendentScreenController extends Controller{
             registrationStage.setScene(new Scene(root));
             registrationStage.setMaximized(true);
             registrationStage.show();
-            //send to server
-            /*
-		    try {
-		        // Create a SendObject with message "Request_Orders" and null object
-		        SendObject<Void> request = new SendObject<>("Request_Orders", null);
-		        clientConnection.sendToServer(request);
-		    } catch (Exception e) {
-		        e.printStackTrace();
-		    }
-             */
             // hide the admin screen via an existing button
             Stage adminStage = (Stage) registerNewSubscriberButton.getScene().getWindow();
             adminStage.hide();
@@ -100,65 +89,78 @@ public class AttendentScreenController extends Controller{
         }
     }
     
+    @FXML
+	private void handleBackButton() {
+		if (backHandler != null) {
+			backHandler.run();
+		}
+	}
     
 //	public void handleServerMessage(Object message) {
 //        // Implement if this screen needs to respond to server replies
 //    }
 	
 	
-    /*private void handleServerMessage(Object msg) {
-		Platform.runLater(() -> {
-			System.out.println("[Server] " + msg);
+//    private void handleServerMessage(Object msg) {
+//		Platform.runLater(() -> {
+//			System.out.println("[Server] " + msg);
+//
+//			// Load next screen (Order Table)
+//			FXMLLoader loader = new FXMLLoader(getClass().getResource("ReportScreenUI.fxml"));
+//            Parent root = loader.load();
+//            Stage reportStage = new Stage();
+//            reportStage.setTitle("Report Screen");
+//            reportStage.setScene(new Scene(root));
+//            reportStage.setMaximized(true);
+//            reportStage.show();
+//			ReportController controller = loader.getController();
+//			controller.setClient(client);
+//			Parent tableRoot = null;
+//			try {
+//				tableRoot = loader.load();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				System.out.println("cant load report screen");
+//				e.printStackTrace();
+//			}
+//			// After Connection start the order table
+//			if (msg instanceof SendObject<?>) {
+//			    SendObject<?> sendObj = (SendObject<?>) msg;
+//			    if ("Send_Orders".equals(sendObj.getObjectMessage())) {
+//			        // Safe cast because you expect List<Order>
+//			        @SuppressWarnings("unchecked")
+//			        List<Order> orders = (List<Order>) sendObj.getObj();
+//			        System.out.println(orders);
+//			        System.out.println("Orders added");
+//			        // Now update the table/controller with the new orders
+//			        // Example if you have a controller:
+//			        controller.setOrders(orders);
+//			    }
+//			}
+//			Stage adminStage = (Stage) generateReportButton.getScene().getWindow();
+//            adminStage.hide();
+//            controller.setBackHandler(() -> {
+//                reportStage.close();
+//                adminStage.show();
+//            });
+//			// Makes sure when X is pressed it closes the connection to the server
+//			
+//			// hand off all future messages to the BParkClientController
+//			//clientConnection.setMessageListener(controller::handleServerMessage);
+//		});
+//	}
+    
+    
+    public void resendSubscriberCode(subscriber subscriber) {
+    	// get the subscriber's code from the server
+    	//System.out.println("Resending subscriber code for: " + subscriber.getCode());
+    	// Assuming you have a method to send a request to the server
+    	// This method should be implemented in your client class to handle server communication
+    	// and return the subscriber's code
+    	
 
-			// Load next screen (Order Table)
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("ReportScreenUI.fxml"));
-            Parent root = loader.load();
-            Stage reportStage = new Stage();
-            reportStage.setTitle("Report Screen");
-            reportStage.setScene(new Scene(root));
-            reportStage.setMaximized(true);
-            reportStage.show();
-			ReportController controller = loader.getController();
-			controller.setClient(client);
-			Parent tableRoot = null;
-			try {
-				tableRoot = loader.load();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				System.out.println("cant load report screen");
-				e.printStackTrace();
-			}
-			// After Connection start the order table
-			if (msg instanceof SendObject<?>) {
-			    SendObject<?> sendObj = (SendObject<?>) msg;
-			    if ("Send_Orders".equals(sendObj.getObjectMessage())) {
-			        // Safe cast because you expect List<Order>
-			        @SuppressWarnings("unchecked")
-			        List<Order> orders = (List<Order>) sendObj.getObj();
-			        System.out.println(orders);
-			        System.out.println("Orders added");
-			        // Now update the table/controller with the new orders
-			        // Example if you have a controller:
-			        controller.setOrders(orders);
-			    }
-			}
-			Stage adminStage = (Stage) generateReportButton.getScene().getWindow();
-            adminStage.hide();
-            controller.setBackHandler(() -> {
-                reportStage.close();
-                adminStage.show();
-            });
-			// Makes sure when X is pressed it closes the connection to the server
-			
-			// hand off all future messages to the BParkClientController
-			//clientConnection.setMessageListener(controller::handleServerMessage);
-		});
-	}*/
-    
-    
-//    public void resendSubscriberCode() {
-//        // TODO: Resend a subscriber's access code
-//    }
+    	//client.sendToServerSafely(new SendObject<Integer>("Get", subscriber.getCode()));
+    }
 //    /* displays the assigned parking spot in the text field */
 //	public void displayRFIDTag(String RFIDTag) {
 //		// display both tag and code

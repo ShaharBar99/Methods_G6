@@ -13,6 +13,7 @@ import javafx.stage.Stage;
 public class MainMenuController extends Controller{
 	@FXML Button historybutton;
 	@FXML Button adminbutton;
+	@FXML Button attendantbutton;
 	
 	@FXML private void handleBackButton() {
 		// swap the TableView scene back to the connect screen
@@ -28,11 +29,10 @@ public class MainMenuController extends Controller{
 			currentStage.close();
 			client.stop();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}
+	
     @FXML public void reservationRequest() { 
     	this.setscreen("ReservationScreen","Reservation.fxml"); 
     }
@@ -47,6 +47,9 @@ public class MainMenuController extends Controller{
     }
     @FXML public void admin() {
     	this.setscreen("AdminScreen","AdminScreen.fxml");
+    }
+    @FXML public void attendant() {
+    	this.setscreen("AttendantScreen","AttendantScreen.fxml");
     }
     private  void setscreen(String screen_name,String fxml) {
 		try {
@@ -67,6 +70,14 @@ public class MainMenuController extends Controller{
             	AdminScreenController controller = loader.getController();
             	c = controller;
             }
+			else if (screen_name.equals("AttendantScreen")) {
+				AttendentScreenController controller = loader.getController();
+				c = controller;
+			} 
+//			else if (screen_name.equals("HistoryScreen")) {
+//				HistoryScreenController controller = loader.getController();
+//				c = controller;
+//			}
             else if(screen_name.equals("Pickupscreen")){
             	PickUpScreenController controller = loader.getController();
             	c = controller;

@@ -45,6 +45,12 @@
                 fx:id="adminbutton"
                 styleClass="menu-button"
                 text="🛠️ Admin Panel"/>
+                
+               
+        <Button onAction="#attendant"
+                fx:id="attendantbutton"
+                styleClass="menu-button"
+                text="🛠️ Attendant Panel"/>
 
     </VBox>
 

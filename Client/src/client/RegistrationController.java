@@ -33,22 +33,20 @@ public class RegistrationController extends Controller{
     @FXML
     private TextField emailField;  // Email field
 	
-	//this.sendToServerSafely(new SendObject<subscriber>("reports",subscriber.getId()));
 //	private AttendantController attendantController;
 //
 //	public RegistrationController(AttendantController attendantController) {
 //		this.attendantController = attendantController;
 //	}
 	
-	public RegistrationController(BParkClient client) {
-		this.client = client;
-	}
-	public RegistrationController() {
-	}
+//	public RegistrationController(BParkClient client) {
+//		this.client = client;
+//	}
+//	public RegistrationController() {
+//	}
     
     @FXML
     public void registerNewSubscriber() {
-    	System.out.println("start registerNewSubscriber");
 		// Get subscriber details from the screen
     	String idText = idField.getText().trim();
         String name = nameField.getText().trim();
@@ -59,30 +57,31 @@ public class RegistrationController extends Controller{
         	showAlert("One of the fields is empty!.");
             return;
         }
-        
-        int id; // Validate ID is a valid number
+        int id;
         try {id = Integer.parseInt(idText);}
 		catch (NumberFormatException e) {
 			showAlert("ID must be a valid number.");
 			return;
 		}
         
-        // לא בטוח אם ליצור אותו פה
+        // create the subscriber locally
         subscriber newSubscriber = new subscriber(id, name, phone, email, Role.SUBSCRIBER, null, "", 0);;
+        // send it to server to check if it already exists
+        // if it does, the server will return an error message
+        // if it doesn't, the server will create the new subscriber and return success
         sendNewSubscriberToServer(newSubscriber);
         
-        // צריך את זה?
-//        nameField.clear();
-//        emailField.clear();
-//        idField.clear();
-//        phoneField.clear();
+        // clear the screen fields after sending
+        nameField.clear();
+        emailField.clear();
+        idField.clear();
+        phoneField.clear();
+        
+        getSubscriberCodeAndRFIDTag(newSubscriber);
     }
-    
-	
+
 	public void sendNewSubscriberToServer(subscriber newSubscriber) {
 		System.out.println("start sendNewSubscriberToServer");
-		// the server will check if it already exists and return an error if it does
-		// if it doesn't, it will create the new subscriber and return success
         try {
             client.sendToServerSafely(new SendObject<subscriber>("Create new Subscriber", newSubscriber));
             Platform.runLater(() -> showAlert("Subscriber registered successfully!"));
@@ -91,14 +90,24 @@ public class RegistrationController extends Controller{
             e.printStackTrace();
         }
     }
-     
 	
+	public void getSubscriberCodeAndRFIDTag(subscriber newSubscriber) {
+		// the server will return the subscriber's code and RFID tag
+		try {
+			SendObject<subscriber> request = new SendObject<>("Get Subscriber Code and RFID Tag", newSubscriber);
+			client.sendToServerSafely(request);
+			Platform.runLater(() -> showAlert(
+					"Subscriber Log In Code: " + newSubscriber.getCode() + "\nRFID Tag: " + newSubscriber.getTag()));
+		} catch (Exception e) {
+			Platform.runLater(() -> showAlert("Failed to retrieve subscriber code and RFID tag: " + e.getMessage()));
+			e.printStackTrace();
+		}	
+	}
+    
 	private void showAlert(String msg) {
 	    Alert alert = new Alert(Alert.AlertType.INFORMATION, msg);
 	    alert.showAndWait();
 	}
-	
-	
 	
 	@FXML
 	private void handleBackButton() {
@@ -106,7 +115,7 @@ public class RegistrationController extends Controller{
 			backHandler.run();
 		}
 	}
-//	
+
 //	@FXML private void handleBackButton() {
 //		try {
 //			FXMLLoader loader = new FXMLLoader(getClass().getResource("login.fxml"));
