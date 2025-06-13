@@ -1,157 +1,200 @@
 package client;
 
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.stage.Stage;
-import logic.Order;
+import javafx.scene.control.*;
+import logic.Reservation;
 
-public class ReportController extends Controller{
+public class ReportController extends Controller {
 
-	@FXML
-	private TableView<Order> orderTable;
+    @FXML
+    private TableView<Reservation> reservationTable;
 
-	@FXML
-	private TableColumn<Order, Integer> colOrderId;
+    @FXML
+    private TableColumn<Reservation, Integer> colSubscriberId;
 
-	@FXML
-	private TableColumn<Order, Date> colDate;
+    @FXML
+    private TableColumn<Reservation, Integer> colSpotId;
 
-	@FXML
-	private TableColumn<Order, Integer> colSpot;
+    @FXML
+    private TableColumn<Reservation, LocalDate> colDate;
 
-	@FXML
-	private TableColumn<Order, Integer> colCode;
+    @FXML
+    private TableColumn<Reservation, String> colStartTime;
 
-	@FXML
-	private TableColumn<Order, Integer> colSubscriberID;
+    @FXML
+    private TableColumn<Reservation, String> colEndTime;
 
-	@FXML
-	private TableColumn<Order, Date> colDatePlacingOrder;
-	
-	@FXML
-	private Button exportCsvButton;
-	
-	@FXML
-	private Button sortByDateButton;
-	
-	@FXML
-	private Button sortByIdButton;
-	private List<Order> orders;
-	private Stage editStage;
+    @FXML
+    private Button exportCsvButton;
 
-	@FXML
-	public void initialize() {
-		colOrderId.setCellValueFactory(
-				cellData -> new SimpleIntegerProperty(cellData.getValue().get_order_id()).asObject());
-		colDate.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getorder_date()));
-		colSpot.setCellValueFactory(
-				cellData -> new SimpleIntegerProperty(cellData.getValue().get_ParkingSpot().getSpotId()).asObject());
-		colCode.setCellValueFactory(cellData -> new SimpleIntegerProperty(cellData.getValue().getCode()).asObject());
+    @FXML
+    private Button sortByDateButton;
 
-		colSubscriberID.setCellValueFactory(
-				cellData -> new SimpleIntegerProperty(cellData.getValue().getSubscriber().getId()).asObject());
+    @FXML
+    private Button sortBySubscriberIdButton;
 
-		colDatePlacingOrder.setCellValueFactory(
-				cellData -> new SimpleObjectProperty<>(cellData.getValue().getdate_of_placing_an_order()));
-		if (exportCsvButton != null) { // check if the button exists
-		    exportCsvButton.setOnAction(e -> {
-		        try {
-		            exportToCSV(orderTable, "orders.csv");
-		            showAlert("Exported table to orders.csv!");
-		        } catch (Exception ex) {
-		            showAlert("Failed to export CSV: " + ex.getMessage());
-		        }
-		    });
-		}
-		if (sortByDateButton != null) {
-		    sortByDateButton.setOnAction(e -> sortByDate());
-		}
-		if (sortByIdButton != null) {
-		    sortByIdButton.setOnAction(e -> sortById());
-		}
+    @FXML
+    private ComboBox<String> monthComboBox;
 
-	}
+    @FXML
+    private ComboBox<Integer> yearComboBox;
 
-	public void setOrders(List<Order> orders) {
-		this.orders = orders;
-	}
+    // Store all and filtered reservations
+    private List<Reservation> allReservations = new ArrayList<>();
+    private List<Reservation> filteredReservations = new ArrayList<>();
 
-	private void updateOrders() {
-		orderTable.getItems().setAll(orders);
-	}
-	
-	private void sortByDate() {
-	    colDate.setSortType(TableColumn.SortType.ASCENDING);
-	    orderTable.getSortOrder().setAll(colDate);
-	    orderTable.sort();
-	}
+    private final List<String> months = Arrays.asList("All", "January", "February", "March", "April",
+            "May", "June", "July", "August", "September", "October", "November", "December");
+    private final List<Integer> years = IntStream.rangeClosed(2020, 2030)
+            .boxed().collect(Collectors.toCollection(ArrayList::new));
 
-	private void sortById() {
-	    colOrderId.setSortType(TableColumn.SortType.ASCENDING);
-	    orderTable.getSortOrder().setAll(colOrderId);
-	    orderTable.sort();
-	}
+    @FXML
+    public void initialize() {
+        // Add "All" (0) as first value in years
+        years.add(0, 0);
 
-	public void handleServerMessage(Object msg) {
-		if (msg instanceof List<?>) {
-			List<Order> updated = (List<Order>) msg;
-			Platform.runLater(() -> {
-				setOrders(updated); // update the orders list				 
-				updateOrders(); // update the table
-			});
-		}
-	}
-	
-	private void exportToCSV(TableView<?> table, String filename) throws Exception {
-	    try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
-	        // Header
-	        for (int i = 0; i < table.getColumns().size(); i++) {
-	            TableColumn<?, ?> col = table.getColumns().get(i);
-	            writer.print(col.getText());
-	            if (i < table.getColumns().size() - 1)
-	                writer.print(",");
-	        }
-	        writer.println();
-	        // Rows
-	        for (Object item : table.getItems()) {
-	            for (int i = 0; i < table.getColumns().size(); i++) {
-	                TableColumn col = table.getColumns().get(i);
-	                Object cell = col.getCellData(item);
-	                String cellText = (cell != null ? cell.toString() : "");
-	                // Escape commas/quotes
-	                cellText = cellText.replace("\"", "\"\"");
-	                if (cellText.contains(",") || cellText.contains("\""))
-	                    cellText = "\"" + cellText + "\"";
-	                writer.print(cellText);
-	                if (i < table.getColumns().size() - 1)
-	                    writer.print(",");
-	            }
-	            writer.println();
-	        }
-	    }
-	}
+        // Setup columns
+        colSubscriberId.setCellValueFactory(cellData ->
+                new SimpleIntegerProperty(cellData.getValue().getSubscriberId()).asObject());
+        colSpotId.setCellValueFactory(cellData ->
+                new SimpleIntegerProperty(cellData.getValue().getSpot()).asObject());
+        colDate.setCellValueFactory(cellData ->
+                new SimpleObjectProperty<>(cellData.getValue().getDate()));
+        colStartTime.setCellValueFactory(cellData ->
+                new SimpleObjectProperty<>(cellData.getValue().getStartTime()));
+        colEndTime.setCellValueFactory(cellData ->
+                new SimpleObjectProperty<>(cellData.getValue().getEndTime()));
 
-	private void showAlert(String msg) {
-	    Alert alert = new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK);
-	    alert.showAndWait();
-	}
+        // Setup ComboBoxes
+        monthComboBox.getItems().setAll(months);
+        monthComboBox.getSelectionModel().selectFirst(); // "All"
+        yearComboBox.getItems().setAll(years);
+        yearComboBox.setCellFactory(cb -> new ListCell<Integer>() {
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(item == null ? "" : (item == 0 ? "All" : item.toString()));
+            }
+        });
+        yearComboBox.setButtonCell(new ListCell<Integer>() {
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(item == null ? "" : (item == 0 ? "All" : item.toString()));
+            }
+        });
+        yearComboBox.getSelectionModel().selectFirst(); // 0 ("All")
 
+        // Filter on ComboBox selection
+        monthComboBox.setOnAction(e -> filterReservations());
+        yearComboBox.setOnAction(e -> filterReservations());
 
+        if (exportCsvButton != null) {
+            exportCsvButton.setOnAction(e -> {
+                try {
+                    exportToCSV(reservationTable, "reservations.csv");
+                    showAlert("Exported table to reservations.csv!");
+                } catch (Exception ex) {
+                    showAlert("Failed to export CSV: " + ex.getMessage());
+                }
+            });
+        }
+        if (sortByDateButton != null) {
+            sortByDateButton.setOnAction(e -> sortByDate());
+        }
+        if (sortBySubscriberIdButton != null) {
+            sortBySubscriberIdButton.setOnAction(e -> sortBySubscriberId());
+        }
+    }
+
+    /** Called with all reservations from server */
+    public void setReservations(List<Reservation> reservations) {
+        this.allReservations = new ArrayList<>(reservations);
+        filterReservations(); // Always refresh filter!
+    }
+
+    private void filterReservations() {
+        String selectedMonth = monthComboBox.getValue();
+        Integer selectedYear = yearComboBox.getValue();
+
+        filteredReservations = allReservations.stream().filter(res -> {
+            boolean monthOk = true, yearOk = true;
+            // Filter by month
+            if (selectedMonth != null && !"All".equals(selectedMonth)) {
+                int monthIndex = months.indexOf(selectedMonth); // January=1
+                monthOk = res.getDate().getMonthValue() == monthIndex;
+            }
+            // Filter by year
+            if (selectedYear != null && selectedYear != 0) {
+                yearOk = res.getDate().getYear() == selectedYear;
+            }
+            return monthOk && yearOk;
+        }).collect(Collectors.toList());
+        reservationTable.getItems().setAll(filteredReservations);
+    }
+
+    private void sortByDate() {
+        colDate.setSortType(TableColumn.SortType.ASCENDING);
+        reservationTable.getSortOrder().setAll(colDate);
+        reservationTable.sort();
+    }
+
+    private void sortBySubscriberId() {
+        colSubscriberId.setSortType(TableColumn.SortType.ASCENDING);
+        reservationTable.getSortOrder().setAll(colSubscriberId);
+        reservationTable.sort();
+    }
+
+    public void handleServerMessage(Object msg) {
+        if (msg instanceof List<?>) {
+            List<?> updated = (List<?>) msg;
+            // Only accept lists of Reservation
+            if (!updated.isEmpty() && updated.get(0) instanceof Reservation) {
+                Platform.runLater(() -> setReservations((List<Reservation>) updated));
+            }
+        }
+    }
+
+    private void exportToCSV(TableView<?> table, String filename) throws Exception {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
+            // Header
+            for (int i = 0; i < table.getColumns().size(); i++) {
+                TableColumn<?, ?> col = table.getColumns().get(i);
+                writer.print(col.getText());
+                if (i < table.getColumns().size() - 1)
+                    writer.print(",");
+            }
+            writer.println();
+            // Rows
+            for (Object item : table.getItems()) {
+                for (int i = 0; i < table.getColumns().size(); i++) {
+                    TableColumn col = table.getColumns().get(i);
+                    Object cell = col.getCellData(item);
+                    String cellText = (cell != null ? cell.toString() : "");
+                    cellText = cellText.replace("\"", "\"\"");
+                    if (cellText.contains(",") || cellText.contains("\""))
+                        cellText = "\"" + cellText + "\"";
+                    writer.print(cellText);
+                    if (i < table.getColumns().size() - 1)
+                        writer.print(",");
+                }
+                writer.println();
+            }
+        }
+    }
+
+    private void showAlert(String msg) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK);
+        alert.showAndWait();
+    }
 }

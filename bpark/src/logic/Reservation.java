@@ -26,7 +26,6 @@ public class Reservation implements Serializable{
 		return subscriberId;
 	}
 
-
 	public int getSpot() {
 		return spotId;
 	}
