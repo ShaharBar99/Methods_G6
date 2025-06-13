@@ -153,14 +153,15 @@ public class AttendentScreenController extends Controller{
     
     public void resendSubscriberCode(subscriber subscriber) {
     	// get the subscriber's code from the server
-    	//System.out.println("Resending subscriber code for: " + subscriber.getCode());
+    	System.out.println("Resending subscriber code for: " + subscriber.getCode());
     	// Assuming you have a method to send a request to the server
     	// This method should be implemented in your client class to handle server communication
     	// and return the subscriber's code
-    	
-
-    	//client.sendToServerSafely(new SendObject<Integer>("Get", subscriber.getCode()));
+    	// how is it going to work?
+    	client.sendToServerSafely(new SendObject<Integer>("Get", subscriber.getCode()));
     }
+    
+    
 //    /* displays the assigned parking spot in the text field */
 //	public void displayRFIDTag(String RFIDTag) {
 //		// display both tag and code

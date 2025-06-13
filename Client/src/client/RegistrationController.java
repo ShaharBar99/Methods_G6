@@ -3,6 +3,8 @@ package client;
 import logic.*;
 
 import java.io.IOException;
+import java.util.List;
+
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -81,7 +83,7 @@ public class RegistrationController extends Controller{
     }
 
 	public void sendNewSubscriberToServer(subscriber newSubscriber) {
-		System.out.println("start sendNewSubscriberToServer");
+		System.out.println("starting sendNewSubscriberToServer");
         try {
             client.sendToServerSafely(new SendObject<subscriber>("Create new Subscriber", newSubscriber));
             Platform.runLater(() -> showAlert("Subscriber registered successfully!"));
@@ -116,6 +118,30 @@ public class RegistrationController extends Controller{
 		}
 	}
 
+	public void handleServerMessage(Object msg) {
+		System.out.println("starting handleServerMessage");
+		System.out.println("[Server] " + msg);
+		// If the message is a SendObject, it contains the subscriber object
+		if (msg instanceof SendObject<?>) {
+			SendObject<?> response = (SendObject<?>) msg;
+			if ("Subscriber Code and RFID Tag".equals(response.getObjectMessage())) {
+				subscriber sub = (subscriber) response.getObj();
+				Platform.runLater(
+						() -> showAlert("Subscriber Log In Code: " + sub.getCode() + "\nRFID Tag: " + sub.getTag()));
+				} 
+			else {
+				Platform.runLater(() -> showAlert("Unexpected message type received: " + response.getObjectMessage()));
+			}
+			return;
+		}
+		// If the message is a String, it indicates a response message
+		if (msg instanceof String) {
+			String response = (String) msg;
+			Platform.runLater(() -> showAlert(response));
+			return;
+		}
+	}
+	
 //	@FXML private void handleBackButton() {
 //		try {
 //			FXMLLoader loader = new FXMLLoader(getClass().getResource("login.fxml"));
