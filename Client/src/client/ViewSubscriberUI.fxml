@@ -8,13 +8,13 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ComboBox?>
-
+<?import javafx.scene.chart.PieChart?>
 
 <AnchorPane xmlns="http://javafx.com/javafx/23.0.1" 
             xmlns:fx="http://javafx.com/fxml"
             styleClass="main-pane"
             stylesheets="@ReportScreen.css"
-            fx:controller="client.ReportController">
+            fx:controller="client.ViewSubscriberController">
 
     <VBox spacing="20.0" alignment="CENTER"
           AnchorPane.topAnchor="20.0"
@@ -24,37 +24,23 @@
           styleClass="menu-container"
           style="-fx-padding: 20;">
         
-        <TableView fx:id="reservationTable" prefHeight="400.0" prefWidth="960.0"
+        <TableView fx:id="subscriberTable" prefHeight="400.0" prefWidth="960.0"
                    styleClass="main-table">
             <columns>
-                <TableColumn fx:id="colSubscriberId" text="Subscriber ID" prefWidth="200.0"/>
-                <TableColumn fx:id="colSpotId" text="Spot" prefWidth="120.0"/>
-                <TableColumn fx:id="colDate" text="Reservation Date" prefWidth="150.0"/>
-                <TableColumn fx:id="colStartTime" text="Start Time" prefWidth="120.0"/>
-                <TableColumn fx:id="colEndTime" text="End Time" prefWidth="120.0"/>
+                <TableColumn fx:id="colSubscriberId" text="Subscriber ID" prefWidth="120.0"/>
+                <TableColumn fx:id="colName" text="Name" prefWidth="140.0"/>
+                <TableColumn fx:id="colEmail" text="Email" prefWidth="180.0"/>
+                <TableColumn fx:id="colPhone" text="Phone" prefWidth="130.0"/>
+                <TableColumn fx:id="colTag" text="Tag" prefWidth="120.0"/>
+                <TableColumn fx:id="colRole" text="Role" prefWidth="100.0"/>
             </columns>
         </TableView>
-        
-        <LineChart fx:id="reservationsLineChart" prefHeight="240.0" prefWidth="800.0">
-    		<xAxis>
-        		<NumberAxis label="Day of Month"/>
-    		</xAxis>
-    		<yAxis>
-        		<NumberAxis label="Reservations"/>
-    		</yAxis>
-		</LineChart>
-        
 
         <HBox spacing="15.0" alignment="CENTER">
-        	<Label text="Month:" />
-    		<ComboBox fx:id="monthComboBox" prefWidth="120"/>
-    		<Label text="Year:" />
-    		<ComboBox fx:id="yearComboBox" prefWidth="90"/>
+            <Label text="Role:" />
+            <ComboBox fx:id="roleComboBox" prefWidth="120"/>
             <Button fx:id="sortBySubscriberIdButton" text="Sort by Subscriber ID" styleClass="button-blue"/>
-            <Button fx:id="sortByDateButton" text="Sort by Date" styleClass="button-blue"/>
-            <Button fx:id="exportCsvButton" text="Export as CSV" styleClass="button-blue"/>
         </HBox>
-        
 
         <Button fx:id="backButton" text="Back" styleClass="button-blue" onAction="#handleBackButton"/>
     </VBox>

@@ -10,26 +10,29 @@
             style="-fx-background-color: linear-gradient(to bottom right, #dbeafe, #93c5fd);">
 
     <VBox alignment="CENTER" spacing="30.0"
-          AnchorPane.topAnchor="50.0"
-          AnchorPane.bottomAnchor="50.0"
-          AnchorPane.leftAnchor="50.0"
-          AnchorPane.rightAnchor="50.0">
+      AnchorPane.topAnchor="50.0"
+      AnchorPane.bottomAnchor="50.0"
+      AnchorPane.leftAnchor="50.0"
+      AnchorPane.rightAnchor="50.0">
 
-        <Label text="🛠️ Admin Panel"
-               style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #1e3a8a;" />
+	    <Label text="🛠️ Admin Panel"
+	           style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #1e3a8a;" />
+	
+	    <Button fx:id="openActiveSessionsReportButton" text="📊 View Active Parkings"
+	            prefWidth="300" prefHeight="50" style="-fx-font-size: 14px;" />
+	
+	    <Button fx:id="openSubscribersReportButton" text="👥 View Subscribers"
+	            prefWidth="300" prefHeight="50" style="-fx-font-size: 14px;" />
+	            
+	    <Button fx:id="openReservationReportButton" text="📋 View Reservations"
+	            onAction="#openReservationReport"
+	            prefWidth="300" prefHeight="50" style="-fx-font-size: 14px;" />
+	
+	    <Button fx:id="backButton" text="⬅ Back"
+	            onAction="#handleBackButton"
+	            prefWidth="180" prefHeight="45"
+	            styleClass="button-back"
+	            style="-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-radius: 12;" />
+	</VBox>
 
-        <Button fx:id="viewParkingButton" text="📊 View Parking Status" onAction="#viewCurrentParkingStatus"
-                prefWidth="300" prefHeight="50" style="-fx-font-size: 14px;" />
-
-        <Button fx:id="viewSubscribersButton" text="👥 View Subscribers" onAction="#viewSubscribersList"
-                prefWidth="300" prefHeight="50" style="-fx-font-size: 14px;" />
-
-        <Button fx:id="generateReportButton" text="📝 Generate Reports" onAction="#generateReport"
-                prefWidth="300" prefHeight="50" style="-fx-font-size: 14px;" />
-
-        <Button fx:id="backButton" text="⬅ Back" onAction="#handleBackButton"
-                prefWidth="180" prefHeight="45"
-                styleClass="button-back"
-                style="-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-radius: 12;" />
-    </VBox>
 </AnchorPane>

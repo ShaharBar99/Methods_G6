@@ -24,7 +24,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import logic.Reservation;
 
-public class ReportController extends Controller {
+public class ReportReservationController extends Controller {
 	// Controller for the Report screen
 
     @FXML
