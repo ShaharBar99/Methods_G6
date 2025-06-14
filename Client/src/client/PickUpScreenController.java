@@ -9,7 +9,7 @@ import logic.*;
 public class PickUpScreenController extends Controller{
 
 	private boolean serverConnection = true;
-	private ParkingController parkingController;
+	private ParkingController parkingController = new ParkingController();
 	@FXML
 	TextField parkingCode;
 
@@ -24,20 +24,14 @@ public class PickUpScreenController extends Controller{
 			}
 		});
 	}
-
-	public void setParkingController(ParkingController parkingController) {
-		this.parkingController = parkingController;
+	@Override
+	public void setClient(BParkClient client, subscriber sub) {
+		this.client = client;
+		this.sub = sub;
+		parkingController.setClient(client, sub);
+		parkingController.setPickUpScreen(this);
 	}
 
-	/* this method initializes the parking controller if it is null */
-	public void initilizeParkingControllerIfNeeded() {
-		if (parkingController == null) {
-			parkingController = ParkingController.getInstance(client); // get the singleton instance of
-																		// ParkingController
-			parkingController.setPickUpScreen(this); // set the DropOffScreenController for the ParkingController
-			parkingController.setSubscriber1(sub); // set the  for the ParkingController
-		}
-	}
 
 	/**
 	 * Sends a message to server to send Email and sms to the , shows a
@@ -46,7 +40,6 @@ public class PickUpScreenController extends Controller{
 	@FXML
 	public void handleLostCodeRequest() {
 		parkingCode.setText("");
-		initilizeParkingControllerIfNeeded();
 		try {
 			parkingController.handleLostCode();
 		} catch (Exception e) {
@@ -71,13 +64,12 @@ public class PickUpScreenController extends Controller{
 			parkingCode.setText("");
 			try {
 				int parkingCodeInt = Integer.parseInt(code);
-				initilizeParkingControllerIfNeeded();
 				parkingController.requestCarPickUp(parkingCodeInt);
 				if (serverConnection) {
 					showPickUpSuccess();
 				}
 			} catch (Exception e) {
-				ShowAlert.showAlert("Error", "Server communication failure.", AlertType.ERROR);
+				ShowAlert.showAlert("Error", "Server communication failure\n"+e.getMessage(), AlertType.ERROR);
 				serverConnection = false;
 			}
 		}
@@ -104,7 +96,6 @@ public class PickUpScreenController extends Controller{
 	 */
 
 	public void handleServerMessage(Object message) {
-		initilizeParkingControllerIfNeeded();
 		parkingController.handleServerResponse(message);
 	}
 }

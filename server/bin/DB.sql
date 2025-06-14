@@ -91,7 +91,7 @@ INSERT INTO `parking_sessions` (
   `session_id`,`subscriber_id`,`spot_id`,`parking_code`,`in_time`,`out_time`,`extended`,`late`,`active`
 ) VALUES
   (1,2001,103,123001,'2025-05-01 08:00:00','2025-05-01 12:00:00',FALSE,FALSE,TRUE),
-  (2,2002,105,123002,'2025-05-02 09:30:00',NULL, FALSE,FALSE,TRUE),
+  (2,2002,105,123002,'2025-05-02 09:30:00','2025-05-02 13:30:00', FALSE,FALSE,TRUE),
   (3,2003,108,123003,'2025-05-03 10:15:00','2025-05-03 15:45:00',TRUE, FALSE,FALSE);
 UNLOCK TABLES;
 

@@ -631,6 +631,130 @@ public class DataBaseQuery extends MySQLConnection {
             e.printStackTrace();
         }
     }
+    
+    /**Add commentMore actions
+     * Retrieves a Parkingsession by its session ID.
+     *
+     * @param sessionId the ID of the parking session to fetch
+     * @return the Parkingsession object, or null if not found / on error
+     */
+    protected Parkingsession getParkingsessionById(int sessionId) {
+        Parkingsession parking = null;
+        String sql = 
+            "SELECT * " +
+            "FROM parking_sessions " +
+            "WHERE session_id = ?";
 
+        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
+            // Bind the sessionId parameter
+            ps.setInt(1, sessionId);
 
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    // Read each column
+                    int    id            = rs.getInt("session_id");
+                    int    subscriberId  = rs.getInt("subscriber_id");
+                    int    spotId        = rs.getInt("spot_id");
+                    int    code          = rs.getInt("parking_code");
+                    java.util.Date inTime  = rs.getTimestamp("in_time");
+                    java.util.Date outTime = rs.getTimestamp("out_time"); // may be null
+                    boolean extended     = rs.getBoolean("extended");
+                    boolean late         = rs.getBoolean("late");
+                    boolean active       = rs.getBoolean("active");
+
+                    // Construct the Parkingsession
+                    parking = new Parkingsession(id,subscriberId,spotId, code, inTime,outTime,extended,late, active);
+                    }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return parking;
+    }
+    /**
+     * Retrieves all active parking sessions for the given subscriber.
+     *
+     * @param subscriberId the ID of the subscriber
+     * @return a list of Parkingsession objects with active = TRUE (empty if none)
+     */
+    protected List<Parkingsession> getActiveParkingsessionsListOfSubscriberbyIdFromDatabase(int subscriberId) {
+        List<Parkingsession> activeList = new ArrayList<>();
+
+        // Select all columns for sessions that belong to this subscriber and are still active
+        String sql =
+            "SELECT * " +
+            "FROM parking_sessions " +
+            "WHERE subscriber_id = ? " +
+            "  AND active = TRUE";
+
+        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
+            // Bind the subscriberId
+            ps.setInt(1, subscriberId);
+
+            // Execute and iterate through each matching row
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int sessionId    = rs.getInt("session_id");
+                    int spotId       = rs.getInt("spot_id");
+                    int code         = rs.getInt("parking_code");
+                    java.util.Date inTime  = rs.getTimestamp("in_time");
+                    java.util.Date outTime = rs.getTimestamp("out_time"); // may be null
+                    boolean extended = rs.getBoolean("extended");
+                    boolean late     = rs.getBoolean("late");
+                    boolean active   = rs.getBoolean("active");
+
+                    activeList.add(new Parkingsession(sessionId,subscriberId,spotId,code,inTime,outTime,extended,late,active));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return activeList;
+    }
+
+    /**Add commentMore actions
+     * Checks whether extending the given parking session’s outTime would conflict
+     * with any existing reservation for the same spot on that date.
+     *
+     * @param session the Parkingsession with its (new) outTime set
+     * @return true if there are no reservations whose start_time is before the new outTime;
+     *         false if at least one reservation would overlap the extension
+     */
+    protected boolean checkExtendTimeParkingsessionWithAllReservations(Parkingsession session) {
+        boolean availableOfTimeExtension = true;
+
+        // We look for any reservation on the same spot & date that starts before our new outTime.
+        // If one exists, the extension conflicts.
+        String sql =
+            "SELECT 1 " +
+            "FROM reservations " +
+            "WHERE spot_id    = ? " +
+            "  AND date       = ? " +
+            "  AND start_time < ? " +
+            "LIMIT 1";
+
+        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
+            // 1) Bind spot_id
+            ps.setInt(1, session.getSpotId());
+
+            // 2) Bind the DATE of the session’s inTime (i.e. which day we’re checking)
+            ps.setDate(2, new java.sql.Date(session.getInTime().getTime()));
+
+            // 3) Bind the new outTime’s TIME value
+            ps.setTime(3, new java.sql.Time(session.getOutTime().getTime()));
+
+            // 4) If the query returns any row, there is a conflict
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    availableOfTimeExtension = false;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return availableOfTimeExtension;
+    }
 }

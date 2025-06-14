@@ -44,14 +44,15 @@ public class TimeExtensionScreenController extends Controller {
 	@FXML
 	private TableColumn<Parkingsession, Date> colOutTime;
 
-	private ParkingController parkingController;
+	private ParkingController parkingController = new ParkingController();
 
 	private Parkingsession session;
 
 	public void setClient(BParkClient client, subscriber sub) {
 		this.client = client;
 		this.sub = sub;
-		initilizeParkingControllerIfNeeded();
+		parkingController.setClient(client, sub);
+		parkingController.setTimeExtensionScreen(this);
 		Platform.runLater(() -> {
 			displayActiveSessions();
 		});
@@ -128,7 +129,6 @@ public class TimeExtensionScreenController extends Controller {
 		try {
 			String parkingsessionId = ParkingsessionIdField.getText();
 			int parkingId = Integer.parseInt(parkingsessionId);
-			initilizeParkingControllerIfNeeded();
 			session = parkingController.getSessionById(parkingId);
 		}
 		catch(NumberFormatException e) {
@@ -144,12 +144,14 @@ public class TimeExtensionScreenController extends Controller {
 		if (hour > 3 && minute > 0) {
 			ShowAlert.showAlert("Error", "Time Extension must be up to 4 hours", AlertType.ERROR);
 		}
-		initilizeParkingControllerIfNeeded();
 		if (session != null) {
 			session.setOutTime(new Date(session.getOutTime().getTime() + hour * 60 * 60 * 1000 + minute * 60 * 1000));
 			try {
 				parkingController.ExtendTime(session);
 				ShowAlert.showAlert("Extended Time", "Time was successfully extended", AlertType.INFORMATION);
+				Platform.runLater(() -> {
+					displayActiveSessions();
+				});
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				ShowAlert.showAlert("Error", "Time hasn't extended", AlertType.ERROR);
@@ -160,18 +162,8 @@ public class TimeExtensionScreenController extends Controller {
 		}
 	}
 
-	/* this method initializes the parking controller if it is null */
-	public void initilizeParkingControllerIfNeeded() {
-		if (parkingController == null) {
-			parkingController = ParkingController.getInstance(client); // get the singleton instance of
-																		// ParkingController
-			parkingController.setTimeExtensionScreen(this); // set the TimeExtensionController for the ParkingController
-			parkingController.setSubscriber1(sub); // set the for the ParkingController
-		}
-	}
 
 	public void handleServerMessage(Object message) {
-		initilizeParkingControllerIfNeeded();
 		parkingController.handleServerResponse(message);
 	}
 

@@ -55,7 +55,7 @@ public class MySQLConnection {
 		}
 		try {
 			Connection conn = DriverManager
-					.getConnection("jdbc:mysql://localhost/bpark?serverTimezone=UTC&useSSL=false", "root", "Aa123456");
+					.getConnection("jdbc:mysql://localhost/bpark?serverTimezone=Asia/Jerusalem&useSSL=false", "root", "Aa123456");
 			System.out.println("DB connection succeed");
 			return conn;
 		} catch (Exception ex) {
@@ -81,7 +81,7 @@ public class MySQLConnection {
 		}
 		try {
 			// Connecting to MySQL without specifying a database
-			Connection conn = DriverManager.getConnection("jdbc:mysql://localhost?serverTimezone=UTC&useSSL=false",
+			Connection conn = DriverManager.getConnection("jdbc:mysql://localhost?serverTimezone=Asia/Jerusalem&useSSL=false",
 					"root", "Aa123456");
 			System.out.println("DB connection succeeded");
 			return conn;

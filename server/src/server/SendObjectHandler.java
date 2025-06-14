@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 public class SendObjectHandler {
 	public static <T extends Serializable, T1 extends Serializable> SendObject<T1> sendObjectHandle(SendObject<T> obj,
@@ -18,7 +19,7 @@ public class SendObjectHandler {
 		String action = obj.getObjectMessage();
 		T object = obj.getObj();
 		if (action == null) {
-			throw new Exception("Null Action was recieved");
+			throw new Exception("Null Action was received");
 		} else if (object instanceof String) {
 			if (action.contains("Get") || action.contains("Check")) {
 				Object genericObject = handleStringType(action, (String) object, con);
@@ -32,13 +33,13 @@ public class SendObjectHandler {
 			return replyDefiner(genericObject);
 		} else if (action.contains("Update")) {
 			if (action.contains("time in session")) {
-				/*
-				 * if(checkExtendTimeParkingsessionWithAllReservations((Parkingsession)session)){ handleUpdateAction(object,
-				 * con); return new SendObject<T1>("Time Extension",(T1)"Accapted"); }else{
-				 * return new SendObject<T1>("Time Extension",(T1)"Not Accapted"); }
-				 */
-				handleUpdateAction(object, con);
-				return new SendObject<T1>("Time Extension", (T1) "Accapted");// fake
+				Parkingsession session = (Parkingsession) obj.getObj();
+				if (con.checkExtendTimeParkingsessionWithAllReservations(session)) {
+					handleUpdateAction(object, con);
+					return new SendObject<T1>("Time Extension", (T1) "Accapted");
+				} else {
+					return new SendObject<T1>("Time Extension", (T1) "Not Accapted");
+				}
 
 			} else {
 				handleUpdateAction(object, con);
@@ -61,18 +62,18 @@ public class SendObjectHandler {
 	}
 
 	private static <T1 extends Serializable> SendObject<T1> replyDefiner(Object genericObject) {
-		String reply = "recieved object";
+		String reply = "received object";
 		if (genericObject != null) {
 			if (genericObject instanceof Boolean) {
-				reply = "recieved Boolean";
+				reply = "received Boolean";
 			} else if (genericObject instanceof Parkingsession) {
-				reply = "recieved Parkingsession";
+				reply = "received Parkingsession";
 			} else if (genericObject instanceof subscriber) {
-				reply = "recieved subscriber";
+				reply = "received subscriber";
 			} else if (genericObject instanceof ParkingSpot) {
-				reply = "recieved ParkingSpot";
+				reply = "received ParkingSpot";
 			} else if (genericObject instanceof Reservation) {
-				reply = "recieved Reservation";
+				reply = "received Reservation";
 			} else if (genericObject instanceof SendObject) {
 
 				return (SendObject<T1>) genericObject;
@@ -90,7 +91,7 @@ public class SendObjectHandler {
 				int code = intObject;
 				isUsed = con.checkParkingCodeInAllActiveSessionsInDatabase(code);
 				return new SendObject<T1>("isUsed", (T1) (Boolean) isUsed);
-			} else if (action.equals("Check recieved Parking Code")) {
+			} else if (action.equals("Check received Parking Code")) {
 				Parkingsession mySession = null;
 				int parkingcode = intObject;
 				mySession = con.getActiveParkingsessionWithThatCodeFromDatabase(parkingcode);
@@ -121,31 +122,28 @@ public class SendObjectHandler {
 			} else if (action.contains("Active Parkingsessions")) {
 				List<Parkingsession> activeParkingsessionsListOfSubscriber = new ArrayList<>();
 				int subscriberId = intObject;
-				// activeParkingsessionsListOfSubscriber =
-				// con.getActiveParkingsessionsListOfSubscriberbyIdFromDatabase(subscriberId);
-				// fake
-				Date outTime = new Date(System.currentTimeMillis() + 4L * 60 * 60 * 1000); // 4 hours later
-		        Parkingsession activeSession = new Parkingsession(1001, 1, 101, 111111, new Date(), outTime, false, false, true);
-		        activeParkingsessionsListOfSubscriber.add(activeSession);
-		        // end fake
+				activeParkingsessionsListOfSubscriber = con
+						.getActiveParkingsessionsListOfSubscriberbyIdFromDatabase(subscriberId);
 				// send back the list
 				return new SendObject<T1>("Active Sessions",
 						(T1) (List<Parkingsession>) activeParkingsessionsListOfSubscriber);
-			}
-			else if(action.contains("Parkingsession")) {
+			} else if (action.contains("Parkingsession")) {
 				Parkingsession session = null;
-				/*Parkingsession fakeSession = new Parkingsession(6, 2001, 104, 387139, 
-					    new java.util.Date("2025/06/11 18:59:32"), 
-					    new java.util.Date("2025/06/11 22:59:32"), 
-					    false, false, true);*/
 				int sessionId = intObject;
-				//session = con.getParkingsessionById(sessionId);
-				if(session !=null) {
-					return new SendObject<T1>("Session found",(T1)session);
+				session = con.getParkingsessionById(sessionId);
+				if (session != null) {
+					return new SendObject<T1>("Session found", (T1) session);
+				} else {
+					return new SendObject<T1>("Session found:", (T1) "False");
 				}
-				else {
-					return new SendObject<T1>("Session found:",(T1)"False");
-				}
+			} else if(action.contains("close to current time reservation")) {
+				Reservation reservation = null;
+				int subscriberId = intObject;
+				// fake
+				reservation = new Reservation(109, 2001, LocalDate.of(2025, 5, 14), "10:00:00", "12:00:00");
+				// end fake
+				// reservation = con.getReservationCloseToCurrentTimeOfSubscriber(subscriberId);
+				return new SendObject<T1>("Received close to current time reservation",(T1)reservation);
 			}
 		}
 		return null;
@@ -167,7 +165,7 @@ public class SendObjectHandler {
 					throw new Exception("No active parking sessions for the user");
 				}
 				SendEmail.sendMail(to, "Parking Code reminder", String.format(
-						"Hello,\nYour last Parking Code in your last/current active session is: %d\nPlease enter the code you recieved in the app.",
+						"Hello,\nYour last Parking Code in your last/current active session is: %d\nPlease enter the code you received in the app.",
 						parkingCode));
 			}
 		}
@@ -183,18 +181,32 @@ public class SendObjectHandler {
 				return new SendObject<T1>("Availability", (T1) (Boolean) true);
 			else
 				return new SendObject<T1>("Availability", (T1) (Boolean) false);
-		} else if (action.contains("Get") && object.equals("Free spot")) {
-
-			ParkingSpot spot;
-			// spot = new ParkingSpot(0, SpotStatus.FREE); // fake
-			DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
-			spot = con.getFreeParkingSpotFromDatabase(LocalDate.now(), LocalTime.now().format(timeFormatter),
-					LocalTime.now().plusHours(4).format(timeFormatter)).get(0);
-			if (spot != null) {
-				spot.setStatus(SpotStatus.OCCUPIED);
-				handleUpdateAction(spot, con);
-				return new SendObject<T1>("new Spot", (T1) (ParkingSpot) spot);
+		} else if (action.contains("Get")) {
+			if (object.equals("Free spot")) {
+				ParkingSpot spot;
+				DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+				spot = con.getFreeParkingSpotFromDatabase(LocalDate.now(), LocalTime.now().format(timeFormatter),
+						LocalTime.now().plusHours(4).format(timeFormatter)).get(0);
+				if (spot != null) {
+					spot.setStatus(SpotStatus.OCCUPIED);
+					handleUpdateAction(spot, con);
+					return new SendObject<T1>("new Spot", (T1) (ParkingSpot) spot);
+				}
+			} else if (object.equals("all reservations")) {
+				List<Reservation> allReservationList = new ArrayList<>();
+				// allReservationList = con.getAllReservationList();
+				return new SendObject<T1>("Received all reservations", (T1) (List<Reservation>) allReservationList);
+			} else if (object.equals("all subscribers")) {
+				List<subscriber> allSubscribersList = new ArrayList<subscriber>();
+				// allSubscribersList = con.getAllSubscribersList();
+				return new SendObject<T1>("Received all subscribers", (T1) (List<subscriber>) allSubscribersList);
+			} else if (object.equals("active parking sessions")) {
+				List<Parkingsession> allActiveParkingsessions = new ArrayList<Parkingsession>();
+				// allActiveParkingsessions = con.getAllActiveParkingsession();
+				return new SendObject<T1>("Received active parking sessions",
+						(T1) (List<Parkingsession>) allActiveParkingsessions);
 			}
+
 		}
 		// Default or fallback return value
 		return new SendObject<T1>("Invalid request", null);
@@ -233,15 +245,15 @@ public class SendObjectHandler {
 		try {
 			if (object instanceof subscriber) {
 				subscriber user = (subscriber) object;
-				// Update User In the database using recieved object
+				// Update User In the database using received object
 				con.updateUserInDatabase(user);
 			} else if (object instanceof Parkingsession) {
 				Parkingsession session = (Parkingsession) object;
-				// Update Parkingsession In the database recieved object
+				// Update Parkingsession In the database received object
 				con.updateParkingsessionInDatabase(session);
 			} else if (object instanceof ParkingSpot) {
 				ParkingSpot spot = (ParkingSpot) object;
-				// Update ParkingSpot In the database recieved object
+				// Update ParkingSpot In the database received object
 				con.updateParkingSpotInDatabase(spot);
 			}
 		} catch (Exception e) { // SQLException e
@@ -249,24 +261,38 @@ public class SendObjectHandler {
 		}
 	}
 
-	private static <T extends Serializable> SendObject<String> handleCreateAction(T object, DataBaseQuery con)
-			throws Exception {
+	private static <T extends Serializable, T1 extends Serializable> SendObject<T1> handleCreateAction(T object,
+			DataBaseQuery con) throws Exception {
 		try {
 			if (object instanceof subscriber) {
 				subscriber user = (subscriber) object;
-				// Create User In the database using recieved object
-				con.createUserInDatabase(user);
-				return new SendObject<String>("subscriber", "Created");
+				boolean checkEmail = false;
+				// checkEmail = con.checkUserEmailDuplicates(user);
+				if (!checkEmail) {
+					Object codeAndTag[] = new Object[2];
+					codeAndTag[0] = (Integer) generateCode(con);
+					codeAndTag[1] = (String) generateTag(con);
+					user.setCode((Integer) codeAndTag[0]);
+					user.setTag((String) codeAndTag[1]);
+					// Create User In the database using received object
+					con.createUserInDatabase(user);
+					SendEmail.sendMail(user.getEmail(), "Welcome to BPark", String.format(
+							"Hello %s!\nWe're happy you decided to join BPark. Here are your Log in options:\nCode:%d\nTag:%s",
+							user.getName(), (Integer) codeAndTag[0], (String) codeAndTag[1]));
+					return new SendObject<T1>("Subscriber created", (T1) (Object[]) codeAndTag);
+				} else {
+					return new SendObject<T1>("Subscriber not created", (T1) (String) "Email exists");
+				}
 			}
 			if (object instanceof Parkingsession) {
 				Parkingsession session = (Parkingsession) object;
-				// Create Parkingsession In the database recieved object
+				// Create Parkingsession In the database received object
 				con.createParkingsessionInDatabase(session);
-				return new SendObject<String>("Parkingsession", "Created");
+				return new SendObject<T1>("Parkingsession", (T1) (String) "Created");
 			}
 			if (object instanceof Reservation) {
 				Reservation reservation = (Reservation) object;
-				// create Reservation in the database using recieved object
+				// create Reservation in the database using received object
 				ParkingSpot spot;
 				spot = con.getFreeParkingSpotFromDatabase(reservation.getDate(), reservation.getStartTime(),
 						reservation.getEndTime()).get(0);
@@ -276,15 +302,41 @@ public class SendObjectHandler {
 					Reservation reservationToBeSent = new Reservation(spot.getSpotId(), reservation.getSubscriberId(),
 							reservation.getDate(), reservation.getStartTime(), reservation.getEndTime());
 					con.createReservationInDatabase(reservationToBeSent); // needs to be implemented
-					return new SendObject<String>("Reservation", "Created");
+					return new SendObject<T1>("Reservation", (T1) (String) "Created");
 				} else {
-					return new SendObject<String>("Reservation", "Not Created");
+					return new SendObject<T1>("Reservation", (T1) (String) "Not Created");
 				}
 			}
 		} catch (Exception e) {// SQLException e
 			throw new Exception("Error creating data in database", e);
 
 		}
-		return new SendObject<String>("Error", "creating data in database");
+		return new SendObject<T1>("Error", (T1) (String) "creating data in database");
+	}
+
+	private static String generateTag(DataBaseQuery con) {
+		Random random = new Random();
+		StringBuilder tag;
+		boolean isDifferent = true;
+		do {
+			tag = new StringBuilder();
+			for (int i = 0; i < 12; i++) {
+				int byteValue = random.nextInt(256); // 0 to 255
+				tag.append(String.format("%02X", byteValue));
+			}
+			// isDifferent = con.checkRFIDTagDifferentFromAllSubscribers(tag.toString());
+		} while (isDifferent);
+		return tag.toString();
+	}
+
+	private static Integer generateCode(DataBaseQuery con) {
+		int code;
+		Random random = new Random(); // Generate code
+		boolean isDifferent = true;
+		do {
+			code = 100000 + random.nextInt(900000);
+			// isDifferent = con.checkCodeDifferentFromAllSubscribers(code);
+		} while (isDifferent);
+		return code;
 	}
 }
