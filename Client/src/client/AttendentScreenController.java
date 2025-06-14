@@ -9,7 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
 import logic.SendObject;
-need to edit duplicate the screens, link to them and remove the csv options from their controllers and buttons
+
 public class AttendentScreenController extends Controller{
 	
 	private BParkClient client;
