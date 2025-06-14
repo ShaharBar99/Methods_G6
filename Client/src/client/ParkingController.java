@@ -1,8 +1,11 @@
 package client;
 
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -357,7 +360,11 @@ public class ParkingController {
 	public void implementDropoffUsingReservation() throws Exception {
 		// TODO Auto-generated method stub
 		reservation = getReservation();
+		
 		if (reservation != null) {
+			if (!isWithin15Minutes(reservation)) {
+				throw new Exception("subscriber didn't come in the right time, cannot create parking session through reservation. Try Submit Parking Request.");
+			}
 			LocalDateTime inDateTime = LocalDateTime.of(reservation.getDate(), LocalTime.parse(reservation.getStartTime()));
 	        LocalDateTime outDateTime = LocalDateTime.of(reservation.getDate(), LocalTime.parse(reservation.getEndTime()));
 
@@ -404,5 +411,19 @@ public class ParkingController {
 		waitForServerResponse(20000);
 		return reservation;
 	}
+	
+	private boolean isWithin15Minutes(Reservation reservation) {
+        // Get the current date and time
+        LocalDateTime now = LocalDateTime.now();
+
+        // Combine reservation date and start time (parsing time from String)
+        LocalDateTime reservationDateTime = reservation.getDate()
+                .atTime(LocalTime.parse(reservation.getStartTime(), DateTimeFormatter.ofPattern("HH:mm:ss")));
+
+        // Check if the reservation is within 15 minutes (before or after) from the current time
+        long minutesDifference = Math.abs(Duration.between(now, reservationDateTime).toMinutes());
+
+        return minutesDifference <= 15;
+    }
 
 }

@@ -913,4 +913,48 @@ public class DataBaseQuery extends MySQLConnection {
 
         return list;
     }
+    
+    /**
+     * Retrieves the next upcoming reservation for the given subscriber,
+     * based on the current date/time. Returns the reservation whose
+     * date/time is the soonest but not earlier than "now".
+     *
+     * @param subscriberId the ID of the subscriber
+     * @return the closest Reservation on or after now, or null if none
+     */
+    protected Reservation getReservationCloseToCurrentTimeOfSubscriber(int subscriberId) {
+        Reservation result = null;
+
+        // We compare reservation.date and reservation.start_time to NOW()
+        // by using DATE > CURDATE() or (DATE = CURDATE() AND start_time >= CURTIME()).
+        // Then pick the earliest by date/time.
+        String sql =
+            "SELECT subscriber_id, spot_id, date, start_time, end_time " +
+            "FROM reservations " +
+            "WHERE subscriber_id = ? " +
+            "AND (date > CURDATE() " +
+            "OR (date = CURDATE() AND start_time >= CURTIME())) " +
+            "ORDER BY date ASC, start_time ASC " +
+            "LIMIT 1";
+
+        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
+            ps.setInt(1, subscriberId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int    subId      = rs.getInt("subscriber_id");
+                    int    spotId     = rs.getInt("spot_id");
+                    LocalDate date     = rs.getDate("date").toLocalDate();
+                    String start    = rs.getString("start_time");
+                    String end      = rs.getString("end_time");
+
+                    result = new Reservation(spotId,subId , date, start, end);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
 }
