@@ -140,7 +140,7 @@ public class SendObjectHandler {
 				Reservation reservation = null;
 				int subscriberId = intObject;
 				// fake
-				reservation = new Reservation(109, 2001, LocalDate.of(2025, 5, 14), "10:00:00", "12:00:00");
+				//reservation = new Reservation(109, 2001, LocalDate.of(2025, 5, 14), "10:00:00", "12:00:00");
 				// end fake
 				// reservation = con.getReservationCloseToCurrentTimeOfSubscriber(subscriberId);
 				return new SendObject<T1>("Received close to current time reservation",(T1)reservation);
@@ -194,15 +194,15 @@ public class SendObjectHandler {
 				}
 			} else if (object.equals("all reservations")) {
 				List<Reservation> allReservationList = new ArrayList<>();
-				// allReservationList = con.getAllReservationList();
+				allReservationList = con.getAllReservationList();
 				return new SendObject<T1>("Received all reservations", (T1) (List<Reservation>) allReservationList);
 			} else if (object.equals("all subscribers")) {
 				List<subscriber> allSubscribersList = new ArrayList<subscriber>();
-				// allSubscribersList = con.getAllSubscribersList();
+				allSubscribersList = con.getAllSubscribersList();
 				return new SendObject<T1>("Received all subscribers", (T1) (List<subscriber>) allSubscribersList);
 			} else if (object.equals("active parking sessions")) {
 				List<Parkingsession> allActiveParkingsessions = new ArrayList<Parkingsession>();
-				// allActiveParkingsessions = con.getAllActiveParkingsession();
+				allActiveParkingsessions = con.getAllActiveParkingsession();
 				return new SendObject<T1>("Received active parking sessions",
 						(T1) (List<Parkingsession>) allActiveParkingsessions);
 			}
@@ -267,7 +267,7 @@ public class SendObjectHandler {
 			if (object instanceof subscriber) {
 				subscriber user = (subscriber) object;
 				boolean checkEmail = false;
-				// checkEmail = con.checkUserEmailDuplicates(user);
+				checkEmail = con.checkUserEmailDuplicates(user);
 				if (!checkEmail) {
 					Object codeAndTag[] = new Object[2];
 					codeAndTag[0] = (Integer) generateCode(con);
@@ -324,7 +324,7 @@ public class SendObjectHandler {
 				int byteValue = random.nextInt(256); // 0 to 255
 				tag.append(String.format("%02X", byteValue));
 			}
-			// isDifferent = con.checkRFIDTagDifferentFromAllSubscribers(tag.toString());
+			isDifferent = con.checkRFIDTagDifferentFromAllSubscribers(tag.toString());
 		} while (isDifferent);
 		return tag.toString();
 	}
@@ -335,7 +335,7 @@ public class SendObjectHandler {
 		boolean isDifferent = true;
 		do {
 			code = 100000 + random.nextInt(900000);
-			// isDifferent = con.checkCodeDifferentFromAllSubscribers(code);
+			isDifferent = con.checkCodeDifferentFromAllSubscribers(code);
 		} while (isDifferent);
 		return code;
 	}

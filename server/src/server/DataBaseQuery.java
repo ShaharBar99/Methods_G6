@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 
 import logic.ParkingSpot;
 import logic.Parkingsession;
@@ -756,5 +757,160 @@ public class DataBaseQuery extends MySQLConnection {
         }
 
         return availableOfTimeExtension;
+    }
+    
+    // 1) Check if a subscriber’s email already exists for a different subscriberAdd commentMore actions
+    protected boolean checkUserEmailDuplicates(subscriber user) {
+        boolean duplicate = false;
+        String sql =
+            "SELECT 1 " +
+            "FROM subscribers " +
+            "WHERE email = ? " +
+            "  AND subscriber_id <> ? " +
+            "LIMIT 1";
+
+        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
+            ps.setString(1, user.getEmail());
+            ps.setInt   (2, user.getId());
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    duplicate = true;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return duplicate;
+    }
+
+    // 2) Check that an RFID tag is unique among all subscribers
+    protected boolean checkRFIDTagDifferentFromAllSubscribers(String tag) {
+        boolean unique = true;
+        String sql =
+            "SELECT 1 " +
+            "FROM subscribers " +
+            "WHERE tag = ? " +
+            "LIMIT 1";
+
+        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
+            ps.setString(1, tag);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    unique = false;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return unique;
+    }
+
+    // 3) Check that a numeric code is unique among all subscribers
+    protected boolean checkCodeDifferentFromAllSubscribers(int code) {
+        boolean unique = true;
+        String sql =
+            "SELECT 1 " +
+            "FROM subscribers " +
+            "WHERE code = ? " +
+            "LIMIT 1";
+
+        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
+            ps.setInt(1, code);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    unique = false;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return unique;
+    }
+
+    // 4) Fetch every reservation in the system
+    protected List<Reservation> getAllReservationList() {
+        List<Reservation> list = new ArrayList<>();
+        String sql = "SELECT * FROM reservations";
+
+        try (PreparedStatement ps = getCon().prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                int        subscriberId = rs.getInt("subscriber_id");
+                int        spotId       = rs.getInt("spot_id");
+                LocalDate  date         = rs.getDate("date").toLocalDate();
+                String  startTime    = rs.getString("start_time");
+                String  endTime      = rs.getString("end_time");
+
+                list.add(new Reservation(subscriberId, spotId, date, startTime, endTime));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    // 5) Fetch every subscriber in the system
+    protected List<subscriber> getAllSubscribersList() {
+        List<subscriber> list = new ArrayList<>();
+        String sql = "SELECT * FROM subscribers";
+
+        try (PreparedStatement ps = getCon().prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                int    id    = rs.getInt("subscriber_id");
+                String name  = rs.getString("name");
+                String phone = rs.getString("phone");
+                String email = rs.getString("email");
+                Role   role  = Role.valueOf(rs.getString("role"));
+                String tag   = rs.getString("tag");
+                int    code  = rs.getInt("code");
+
+                // empty history list for now
+                List<Parkingsession> history = new ArrayList<>();
+
+                list.add(new subscriber(id, name, phone, email, role, history, tag, code));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    // 6) Fetch all active parking sessions in the system
+    protected List<Parkingsession> getAllActiveParkingsession() {
+        List<Parkingsession> list = new ArrayList<>();
+        String sql =
+            "SELECT * " +
+            "FROM parking_sessions " +
+            "WHERE active = TRUE";
+
+        try (PreparedStatement ps = getCon().prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                int    sessionId    = rs.getInt("session_id");
+                int    subscriberId = rs.getInt("subscriber_id");
+                int    spotId       = rs.getInt("spot_id");
+                int    code         = rs.getInt("parking_code");
+                Date   inTs         = rs.getTimestamp("in_time");
+                Date   outTs        = rs.getTimestamp("out_time"); // may be null
+                boolean extended    = rs.getBoolean("extended");
+                boolean late        = rs.getBoolean("late");
+                boolean active      = rs.getBoolean("active");
+
+                list.add(new Parkingsession(sessionId,subscriberId,spotId,code,inTs,outTs,extended,late,active));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
     }
 }
