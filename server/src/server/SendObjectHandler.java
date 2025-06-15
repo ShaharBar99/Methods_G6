@@ -76,6 +76,7 @@ public class SendObjectHandler {
 				reply = "received Reservation";
 			} else if (genericObject instanceof SendObject) {
 
+				System.out.println(((SendObject<T1>) genericObject).getObjectMessage());
 				return (SendObject<T1>) genericObject;
 			}
 
@@ -142,7 +143,7 @@ public class SendObjectHandler {
 				// fake
 				//reservation = new Reservation(109, 2001, LocalDate.of(2025, 5, 14), "10:00:00", "12:00:00");
 				// end fake
-				// reservation = con.getReservationCloseToCurrentTimeOfSubscriber(subscriberId);
+				reservation = con.getReservationCloseToCurrentTimeOfSubscriber(subscriberId);
 				return new SendObject<T1>("Received close to current time reservation",(T1)reservation);
 			}
 		}
@@ -317,7 +318,7 @@ public class SendObjectHandler {
 	private static String generateTag(DataBaseQuery con) {
 		Random random = new Random();
 		StringBuilder tag;
-		boolean isDifferent = true;
+		boolean isDifferent = false;
 		do {
 			tag = new StringBuilder();
 			for (int i = 0; i < 12; i++) {
@@ -325,18 +326,18 @@ public class SendObjectHandler {
 				tag.append(String.format("%02X", byteValue));
 			}
 			isDifferent = con.checkRFIDTagDifferentFromAllSubscribers(tag.toString());
-		} while (isDifferent);
+		} while (!isDifferent);
 		return tag.toString();
 	}
 
 	private static Integer generateCode(DataBaseQuery con) {
 		int code;
 		Random random = new Random(); // Generate code
-		boolean isDifferent = true;
+		boolean isDifferent = false;
 		do {
 			code = 100000 + random.nextInt(900000);
 			isDifferent = con.checkCodeDifferentFromAllSubscribers(code);
-		} while (isDifferent);
+		} while (!isDifferent);
 		return code;
 	}
 }

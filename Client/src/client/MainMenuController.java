@@ -7,12 +7,13 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
+import logic.*;
 
 
 
 public class MainMenuController extends Controller{
 	@FXML Button historybutton;
-	@FXML Button adminbutton;
+
 	
 	@FXML private void handleBackButton() {
 		// swap the TableView scene back to the connect screen
@@ -23,15 +24,13 @@ public class MainMenuController extends Controller{
 			stage.setTitle("Login");
 			stage.setScene(new Scene(root));		
 			stage.show();
-			// סגור את החלון הנוכחי
 			Stage currentStage = (Stage) historybutton.getScene().getWindow();
 			currentStage.close();
 			client.stop();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		
+		}	
 	}
     @FXML public void reservationRequest() { 
     	this.setscreen("ReservationScreen","Reservation.fxml"); 
@@ -44,9 +43,6 @@ public class MainMenuController extends Controller{
     }
     @FXML public void historyRequest() {
     	this.setscreen("HistoryScreen","HistoryScreen.fxml");
-    }
-    @FXML public void admin() {
-    	this.setscreen("AdminScreen","AdminScreen.fxml");
     }
     @FXML public void openTimeExtensionScreen() {
     	this.setscreen("TimeExtensionScreen", "TimeExtensionScreen.fxml");
@@ -62,15 +58,11 @@ public class MainMenuController extends Controller{
             stage.setMaximized(true);
             stage.show();
             // closed current screen
-            Stage currentStage = (Stage) adminbutton.getScene().getWindow();
+            Stage currentStage = (Stage) historybutton.getScene().getWindow();
             currentStage.close();
             Controller c = null;
             //open next controller
-            if (screen_name.equals("AdminScreen")) {
-            	AdminScreenController controller = loader.getController();
-            	c = controller;
-            }
-            else if(screen_name.equals("Pickupscreen")){
+            if(screen_name.equals("Pickupscreen")){
             	PickUpScreenController controller = loader.getController();
             	c = controller;
             }
@@ -115,4 +107,6 @@ public class MainMenuController extends Controller{
 		
 		
 	}
+
+
 }

@@ -805,7 +805,8 @@ public class DataBaseQuery extends MySQLConnection {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
+        System.out.println(tag);
+        System.out.println(unique);
         return unique;
     }
 

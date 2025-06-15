@@ -27,10 +27,10 @@ LOCK TABLES `subscribers` WRITE;
 INSERT INTO `subscribers` 
   (`subscriber_id`,`name`,`phone`,`email`,`role`,`tag`,`code`) 
 VALUES
-  (2001,'Alice','050-1234567','alice@example.com','SUBSCRIBER',NULL,111111),
+  (2001,'Alice','050-1234567','Avigdor.Feldman@e.braude.ac.il','SUBSCRIBER',NULL,111111),
   (2002,'Bob'  ,'050-2345678','bob@example.com'  ,'SUBSCRIBER',NULL,222222),
-  (2003,'Carol','050-3456789','carol@example.com','SUBSCRIBER',NULL,333333),
-  (2004,'Dave' ,'050-4567890','dave@example.com' ,'SUBSCRIBER',NULL,444444),
+  (2003,'Carol','050-3456789','carol@example.com','SUBSCRIBER','E200341201F82031AB12CD3F',333333),
+  (2004,'Dave' ,'050-4567890','dave@example.com' ,'ATTENDANT',NULL,444444),
   (2005,'Eve'  ,'050-5678901','eve@example.com'  ,'MANAGER',NULL,555555);
 UNLOCK TABLES;
 
@@ -91,7 +91,7 @@ INSERT INTO `parking_sessions` (
   `session_id`,`subscriber_id`,`spot_id`,`parking_code`,`in_time`,`out_time`,`extended`,`late`,`active`
 ) VALUES
   (1,2001,103,123001,'2025-05-01 08:00:00','2025-05-01 12:00:00',FALSE,FALSE,TRUE),
-  (2,2002,105,123002,'2025-05-02 09:30:00','2025-05-02 13:30:00', FALSE,FALSE,TRUE),
+  (2,2002,105,123002,'2025-05-02 09:30:00',NULL, FALSE,FALSE,TRUE),
   (3,2003,108,123003,'2025-05-03 10:15:00','2025-05-03 15:45:00',TRUE, FALSE,FALSE);
 UNLOCK TABLES;
 
