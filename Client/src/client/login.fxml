@@ -19,11 +19,11 @@
         <TextField fx:id="ipField" promptText="Server IP Address" />
 
         <ComboBox fx:id="loginMethodComboBox" promptText="Select login method" />
-        <ComboBox fx:id="roleComboBox" promptText="Select your role" />
+
 
         <!-- Subscriber fields -->
         <TextField fx:id="nameField" promptText="Enter name" />
-        <TextField fx:id="subscriberIdField" promptText="Enter subscriber ID" />
+        <TextField fx:id="subscriberIdField" promptText="Enter subscriber Code" />
         <TextField fx:id="tagField" promptText="Enter tag" visible="false" managed="false" />
 
         <!-- Admin/Attendant fields -->

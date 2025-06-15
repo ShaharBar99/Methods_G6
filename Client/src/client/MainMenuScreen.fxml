@@ -26,11 +26,11 @@
 
         <Button onAction="#parkingRequest"
                 styleClass="menu-button"
-                text="🚗 Parking Request"/>
+                text="🚗 Drop off"/>
 
         <Button onAction="#retrieveRequest"
                 styleClass="menu-button"
-                text="🎁 Retrieve Request"/>
+                text="🎁 Pickup"/>
 
         <Button onAction="#reservationRequest"
                 styleClass="menu-button"
@@ -41,10 +41,7 @@
                 styleClass="menu-button"
                 text="📖 History Request"/>
 
-        <Button onAction="#admin"
-                fx:id="adminbutton"
-                styleClass="menu-button"
-                text="🛠️ Admin Panel"/>
+
 		<Button onAction="#openTimeExtensionScreen"
                 styleClass="menu-button"
                 text="⏰ Time Extension Request"/>

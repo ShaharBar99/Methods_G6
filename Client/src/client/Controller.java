@@ -31,7 +31,6 @@ public abstract class Controller {
 	}
 
 	@FXML private void handleBackButton() {
-		// swap the TableView scene back to the connect screen
 		if (backHandler != null) {
 			backHandler.run();
 		}

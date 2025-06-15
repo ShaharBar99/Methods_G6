@@ -27,10 +27,10 @@ LOCK TABLES `subscribers` WRITE;
 INSERT INTO `subscribers` 
   (`subscriber_id`,`name`,`phone`,`email`,`role`,`tag`,`code`) 
 VALUES
-  (2001,'Alice','050-1234567','alice@example.com','SUBSCRIBER',NULL,111111),
+  (2001,'Alice','050-1234567','guyziv313@gmail.com','SUBSCRIBER',NULL,111111),
   (2002,'Bob'  ,'050-2345678','bob@example.com'  ,'SUBSCRIBER',NULL,222222),
-  (2003,'Carol','050-3456789','carol@example.com','SUBSCRIBER',NULL,333333),
-  (2004,'Dave' ,'050-4567890','dave@example.com' ,'SUBSCRIBER',NULL,444444),
+  (2003,'Carol','050-3456789','carol@example.com','SUBSCRIBER','E200341201F82031AB12CD3F',333333),
+  (2004,'Dave' ,'050-4567890','dave@example.com' ,'ATTENDANT',NULL,444444),
   (2005,'Eve'  ,'050-5678901','eve@example.com'  ,'MANAGER',NULL,555555);
 UNLOCK TABLES;
 

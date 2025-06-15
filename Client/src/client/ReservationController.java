@@ -15,7 +15,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.PropertyValueFactory;
 import logic.Reservation;
+import logic.Role;
 import logic.SendObject;
+import logic.subscriber;
 
 public class ReservationController extends Controller{
 
@@ -144,5 +146,10 @@ public class ReservationController extends Controller{
         a.setHeaderText(null);
         a.setContentText(text);
         a.showAndWait();
+    }
+    @Override
+    public void setClient(BParkClient client, subscriber sub) {
+        super.setClient(client, sub); // 
+        getFutureReservationsFor();
     }
 }
