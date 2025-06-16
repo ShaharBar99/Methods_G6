@@ -29,8 +29,8 @@ public class SendObjectHandler {
 			Object genericObject = handleIntegerType(action, (Integer) object, con);
 			return replyDefiner(genericObject);
 		} else if (action.contains("connect")) {
-			if(obj==null) {
-				double percent = con.getPrecentageAvailableSpaceFromDatabase() * 100;
+			if(object==null) {
+				double percent = con.getPrecentageAvailableSpaceFromDatabase();
 				return new SendObject<T1>("Percent",(T1)(Double)percent);
 			}
 			Object genericObject = handleGetAction(object, con);
@@ -182,7 +182,7 @@ public class SendObjectHandler {
 		if (action.contains("Check") && object.contains("Availability")) {
 			double availablePrecentage = 0.6; // fake
 			availablePrecentage = con.getPrecentageAvailableSpaceFromDatabase();
-			if (availablePrecentage > 0.4)
+			if (availablePrecentage > 40)
 				return new SendObject<T1>("Availability", (T1) (Boolean) true);
 			else
 				return new SendObject<T1>("Availability", (T1) (Boolean) false);
