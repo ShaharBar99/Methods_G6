@@ -31,6 +31,7 @@
         <PasswordField fx:id="passwordField" promptText="Enter password" visible="false" managed="false" />
 
         <Button fx:id="connectButton" text="Connect" onAction="#handleLogin"/>
+        <Button text="Guest Access" onAction="#openGuestScreen"/>
         <Button fx:id="exitButton" text="Exit" onAction="#handleExit" />
     </VBox>
 </AnchorPane>
