@@ -142,7 +142,7 @@ public class SendObjectHandler {
 					return new SendObject<T1>("Session found:", (T1) "False");
 				}
 			} else if(action.contains("close to current time reservation")) {
-				Reservation reservation = null;
+				Reservation reservation;
 				int subscriberId = intObject;
 				// fake
 				//reservation = new Reservation(109, 2001, LocalDate.of(2025, 5, 14), "10:00:00", "12:00:00");
@@ -263,7 +263,7 @@ public class SendObjectHandler {
 			} else if(object instanceof Reservation) {
 				Reservation reservation = (Reservation)object;
 				// Update Reservation In the database received object
-				//con.updateReservationInDatabase(reservation);
+				con.updateReservationInDatabase(reservation);
 			}
 		} catch (Exception e) { // SQLException e
 			throw new Exception("Error updating data to database", e);

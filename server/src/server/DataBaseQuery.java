@@ -4,6 +4,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -130,7 +132,9 @@ public class DataBaseQuery extends MySQLConnection {
     	String sql = 
                 "SELECT spot_id,date,start_time,end_time " +
                 "FROM reservations " +
-                "WHERE subscriber_id = ?";
+                "WHERE subscriber_id = ? "+
+                "And end_time IS NOT NULL " + 
+    			"And start_time IS NOT NULL ";
             try (
                 PreparedStatement ps = getCon().prepareStatement(sql)
             ) {  
@@ -473,6 +477,64 @@ public class DataBaseQuery extends MySQLConnection {
         }
     }
     /**
+     * Updates an existing reservation in the database.
+     * Since we use subscriber_id + start_time as the key, we cannot update those—
+     * so we only update the other fields.
+     *
+     * @param reservation the Reservation object containing updated fields
+     */
+    protected void updateReservationInDatabase(Reservation reservation) {
+        String sql =
+            "UPDATE reservations " +
+            "SET spot_id    = ?, " +
+            "    date       = ?, " +
+            "    end_time   = ?, " +
+            "    start_time = ? " +
+            "WHERE subscriber_id = ? ";
+
+        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
+            // 1) Bind the fields we're updating
+            ps.setInt(1, reservation.getSpot());
+            ps.setDate(2, java.sql.Date.valueOf(reservation.getDate()));
+            String endTimeStr = reservation.getEndTime();
+            if (endTimeStr == null || endTimeStr.trim().isEmpty()) {
+                ps.setNull(3, java.sql.Types.TIME);  // Set null if end_time is null or empty
+            } else {
+                // Append :00 for seconds to make the format HH:mm:ss
+            	if (endTimeStr.length() == 5) {  // HH:mm format
+                    endTimeStr += ":00";  // Append :00 for seconds if missing
+                }
+                try {
+                    ps.setTime(3, java.sql.Time.valueOf(endTimeStr));  // Convert to Time
+                } catch (IllegalArgumentException e) {
+                    throw new SQLException("Invalid end_time format: " + endTimeStr, e);
+                }
+            }
+            // 2) Bind the key columns in the WHERE clause
+            ps.setInt(5, reservation.getSubscriberId());
+            // Handle start_time using Time.valueOf() by ensuring the format is HH:mm:ss
+            String startTimeStr = reservation.getStartTime();
+            if (startTimeStr == null || startTimeStr.trim().isEmpty()) {
+            	System.out.println("Late");
+                ps.setNull(4, java.sql.Types.TIME);  // Set null if start_time is null or empty
+            } else {
+                // Append :00 for seconds to make the format HH:mm:ss
+            	 if (startTimeStr.length() == 5) {  // HH:mm format
+                     startTimeStr += ":00";  // Append :00 for seconds if missing
+                 }
+                try {
+                    ps.setTime(4, java.sql.Time.valueOf(startTimeStr));  // Convert to Time
+                } catch (IllegalArgumentException e) {
+                    throw new SQLException("Invalid start_time format: " + startTimeStr, e);
+                }
+            }
+            // 3) Execute
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    /**
      * Inserts a new subscriber into the database and updates its generated ID.
      *
      * @param user the subscriber to create (its subscriberId will be set after insertion)
@@ -572,23 +634,26 @@ public class DataBaseQuery extends MySQLConnection {
         List<ParkingSpot> availableSpots = new ArrayList<>();
 
         String sql =
-            "SELECT ps.spot_id, ps.status " +
-            "FROM parking_spots ps " +
-            "WHERE ps.status IN ('FREE', 'RESERVED') " +
-            "  AND NOT EXISTS ( " +
-            "    SELECT 1 " +
-            "    FROM reservations r " +
-            "    WHERE r.spot_id    = ps.spot_id " +
-            "      AND r.date       = ? " +
-            "      AND r.start_time < ? " +
-            "      AND r.end_time   > ? " +
-            "  )";
-
+        		"SELECT ps.spot_id, ps.status " +
+        		        "FROM parking_spots ps " +
+        		        "WHERE ps.status IN ('FREE', 'RESERVED') " +
+        		        "  AND NOT EXISTS ( " +
+        		        "    SELECT 1 " +
+        		        "    FROM reservations r " +
+        		        "    WHERE r.spot_id = ps.spot_id " +
+        		        "      AND r.date = ? " +
+        		        "      AND ( " +
+        		        "        (r.end_time IS NOT NULL AND r.start_time < ? AND r.end_time > ?) " +  // Case 1: Reservation has a set end time
+        		        "        OR (r.end_time IS NULL AND r.start_time < ? ) " +  // Case 2: Reservation has no end time but starts before requested time
+        		        "      )" +
+        		        "  )";
         try (PreparedStatement ps = getCon().prepareStatement(sql)) {
             // bind the date/time parameters
-            ps.setDate(1, java.sql.Date.valueOf(date));
-            ps.setTime(2, java.sql.Time.valueOf(startTime+ ":00"));
-            ps.setTime(3, java.sql.Time.valueOf(endTime+ ":00"));
+        	ps.setDate(1, java.sql.Date.valueOf(date));  // setting the date (yyyy-MM-dd)
+            ps.setTime(2, java.sql.Time.valueOf(startTime+":00")); // set start time (HH:mm:ss)
+            ps.setTime(3, java.sql.Time.valueOf(endTime+":00"));   // set end time (HH:mm:ss)
+            ps.setTime(4, java.sql.Time.valueOf(startTime+":00")); // set start time (HH:mm:ss) for second condition
+            
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     int spotId = rs.getInt("spot_id");
@@ -930,13 +995,17 @@ public class DataBaseQuery extends MySQLConnection {
         // by using DATE > CURDATE() or (DATE = CURDATE() AND start_time >= CURTIME()).
         // Then pick the earliest by date/time.
         String sql =
-            "SELECT subscriber_id, spot_id, date, start_time, end_time " +
-            "FROM reservations " +
-            "WHERE subscriber_id = ? " +
-            "AND (date > CURDATE() " +
-            "OR (date = CURDATE() AND start_time >= CURTIME())) " +
-            "ORDER BY date ASC, start_time ASC " +
-            "LIMIT 1";
+        		"SELECT subscriber_id, spot_id, date, start_time, end_time " +
+        		"FROM reservations " +
+        		"WHERE subscriber_id = ? " +
+        		"AND end_time IS NOT NULL " + 
+        		"AND start_time IS NOT NULL " +
+        		"AND ( " +
+        		"    date >= CURDATE() " +  // Future reservations and today's reservations
+        		"    OR (date = CURDATE() AND start_time <= CURTIME()) " + // Reservations today that are in the past or current time
+        		") " +
+        		"ORDER BY date ASC, start_time ASC " +  // Earliest first
+        		"LIMIT 1";
 
         try (PreparedStatement ps = getCon().prepareStatement(sql)) {
             ps.setInt(1, subscriberId);
@@ -949,13 +1018,18 @@ public class DataBaseQuery extends MySQLConnection {
                     String start    = rs.getString("start_time");
                     String end      = rs.getString("end_time");
 
-                    result = new Reservation(spotId,subId , date, start, end);
+                    result = new Reservation(spotId, subId, date, start, end);
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
+        if (result != null) {
+            System.out.println("Reservation found: " + result.getStartTime() + " " + result.getEndTime());
+        } else {
+            System.out.println("No reservation found for subscriber " + subscriberId);
+        }
         return result;
     }
+
 }

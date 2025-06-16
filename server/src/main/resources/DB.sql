@@ -104,8 +104,8 @@ CREATE TABLE IF NOT EXISTS `reservations` (
   `subscriber_id`   INT            NOT NULL,
   `spot_id`         INT            NOT NULL,
   `date`            DATE           NOT NULL,
-  `start_time`      TIME           NOT NULL,
-  `end_time`        TIME           NOT NULL,
+  `start_time`      TIME           DEFAULT NULL,
+  `end_time`        TIME           DEFAULT NULL,
   PRIMARY KEY (`reservation_id`),
   FOREIGN KEY (`subscriber_id`) REFERENCES `subscribers`(`subscriber_id`)
     ON UPDATE CASCADE ON DELETE CASCADE,

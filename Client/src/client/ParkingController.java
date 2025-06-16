@@ -360,8 +360,7 @@ public class ParkingController {
 	public void implementDropoffUsingReservation() throws Exception {
 		// TODO Auto-generated method stub
 		reservation = getReservation();
-		
-		if (reservation != null) {
+		if (reservation.getEndTime() != null) {
 			if (!isWithin15Minutes(reservation)) {
 				reservation.setStartTime(null);
 				client.sendToServerSafely(new SendObject<Reservation>("Update",reservation)); // Indicates reservation hasn't been used
@@ -424,9 +423,9 @@ public class ParkingController {
                 .atTime(LocalTime.parse(reservation.getStartTime(), DateTimeFormatter.ofPattern("HH:mm:ss")));
 
         // Check if the reservation is within 15 minutes (before or after) from the current time
-        long minutesDifference = Math.abs(Duration.between(now, reservationDateTime).toMinutes());
+        long minutesDifference = Duration.between(reservationDateTime,now).toMinutes();
 
-        return minutesDifference <= 15;
+        return minutesDifference >= 0 && minutesDifference <= 15;
     }
 
 }

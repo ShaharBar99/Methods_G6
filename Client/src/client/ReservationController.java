@@ -1,6 +1,7 @@
 package client;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -40,38 +41,51 @@ public class ReservationController extends Controller{
         colEnd  .setCellValueFactory(new PropertyValueFactory<>("endTime"));
         // DON'T call getFutureReservationsFor() here, client is still null
     }
+    /** Validate date, times (HH:MM), start < end, and booking window 24 h – 7 days out */
+    protected boolean validateReservation() {
+        LocalDate date = datePicker.getValue();
+        String start = startTimeField.getText().trim();
+        String end   = endTimeField.getText().trim();
 
-    /** Called by ReservationScreenController#submitReservationRequest() */
-    /** Validate date, times (HH:MM), start < end, date ≥ today */
-	protected boolean validateReservation() {
-		LocalDate date = datePicker.getValue();
-		String start = startTimeField.getText().trim();
-		String end = endTimeField.getText().trim();
+        // Basic non‐empty check
+        if (date == null || start.isEmpty() || end.isEmpty()) {
+            showAlert(AlertType.ERROR, "Date, start time and end time are required.");
+            return false;
+        }
 
-		if (date == null || start.isEmpty() || end.isEmpty()) {
-			showAlert(AlertType.ERROR, "Date, start time and end time are required.");
-			return false;
-		}
+        LocalTime startT, endT;
+        try {
+            startT = LocalTime.parse(start);
+            endT   = LocalTime.parse(end);
+        } catch (DateTimeParseException ex) {
+            showAlert(AlertType.ERROR, "Time must be in HH:MM format.");
+            return false;
+        }
 
-		try {
-			LocalTime s = LocalTime.parse(start);
-			LocalTime e = LocalTime.parse(end);
-			if (!s.isBefore(e)) {
-				showAlert(AlertType.ERROR, "Start time must be before end time.");
-				return false;
-			}
-		} catch (DateTimeParseException ex) {
-			showAlert(AlertType.ERROR, "Time must be in HH:MM format.");
-			return false;
-		}
+        // Ensure start < end
+        if (!startT.isBefore(endT)) {
+            showAlert(AlertType.ERROR, "Start time must be before end time.");
+            return false;
+        }
 
-		if (date.isBefore(LocalDate.now())) {
-			showAlert(AlertType.ERROR, "Date cannot be in the past.");
-			return false;
-		}
+        // Combine date & start into a LocalDateTime
+        LocalDateTime now            = LocalDateTime.now();
+        LocalDateTime reservationStart = LocalDateTime.of(date, startT);
 
-		return true;
-	}
+        // Must be at least 24h in the future
+        if (reservationStart.isBefore(now.plusHours(24))) {
+            showAlert(AlertType.ERROR, "Reservations must be placed at least 24 hours in advance.");
+            return false;
+        }
+
+        // Must be no more than 7 days ahead
+        if (reservationStart.isAfter(now.plusDays(7))) {
+            showAlert(AlertType.ERROR, "Reservations cannot be made more than 7 days in advance.");
+            return false;
+        }
+
+        return true;
+    }
 
 	/** Called by ReservationScreenController#submitReservationRequest() */
 	/** Called when the user clicks “Reserve”. */
