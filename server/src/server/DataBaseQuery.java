@@ -510,6 +510,37 @@ public class DataBaseQuery extends MySQLConnection {
         }
     }
     /**
+     * Updates an existing reservation in the database.
+     * Since we use subscriber_id + start_time as the key, we cannot update those—
+     * so we only update the other fields.
+     *
+     * @param reservation the Reservation object containing updated fields
+     */
+    protected void updateReservationInDatabase(Reservation reservation) {
+        String sql =
+            "UPDATE reservations " +
+            "SET spot_id    = ?, " +
+            "    date       = ?, " +
+            "    end_time   = ? " +
+            "WHERE subscriber_id = ? " +
+            "  AND start_time    = ?";
+
+        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
+            // 1) Bind the fields we're updating
+            ps.setInt(1, reservation.getSpot());
+            ps.setDate(2, java.sql.Date.valueOf(reservation.getDate()));
+            ps.setTime(3, java.sql.Time.valueOf(reservation.getEndTime()));
+            // 2) Bind the key columns in the WHERE clause
+            ps.setInt(4, reservation.getSubscriberId());
+            ps.setTime(5, java.sql.Time.valueOf(reservation.getStartTime()));
+            // 3) Execute
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Inserts a new Parkingsession into the database and updates its generated sessionId.
      *
      * @param session the Parkingsession to create (its sessionId will be set after insertion)
@@ -933,7 +964,8 @@ public class DataBaseQuery extends MySQLConnection {
             "FROM reservations " +
             "WHERE subscriber_id = ? " +
             "AND (date > CURDATE() " +
-            "OR (date = CURDATE() AND start_time >= CURTIME())) " +
+            "OR (date = CURDATE() AND start_time BETWEEN "
+            + "CURTIME() AND ADDTIME(CURTIME(), '00:15:00') " +
             "ORDER BY date ASC, start_time ASC " +
             "LIMIT 1";
 
@@ -957,8 +989,6 @@ public class DataBaseQuery extends MySQLConnection {
 
         return result;
     }
-
-
 }
     
     

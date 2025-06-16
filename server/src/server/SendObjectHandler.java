@@ -29,6 +29,10 @@ public class SendObjectHandler {
 			Object genericObject = handleIntegerType(action, (Integer) object, con);
 			return replyDefiner(genericObject);
 		} else if (action.contains("connect")) {
+			if(object==null) {
+				double percent = con.getPrecentageAvailableSpaceFromDatabase();
+				return new SendObject<T1>("Percent",(T1)(Double)percent);
+			}
 			Object genericObject = handleGetAction(object, con);
 			return replyDefiner(genericObject);
 		} else if (action.contains("Update")) {
@@ -76,6 +80,7 @@ public class SendObjectHandler {
 				reply = "received Reservation";
 			} else if (genericObject instanceof SendObject) {
 
+				System.out.println(((SendObject<T1>) genericObject).getObjectMessage());
 				return (SendObject<T1>) genericObject;
 			}
 
@@ -140,9 +145,9 @@ public class SendObjectHandler {
 				Reservation reservation = null;
 				int subscriberId = intObject;
 				// fake
-				reservation = new Reservation(109, 2001, LocalDate.of(2025, 5, 14), "10:00:00", "12:00:00");
+				//reservation = new Reservation(109, 2001, LocalDate.of(2025, 5, 14), "10:00:00", "12:00:00");
 				// end fake
-				// reservation = con.getReservationCloseToCurrentTimeOfSubscriber(subscriberId);
+				reservation = con.getReservationCloseToCurrentTimeOfSubscriber(subscriberId);
 				return new SendObject<T1>("Received close to current time reservation",(T1)reservation);
 			}
 		}
@@ -156,14 +161,17 @@ public class SendObjectHandler {
 			if (to == null || !to.contains("@"))
 				throw new Exception("Subscriber doesn't have a legal Email");
 			else if (action.equals("Send late message by Email/SMS")) {
-				//SendEmail.sendMail(to, "Late retrivel!","Hello,\nWe inform you picked up your vehicle later than expected.\n Note that in the future it might incur additional charges.");
+				//SendEmail.sendMail(to, "Late retrivel!",
+				//		"Hello,\nWe inform you picked up your vehicle later than expected.\n Note that in the future it might incur additional charges.");
 			} else if (action.equals("Send Parking Code by Email/SMS")) {
 				int parkingCode = 99999; // fake
 				parkingCode = con.getSubscriberLastActiveParkingsessionParkingCode(object.getId());
 				if (parkingCode == 99999) {
 					throw new Exception("No active parking sessions for the user");
 				}
-				//SendEmail.sendMail(to, "Parking Code reminder", String.format("Hello,\nYour last Parking Code in your last/current active session is: %d\nPlease enter the code you received in the app.",parkingCode));
+				//SendEmail.sendMail(to, "Parking Code reminder", String.format(
+					//	"Hello,\nYour last Parking Code in your last/current active session is: %d\nPlease enter the code you received in the app.",
+					//	parkingCode));
 			}
 		}
 
@@ -174,7 +182,7 @@ public class SendObjectHandler {
 		if (action.contains("Check") && object.contains("Availability")) {
 			double availablePrecentage = 0.6; // fake
 			availablePrecentage = con.getPrecentageAvailableSpaceFromDatabase();
-			if (availablePrecentage > 0.4)
+			if (availablePrecentage > 40)
 				return new SendObject<T1>("Availability", (T1) (Boolean) true);
 			else
 				return new SendObject<T1>("Availability", (T1) (Boolean) false);
@@ -191,15 +199,15 @@ public class SendObjectHandler {
 				}
 			} else if (object.equals("all reservations")) {
 				List<Reservation> allReservationList = new ArrayList<>();
-				// allReservationList = con.getAllReservationList();
+				allReservationList = con.getAllReservationList();
 				return new SendObject<T1>("Received all reservations", (T1) (List<Reservation>) allReservationList);
 			} else if (object.equals("all subscribers")) {
 				List<subscriber> allSubscribersList = new ArrayList<subscriber>();
-				// allSubscribersList = con.getAllSubscribersList();
+				allSubscribersList = con.getAllSubscribersList();
 				return new SendObject<T1>("Received all subscribers", (T1) (List<subscriber>) allSubscribersList);
 			} else if (object.equals("active parking sessions")) {
 				List<Parkingsession> allActiveParkingsessions = new ArrayList<Parkingsession>();
-				// allActiveParkingsessions = con.getAllActiveParkingsession();
+				allActiveParkingsessions = con.getAllActiveParkingsession();
 				return new SendObject<T1>("Received active parking sessions",
 						(T1) (List<Parkingsession>) allActiveParkingsessions);
 			}
@@ -252,6 +260,10 @@ public class SendObjectHandler {
 				ParkingSpot spot = (ParkingSpot) object;
 				// Update ParkingSpot In the database received object
 				con.updateParkingSpotInDatabase(spot);
+			} else if(object instanceof Reservation) {
+				Reservation reservation = (Reservation)object;
+				// Update Reservation In the database received object
+				//con.updateReservationInDatabase(reservation);
 			}
 		} catch (Exception e) { // SQLException e
 			throw new Exception("Error updating data to database", e);
@@ -264,7 +276,7 @@ public class SendObjectHandler {
 			if (object instanceof subscriber) {
 				subscriber user = (subscriber) object;
 				boolean checkEmail = false;
-				// checkEmail = con.checkUserEmailDuplicates(user);
+				checkEmail = con.checkUserEmailDuplicates(user);
 				if (!checkEmail) {
 					Object codeAndTag[] = new Object[2];
 					codeAndTag[0] = (Integer) generateCode(con);
@@ -273,7 +285,9 @@ public class SendObjectHandler {
 					user.setTag((String) codeAndTag[1]);
 					// Create User In the database using received object
 					con.createUserInDatabase(user);
-					//SendEmail.sendMail(user.getEmail(), "Welcome to BPark", String.format("Hello %s!\nWe're happy you decided to join BPark. Here are your Log in options:\nCode:%d\nTag:%s",user.getName(), (Integer) codeAndTag[0], (String) codeAndTag[1]));
+					//SendEmail.sendMail(user.getEmail(), "Welcome to BPark", String.format(
+							//"Hello %s!\nWe're happy you decided to join BPark. Here are your Log in options:\nCode:%d\nTag:%s",
+							//user.getName(), (Integer) codeAndTag[0], (String) codeAndTag[1]));
 					return new SendObject<T1>("Subscriber created", (T1) (Object[]) codeAndTag);
 				} else {
 					return new SendObject<T1>("Subscriber not created", (T1) (String) "Email exists");
@@ -312,26 +326,26 @@ public class SendObjectHandler {
 	private static String generateTag(DataBaseQuery con) {
 		Random random = new Random();
 		StringBuilder tag;
-		boolean isDifferent = true;
+		boolean isDifferent = false;
 		do {
 			tag = new StringBuilder();
 			for (int i = 0; i < 12; i++) {
 				int byteValue = random.nextInt(256); // 0 to 255
 				tag.append(String.format("%02X", byteValue));
 			}
-			// isDifferent = con.checkRFIDTagDifferentFromAllSubscribers(tag.toString());
-		} while (isDifferent);
+			isDifferent = con.checkRFIDTagDifferentFromAllSubscribers(tag.toString());
+		} while (!isDifferent);
 		return tag.toString();
 	}
 
 	private static Integer generateCode(DataBaseQuery con) {
 		int code;
 		Random random = new Random(); // Generate code
-		boolean isDifferent = true;
+		boolean isDifferent = false;
 		do {
 			code = 100000 + random.nextInt(900000);
-			// isDifferent = con.checkCodeDifferentFromAllSubscribers(code);
-		} while (isDifferent);
+			isDifferent = con.checkCodeDifferentFromAllSubscribers(code);
+		} while (!isDifferent);
 		return code;
 	}
 }
