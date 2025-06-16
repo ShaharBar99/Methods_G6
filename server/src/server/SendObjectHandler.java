@@ -29,6 +29,10 @@ public class SendObjectHandler {
 			Object genericObject = handleIntegerType(action, (Integer) object, con);
 			return replyDefiner(genericObject);
 		} else if (action.contains("connect")) {
+			if(obj==null) {
+				double percent = con.getPrecentageAvailableSpaceFromDatabase() * 100;
+				return new SendObject<T1>("Percent",(T1)(Double)percent);
+			}
 			Object genericObject = handleGetAction(object, con);
 			return replyDefiner(genericObject);
 		} else if (action.contains("Update")) {
