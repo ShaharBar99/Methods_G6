@@ -61,27 +61,7 @@ public class MainMenuController extends Controller{
             Stage currentStage = (Stage) historybutton.getScene().getWindow();
             currentStage.close();
             Controller c = null;
-            //open next controller
-            if(screen_name.equals("Pickupscreen")){
-            	PickUpScreenController controller = loader.getController();
-            	c = controller;
-            }
-            else if(screen_name.equals("DropOffScreen")){
-            	DropOffScreenController controller = loader.getController();
-            	c = controller;
-            }
-            else if(screen_name.equals("ReservationScreen")){
-            	ReservationScreenController controller = loader.getController();
-            	c = controller;
-            }
-            else if(screen_name.equals("TimeExtensionScreen")) {
-            	TimeExtensionScreenController controller = loader.getController();
-            	c = controller;
-            }
-            else {
-            	HistoryScreenController controller = loader.getController();
-            	c = controller;
-            }
+            c = loader.getController();
             c.setClient(client,sub);
             client.setMessageListener(c::handleServerMessage);
             c.setBackHandler(() -> {
