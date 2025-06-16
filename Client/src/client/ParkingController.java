@@ -363,6 +363,8 @@ public class ParkingController {
 		
 		if (reservation != null) {
 			if (!isWithin15Minutes(reservation)) {
+				reservation.setStartTime(null);
+				client.sendToServerSafely(new SendObject<Reservation>("Update",reservation)); // Indicates reservation hasn't been used
 				throw new Exception("subscriber didn't come in the right time, cannot create parking session through reservation. Try Submit Parking Request.");
 			}
 			LocalDateTime inDateTime = LocalDateTime.of(reservation.getDate(), LocalTime.parse(reservation.getStartTime()));
@@ -381,7 +383,8 @@ public class ParkingController {
 						outTime, false, false, true);
 				// TO DO: send session to database
 				client.sendToServerSafely(new SendObject<Parkingsession>("Create new", session));// V
-				//client.sendToServer(new SendObject<Reservation>("Delete",reservation)); // do we need this? or change future reservations to show reservation that are in the future
+				reservation.setEndTime(null);
+				client.sendToServer(new SendObject<Reservation>("Update",reservation)); // Indicates reservation has been used
 				int spotId = spot.getSpotId();
 				Platform.runLater(() -> {
 					System.out.println(spotId + ", " + parkingCode);

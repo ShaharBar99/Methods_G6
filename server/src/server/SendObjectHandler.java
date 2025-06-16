@@ -256,6 +256,10 @@ public class SendObjectHandler {
 				ParkingSpot spot = (ParkingSpot) object;
 				// Update ParkingSpot In the database received object
 				con.updateParkingSpotInDatabase(spot);
+			} else if(object instanceof Reservation) {
+				Reservation reservation = (Reservation)object;
+				// Update Reservation In the database received object
+				//con.updateReservationInDatabase(reservation);
 			}
 		} catch (Exception e) { // SQLException e
 			throw new Exception("Error updating data to database", e);

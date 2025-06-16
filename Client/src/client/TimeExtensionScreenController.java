@@ -130,8 +130,7 @@ public class TimeExtensionScreenController extends Controller {
 			String parkingsessionId = ParkingsessionIdField.getText();
 			int parkingId = Integer.parseInt(parkingsessionId);
 			session = parkingController.getSessionById(parkingId);
-		}
-		catch(NumberFormatException e) {
+		} catch (NumberFormatException e) {
 			ShowAlert.showAlert("Error", "Enter a valid Parkingsession", AlertType.ERROR);
 		}
 	}
@@ -143,25 +142,26 @@ public class TimeExtensionScreenController extends Controller {
 		long minute = minuteSpinner.getValue();
 		if (hour > 3 && minute > 0) {
 			ShowAlert.showAlert("Error", "Time Extension must be up to 4 hours", AlertType.ERROR);
-		}
-		if (session != null) {
-			session.setOutTime(new Date(session.getOutTime().getTime() + hour * 60 * 60 * 1000 + minute * 60 * 1000));
-			try {
-				parkingController.ExtendTime(session);
-				ShowAlert.showAlert("Extended Time", "Time was successfully extended", AlertType.INFORMATION);
-				Platform.runLater(() -> {
-					displayActiveSessions();
-				});
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				ShowAlert.showAlert("Error", "Time hasn't extended", AlertType.ERROR);
-				e.printStackTrace();
-			}
 		} else {
-			this.ShowFail("Session was not found");
+			if (session != null) {
+				session.setOutTime(
+						new Date(session.getOutTime().getTime() + hour * 60 * 60 * 1000 + minute * 60 * 1000));
+				try {
+					parkingController.ExtendTime(session);
+					ShowAlert.showAlert("Extended Time", "Time was successfully extended", AlertType.INFORMATION);
+					Platform.runLater(() -> {
+						displayActiveSessions();
+					});
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					ShowAlert.showAlert("Error", "Time hasn't extended", AlertType.ERROR);
+					e.printStackTrace();
+				}
+			} else {
+				this.ShowFail("Session was not found");
+			}
 		}
 	}
-
 
 	public void handleServerMessage(Object message) {
 		parkingController.handleServerResponse(message);
