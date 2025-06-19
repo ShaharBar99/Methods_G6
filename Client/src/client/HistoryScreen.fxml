@@ -27,17 +27,20 @@
 
         <!-- רשימת היסטוריה -->
         <TableView fx:id="parkingTable"
-                   VBox.vgrow="ALWAYS"
-                   maxWidth="Infinity"
-                   maxHeight="Infinity">
-            <columns>
-                <TableColumn fx:id="colSessionId" text="Session ID"/>
-                <TableColumn fx:id="colSpotId" text="Spot ID"/>
-                <TableColumn fx:id="colInTime" text="In Time"/>
-                <TableColumn fx:id="colOutTime" text="Out Time"/>
-                <TableColumn fx:id="colLate" text="Late?"/>
-            </columns>
-        </TableView>
+           VBox.vgrow="ALWAYS"
+           maxWidth="Infinity"
+           maxHeight="Infinity">
+
+    <columns>
+        <TableColumn fx:id="colSessionId" text="Session ID" prefWidth="100" minWidth="80"/>
+        <TableColumn fx:id="colSpotId" text="Spot ID" prefWidth="100" minWidth="80"/>
+        <TableColumn fx:id="colInTime" text="In Time" prefWidth="180" minWidth="150"/>
+        <TableColumn fx:id="colOutTime" text="Out Time" prefWidth="180" minWidth="150"/>
+        <TableColumn fx:id="colLate" text="Late?" prefWidth="80" minWidth="60"/>
+    </columns>
+
+</TableView>
+
 
         <!-- כפתורים -->
         <HBox alignment="CENTER"

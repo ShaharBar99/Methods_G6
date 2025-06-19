@@ -41,6 +41,10 @@ public class PickUpScreenController extends Controller{
 	public void handleLostCodeRequest() {
 		parkingCode.setText("");
 		try {
+			if (!ShowAlert.showConfirmation("Send Parking code",
+					"Are you sure you want to send the code to\nEmail: " +sub.getEmail()+"\nPhone: "+sub.getPhone())) {
+				return; // user clicked Cancel
+			}
 			parkingController.handleLostCode();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -57,10 +61,16 @@ public class PickUpScreenController extends Controller{
 	 */
 	@FXML
 	public void submitParkingCode() {
+		
 		String code = parkingCode.getText().trim();
 		if (code.length() < 6) {
 			ShowAlert.showAlert("Error", "Enter a 6 digit code!", Alert.AlertType.ERROR);
 		} else {
+			if (!ShowAlert.showConfirmation("Confirm Parking Code submit",
+					"Are you sure you want to submit the code " +code+"?")) {
+				parkingCode.setText("");
+				return; // user clicked Cancel
+			}
 			parkingCode.setText("");
 			try {
 				int parkingCodeInt = Integer.parseInt(code);

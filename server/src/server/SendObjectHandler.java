@@ -29,9 +29,9 @@ public class SendObjectHandler {
 			Object genericObject = handleIntegerType(action, (Integer) object, con);
 			return replyDefiner(genericObject);
 		} else if (action.contains("connect")) {
-			if(object==null) {
+			if (object == null) {
 				double percent = con.getPrecentageAvailableSpaceFromDatabase();
-				return new SendObject<T1>("Percent",(T1)(Double)percent);
+				return new SendObject<T1>("Percent", (T1) (Double) percent);
 			}
 			Object genericObject = handleGetAction(object, con);
 			return replyDefiner(genericObject);
@@ -141,14 +141,15 @@ public class SendObjectHandler {
 				} else {
 					return new SendObject<T1>("Session found:", (T1) "False");
 				}
-			} else if(action.contains("close to current time reservation")) {
+			} else if (action.contains("close to current time reservation")) {
 				Reservation reservation;
 				int subscriberId = intObject;
 				// fake
-				//reservation = new Reservation(109, 2001, LocalDate.of(2025, 5, 14), "10:00:00", "12:00:00");
+				// reservation = new Reservation(109, 2001, LocalDate.of(2025, 5, 14),
+				// "10:00:00", "12:00:00");
 				// end fake
 				reservation = con.getReservationCloseToCurrentTimeOfSubscriber(subscriberId);
-				return new SendObject<T1>("Received close to current time reservation",(T1)reservation);
+				return new SendObject<T1>("Received close to current time reservation", (T1) reservation);
 			}
 		}
 		return null;
@@ -182,7 +183,7 @@ public class SendObjectHandler {
 		if (action.contains("Check") && object.contains("Availability")) {
 			double availablePrecentage = 0.6; // fake
 			availablePrecentage = con.getPrecentageAvailableSpaceFromDatabase();
-			if (availablePrecentage > 40)
+			if (availablePrecentage > 0)
 				return new SendObject<T1>("Availability", (T1) (Boolean) true);
 			else
 				return new SendObject<T1>("Availability", (T1) (Boolean) false);
@@ -197,6 +198,7 @@ public class SendObjectHandler {
 					handleUpdateAction(spot, con);
 					return new SendObject<T1>("new Spot", (T1) (ParkingSpot) spot);
 				}
+
 			} else if (object.equals("all reservations")) {
 				List<Reservation> allReservationList = new ArrayList<>();
 				allReservationList = con.getAllReservationList();
@@ -260,8 +262,8 @@ public class SendObjectHandler {
 				ParkingSpot spot = (ParkingSpot) object;
 				// Update ParkingSpot In the database received object
 				con.updateParkingSpotInDatabase(spot);
-			} else if(object instanceof Reservation) {
-				Reservation reservation = (Reservation)object;
+			} else if (object instanceof Reservation) {
+				Reservation reservation = (Reservation) object;
 				// Update Reservation In the database received object
 				con.updateReservationInDatabase(reservation);
 			}
@@ -302,9 +304,14 @@ public class SendObjectHandler {
 			if (object instanceof Reservation) {
 				Reservation reservation = (Reservation) object;
 				// create Reservation in the database using received object
-				ParkingSpot spot;
-				spot = con.getFreeParkingSpotFromDatabase(reservation.getDate(), reservation.getStartTime(),
-						reservation.getEndTime()).get(0);
+				ParkingSpot spot = null;
+				if (con.getPrecentageAvailableSpaceFromDatabase() >= 40) {
+					spot = con.getFreeParkingSpotFromDatabase(reservation.getDate(), reservation.getStartTime(),
+							reservation.getEndTime()).get(0);
+				} else {
+					return new SendObject<T1>("Reservation",
+							(T1) (String) "Not Created because there is less than 40% space available");
+				}
 				if (spot != null) {
 					spot.setStatus(SpotStatus.RESERVED);
 					con.updateParkingSpotInDatabase(spot);

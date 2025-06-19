@@ -60,6 +60,10 @@ public class DropOffScreenController extends Controller {
 		// if there's a free spot assigns it, generates a code,
 		// creates a parking session, and shows success message
 		try {
+			if (!ShowAlert.showConfirmation("Confirm Vehicle dropoff",
+					"Are you sure you want to dropoff your vehicle?")) {
+				return; // user clicked Cancel
+			}
 			parkingController.confirmDropOff();
 		} catch (Exception e) { // if subscriber1 is null, throw an exception
 			ShowAlert.showAlert("Error", "An error occurred while processing your request: "+e.getMessage(), Alert.AlertType.ERROR);
@@ -69,6 +73,10 @@ public class DropOffScreenController extends Controller {
 	
 	public void submitParkingRequestUsingReservation() {
 		try {
+			if (!ShowAlert.showConfirmation("Confirm Vehicle dropoff",
+					"Are you sure you want to dropoff your vehicle using reservation?")) {
+				return; // user clicked Cancel
+			}
 			parkingController.implementDropoffUsingReservation();
 		} catch (Exception e) {
 			ShowAlert.showAlert("Error", "An error occurred while processing your request: "+e.getMessage(), Alert.AlertType.ERROR);
@@ -108,7 +116,6 @@ public class DropOffScreenController extends Controller {
 	 * Shows error message when parking is unsuccessful
 	 */
 	public void showNoAvailability() {
-		System.out.println("inside showNoAvailability");
 		ShowAlert.showAlert("Error", "No parking spots available at the moment.", Alert.AlertType.ERROR);
 	}
 

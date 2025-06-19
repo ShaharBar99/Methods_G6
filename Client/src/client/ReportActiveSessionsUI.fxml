@@ -22,19 +22,20 @@
           style="-fx-padding: 20;">
         
         <TableView fx:id="sessionTable" prefHeight="400.0" prefWidth="1050.0"
-                   styleClass="main-table">
-            <columns>
-                <TableColumn fx:id="colSessionId" text="Session ID" prefWidth="90.0"/>
-                <TableColumn fx:id="colSubscriberId" text="Subscriber ID" prefWidth="100.0"/>
-                <TableColumn fx:id="colSpotId" text="Spot ID" prefWidth="80.0"/>
-                <TableColumn fx:id="colParkingCode" text="Parking Code" prefWidth="100.0"/>
-                <TableColumn fx:id="colInTime" text="In Time" prefWidth="150.0"/>
-                <TableColumn fx:id="colOutTime" text="Out Time" prefWidth="150.0"/>
-                <TableColumn fx:id="colExtended" text="Extended" prefWidth="90.0"/>
-                <TableColumn fx:id="colLate" text="Late" prefWidth="80.0"/>
-                <TableColumn fx:id="colActive" text="Active" prefWidth="80.0"/>
-            </columns>
-        </TableView>
+           styleClass="main-table">
+    <columns>
+        <TableColumn fx:id="colSessionId" text="Session ID" prefWidth="100.0" minWidth="80.0"/>
+        <TableColumn fx:id="colSubscriberId" text="Subscriber ID" prefWidth="120.0" minWidth="100.0"/>
+        <TableColumn fx:id="colSpotId" text="Spot ID" prefWidth="100.0" minWidth="80.0"/>
+        <TableColumn fx:id="colParkingCode" text="Parking Code" prefWidth="120.0" minWidth="100.0"/>
+        <TableColumn fx:id="colInTime" text="In Time" prefWidth="180.0" minWidth="150.0"/>
+        <TableColumn fx:id="colOutTime" text="Out Time" prefWidth="180.0" minWidth="150.0"/>
+        <TableColumn fx:id="colExtended" text="Extended" prefWidth="90.0" minWidth="70.0"/>
+        <TableColumn fx:id="colLate" text="Late" prefWidth="80.0" minWidth="70.0"/>
+        <TableColumn fx:id="colActive" text="Active" prefWidth="80.0" minWidth="70.0"/>
+    </columns>
+</TableView>
+
 
         <HBox spacing="15.0" alignment="CENTER">
             <Button fx:id="exportCsvButton" text="Export as CSV" styleClass="button-blue"/>

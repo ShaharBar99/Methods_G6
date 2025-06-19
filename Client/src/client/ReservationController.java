@@ -92,14 +92,18 @@ public class ReservationController extends Controller{
 	protected void onReserve() {
 		if (!validateReservation())
 			return;
-
+		
 		// Build a simple payload like "2025-06-10 09:00 11:00"
 
 		Reservation reservation = new Reservation(0, sub.getId(), datePicker.getValue(),
 				startTimeField.getText().trim(), endTimeField.getText().trim());
-		String payload = String.format("Create Reservation:%s %s %s", datePicker.getValue(),
+		String payload = String.format("Create Reservation: %s %s %s", datePicker.getValue(),
 				startTimeField.getText().trim(), endTimeField.getText().trim());
-
+		if (!ShowAlert.showConfirmation("Confirm Reservation",
+				"Are you sure you want to " +payload+" ?")) {
+			clearForm();
+			return; // user clicked Cancel
+		}
 		// Wrap <payload, subscriberId> in a SendObject<Integer>
 		SendObject<Reservation> req = new SendObject<>(payload, reservation
 		// subscribe.getId()

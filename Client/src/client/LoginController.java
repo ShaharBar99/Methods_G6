@@ -16,6 +16,7 @@ import logic.*;
 
 public class LoginController {
 
+	final int port = 5555;
     @FXML private TextField ipField;
     @FXML private ComboBox<String> loginMethodComboBox;
     @FXML private TextField nameField;
@@ -56,19 +57,12 @@ public class LoginController {
     @FXML
     private void handleLogin() {
     	String ipAddress = ipField.getText().trim();
-		String portText = "5555";
-		if (ipAddress.isEmpty() || portText.isEmpty()) {
+		if (ipAddress.isEmpty()) {
 			ShowAlert.showAlert("Error", "Please enter both IP and port", Alert.AlertType.ERROR);
 			return;
 		}
-		int port;
-		try {
-			port = Integer.parseInt(portText);
-		} catch (NumberFormatException e) {
-			ShowAlert.showAlert("Error", "Port must be a valid number", Alert.AlertType.ERROR);
-			return;
-		}
-		connectToServer(ipAddress, port);
+		subscriber sub1 = createsubfromlogin();
+		connectToServer(ipAddress, port,sub1);
     }
     
     public subscriber createsubfromlogin() {
@@ -84,13 +78,13 @@ public class LoginController {
     	return sub;
     }
     
-    public void connectToServer(String ipAddress, int port) {
+    public void connectToServer(String ipAddress, int port,subscriber sub1) {
 		try {
 			client = new BParkClient(ipAddress, port);
 			//connectButton.setDisable(true);
 			exitButton.setDisable(false);
 			//client.start();
-			subscriber sub1 = createsubfromlogin();
+			
 			client.start(sub1);
 			
 			// Creates the order table 
@@ -111,25 +105,31 @@ public class LoginController {
     			subscriber sub = (subscriber) send.getObj();
     			System.out.println("[Server] " + msg);
     			if(sub.getRole().equals(Role.SUBSCRIBER)) {
-    				this.connectclient(sub,"MainMenuScreen.fxml","Main Menu");
+    				this.connectclient(sub,"MainMenuScreen.fxml","Main Menu",-1);
     			}
     			else if(sub.getRole().equals(Role.ATTENDANT)) {
-    				this.connectclient(sub,"AttendantScreen.fxml","Attendant Menu");
+    				this.connectclient(sub,"AttendantScreen.fxml","Attendant Menu",-1);
     			}
     			else if(sub.getRole().equals(Role.MANAGER)) {
-    				this.connectclient(sub,"AdminScreen.fxml","Admin Menu");
+    				this.connectclient(sub,"AdminScreen.fxml","Admin Menu",-1);
     			}
-
+    			
+    			
 		}
- 
+    			else if(send.getObj() instanceof Double) {
+    				System.out.println(send.getObj());
+    				this.connectclient(null,"GuestScreenUI.fxml","Guest Screen",(double)send.getObj());
+    			}
+    			
 		else{
 		client.stop();
 		ShowAlert.showAlert("Error", "Cant login to server wrong account", Alert.AlertType.ERROR);
 		}
     		}
+    		
 	});
     }
-    private void connectclient(subscriber sub,String fxml,String title) {
+    private void connectclient(subscriber sub,String fxml,String title,double percent) {
     	// Load next screen (Order Table)
 		Controller controller = null;
 		FXMLLoader loader = new FXMLLoader(getClass().getResource(fxml));
@@ -144,7 +144,9 @@ public class LoginController {
 			System.out.println("cant load main menu screen");
 			e.printStackTrace();
 		}
-		
+		if(percent != -1) {
+			((GuestScreenController)controller).set_percent(percent);
+		}
 		// After Connection start the order table
 		
         Stage stage = (Stage) connectButton.getScene().getWindow();
@@ -190,4 +192,15 @@ public class LoginController {
 		Platform.exit();
 
 	}
+    @FXML
+    private void openGuestScreen() {
+    	String ipAddress = ipField.getText().trim();
+		String portText = "5555";
+		if (ipAddress.isEmpty()) {
+			ShowAlert.showAlert("Error", "Please enter both IP and port", Alert.AlertType.ERROR);
+			return;
+		}
+		connectToServer(ipAddress, port,null);
+    }
+
 }

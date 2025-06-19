@@ -40,6 +40,18 @@
     -fx-border-color: rgba(255,255,255,0.2);
     -fx-border-width: 1px;
 }
+.form-label {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0d47a1; /* Deep blue for consistency */
+    -fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.15), 4, 0, 0, 2);
+}
+.date-picker {
+    -fx-font-size: 20px;
+    -fx-pref-height: 50px;
+}
+
+
 /* Matching TextField Style */
 .text-field {
     -fx-font-size: 36px; /* Slightly smaller font for the TextField */
