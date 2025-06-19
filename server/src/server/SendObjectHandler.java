@@ -29,9 +29,9 @@ public class SendObjectHandler {
 			Object genericObject = handleIntegerType(action, (Integer) object, con);
 			return replyDefiner(genericObject);
 		} else if (action.contains("connect")) {
-			if(object==null) {
+			if (object == null) {
 				double percent = con.getPrecentageAvailableSpaceFromDatabase();
-				return new SendObject<T1>("Percent",(T1)(Double)percent);
+				return new SendObject<T1>("Percent", (T1) (Double) percent);
 			}
 			Object genericObject = handleGetAction(object, con);
 			return replyDefiner(genericObject);
@@ -141,14 +141,15 @@ public class SendObjectHandler {
 				} else {
 					return new SendObject<T1>("Session found:", (T1) "False");
 				}
-			} else if(action.contains("close to current time reservation")) {
-				Reservation reservation = null;
+			} else if (action.contains("close to current time reservation")) {
+				Reservation reservation;
 				int subscriberId = intObject;
 				// fake
-				//reservation = new Reservation(109, 2001, LocalDate.of(2025, 5, 14), "10:00:00", "12:00:00");
+				// reservation = new Reservation(109, 2001, LocalDate.of(2025, 5, 14),
+				// "10:00:00", "12:00:00");
 				// end fake
 				reservation = con.getReservationCloseToCurrentTimeOfSubscriber(subscriberId);
-				return new SendObject<T1>("Received close to current time reservation",(T1)reservation);
+				return new SendObject<T1>("Received close to current time reservation", (T1) reservation);
 			}
 		}
 		return null;
@@ -161,17 +162,14 @@ public class SendObjectHandler {
 			if (to == null || !to.contains("@"))
 				throw new Exception("Subscriber doesn't have a legal Email");
 			else if (action.equals("Send late message by Email/SMS")) {
-				//SendEmail.sendMail(to, "Late retrivel!",
-				//		"Hello,\nWe inform you picked up your vehicle later than expected.\n Note that in the future it might incur additional charges.");
+				//SendEmail.sendMail(to, "Late retrivel!","Hello,\nWe inform you picked up your vehicle later than expected.\n Note that in the future it might incur additional charges.");
 			} else if (action.equals("Send Parking Code by Email/SMS")) {
 				int parkingCode = 99999; // fake
 				parkingCode = con.getSubscriberLastActiveParkingsessionParkingCode(object.getId());
 				if (parkingCode == 99999) {
 					throw new Exception("No active parking sessions for the user");
 				}
-				//SendEmail.sendMail(to, "Parking Code reminder", String.format(
-					//	"Hello,\nYour last Parking Code in your last/current active session is: %d\nPlease enter the code you received in the app.",
-					//	parkingCode));
+				//SendEmail.sendMail(to, "Parking Code reminder", String.format("Hello,\nYour last Parking Code in your last/current active session is: %d\nPlease enter the code you received in the app.",parkingCode));
 			}
 		}
 
@@ -182,7 +180,7 @@ public class SendObjectHandler {
 		if (action.contains("Check") && object.contains("Availability")) {
 			double availablePrecentage = 0.6; // fake
 			availablePrecentage = con.getPrecentageAvailableSpaceFromDatabase();
-			if (availablePrecentage > 40)
+			if (availablePrecentage > 0)
 				return new SendObject<T1>("Availability", (T1) (Boolean) true);
 			else
 				return new SendObject<T1>("Availability", (T1) (Boolean) false);
@@ -197,6 +195,7 @@ public class SendObjectHandler {
 					handleUpdateAction(spot, con);
 					return new SendObject<T1>("new Spot", (T1) (ParkingSpot) spot);
 				}
+
 			} else if (object.equals("all reservations")) {
 				List<Reservation> allReservationList = new ArrayList<>();
 				allReservationList = con.getAllReservationList();
@@ -260,10 +259,10 @@ public class SendObjectHandler {
 				ParkingSpot spot = (ParkingSpot) object;
 				// Update ParkingSpot In the database received object
 				con.updateParkingSpotInDatabase(spot);
-			} else if(object instanceof Reservation) {
-				Reservation reservation = (Reservation)object;
+			} else if (object instanceof Reservation) {
+				Reservation reservation = (Reservation) object;
 				// Update Reservation In the database received object
-				//con.updateReservationInDatabase(reservation);
+				con.updateReservationInDatabase(reservation);
 			}
 		} catch (Exception e) { // SQLException e
 			throw new Exception("Error updating data to database", e);
@@ -285,9 +284,7 @@ public class SendObjectHandler {
 					user.setTag((String) codeAndTag[1]);
 					// Create User In the database using received object
 					con.createUserInDatabase(user);
-					//SendEmail.sendMail(user.getEmail(), "Welcome to BPark", String.format(
-							//"Hello %s!\nWe're happy you decided to join BPark. Here are your Log in options:\nCode:%d\nTag:%s",
-							//user.getName(), (Integer) codeAndTag[0], (String) codeAndTag[1]));
+				//	SendEmail.sendMail(user.getEmail(), "Welcome to BPark", String.format("Hello %s!\nWe're happy you decided to join BPark. Here are your Log in options:\nCode:%d\nTag:%s",user.getName(), (Integer) codeAndTag[0], (String) codeAndTag[1]));
 					return new SendObject<T1>("Subscriber created", (T1) (Object[]) codeAndTag);
 				} else {
 					return new SendObject<T1>("Subscriber not created", (T1) (String) "Email exists");
@@ -302,9 +299,14 @@ public class SendObjectHandler {
 			if (object instanceof Reservation) {
 				Reservation reservation = (Reservation) object;
 				// create Reservation in the database using received object
-				ParkingSpot spot;
-				spot = con.getFreeParkingSpotFromDatabase(reservation.getDate(), reservation.getStartTime(),
-						reservation.getEndTime()).get(0);
+				ParkingSpot spot = null;
+				if (con.getPrecentageAvailableSpaceFromDatabase() >= 40) {
+					spot = con.getFreeParkingSpotFromDatabase(reservation.getDate(), reservation.getStartTime(),
+							reservation.getEndTime()).get(0);
+				} else {
+					return new SendObject<T1>("Reservation",
+							(T1) (String) "Not Created because there is less than 40% space available");
+				}
 				if (spot != null) {
 					spot.setStatus(SpotStatus.RESERVED);
 					con.updateParkingSpotInDatabase(spot);

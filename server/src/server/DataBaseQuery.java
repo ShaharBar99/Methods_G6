@@ -4,10 +4,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 
 import logic.ParkingSpot;
 import logic.Parkingsession;
@@ -15,7 +17,6 @@ import logic.Reservation;
 import logic.Role;
 import logic.SpotStatus;
 import logic.subscriber;
-import java.util.Date;
 
 /**
  * DataBaseQuery contains methods for reading from the BPark schema.
@@ -129,9 +130,11 @@ public class DataBaseQuery extends MySQLConnection {
     {
     	List<Reservation> reservationListOfSubscriber = new ArrayList<>();
     	String sql = 
-                "SELECT spot_id,date,start_time,end_time" +
+                "SELECT spot_id,date,start_time,end_time " +
                 "FROM reservations " +
-                "WHERE subscriber_id = ?";
+                "WHERE subscriber_id = ? "+
+                "And end_time IS NOT NULL " + 
+    			"And start_time IS NOT NULL ";
             try (
                 PreparedStatement ps = getCon().prepareStatement(sql)
             ) {  
@@ -220,7 +223,7 @@ public class DataBaseQuery extends MySQLConnection {
     }
     protected List<Parkingsession> gethistoryParkingsessionsListOfSubscriberbyIdFromDatabase(int subscriber_id)
     {
-    	List<Parkingsession> historyList  = null;
+    	List<Parkingsession> historyList  = new ArrayList<>();
         String sql =
             "SELECT *"+
             "FROM parking_sessions " +
@@ -242,7 +245,7 @@ public class DataBaseQuery extends MySQLConnection {
                     boolean extended = rs.getBoolean("extended");
                     boolean late     = rs.getBoolean("late");
                     boolean active   = rs.getBoolean("active");
-                    historyList.add(new Parkingsession(sessionId,subscriberId,spotId,code,inTime,outTime,extended,late,active));
+                    historyList.add(new Parkingsession(sessionId,subscriberId,spotId,code,inTime,outTime,extended,late,false));
                 }
             }
         }
@@ -372,43 +375,6 @@ public class DataBaseQuery extends MySQLConnection {
         return subscribe;
     }
     /**
-     * Updates the given subscriber’s data in the database.
-     *
-     * @param user the subscriber object containing updated fields
-     */
-    protected void updateUserInDatabase(subscriber user) {
-        // 1) Prepare UPDATE statement for subscribers (see table definition) :contentReference[oaicite:0]{index=0}
-        String sql =
-            "UPDATE subscribers " +
-            "SET name   = ?, " +
-            "    phone  = ?, " +
-            "    email  = ?, " +
-            "    role   = ?, " +
-            "    tag    = ?, " +
-            "    code   = ? " +
-            "WHERE subscriber_id = ?";
-
-        // 2) Use try-with-resources to ensure the PreparedStatement is closed
-        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
-            // 3) Bind each field from the subscriber object in the same order
-            ps.setString(1, user.getName());
-            ps.setString(2, user.getPhone());
-            ps.setString(3, user.getEmail());
-            ps.setString(4, user.getRole().name());
-            ps.setString(5, user.getTag());
-            ps.setInt   (6, user.getCode());
-            // 4) Bind the WHERE clause parameter
-            ps.setInt   (7, user.getId());
-
-            // 5) Execute the update
-            int rowsAffected = ps.executeUpdate();
-            // (Optional) you can log or check rowsAffected to ensure one row was updated
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * Updates the given parking session in the database.
      *
      * @param session the Parkingsession object containing new values
@@ -451,6 +417,45 @@ public class DataBaseQuery extends MySQLConnection {
             e.printStackTrace();
         }
     }
+    
+    /**
+     * Updates the given subscriber’s data in the database.
+     *
+     * @param user the subscriber object containing updated fields
+     */
+    protected void updateUserInDatabase(subscriber user) {
+        // 1) Prepare UPDATE statement for subscribers (see table definition) :contentReference[oaicite:0]{index=0}
+        String sql =
+            "UPDATE subscribers " +
+            "SET name   = ?, " +
+            "    phone  = ?, " +
+            "    email  = ?, " +
+            "    role   = ?, " +
+            "    tag    = ?, " +
+            "    code   = ? " +
+            "WHERE subscriber_id = ?";
+
+        // 2) Use try-with-resources to ensure the PreparedStatement is closed
+        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
+            // 3) Bind each field from the subscriber object in the same order
+            ps.setString(1, user.getName());
+            ps.setString(2, user.getPhone());
+            ps.setString(3, user.getEmail());
+            ps.setString(4, user.getRole().name());
+            ps.setString(5, user.getTag());
+            ps.setInt   (6, user.getCode());
+            // 4) Bind the WHERE clause parameter
+            ps.setInt   (7, user.getId());
+
+            // 5) Execute the update
+            int rowsAffected = ps.executeUpdate();
+            // (Optional) you can log or check rowsAffected to ensure one row was updated
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    
     /**
      * Updates the status of a parking spot in the database.
      *
@@ -468,6 +473,64 @@ public class DataBaseQuery extends MySQLConnection {
             int rows = ps.executeUpdate();
         }
         catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    /**
+     * Updates an existing reservation in the database.
+     * Since we use subscriber_id + start_time as the key, we cannot update those—
+     * so we only update the other fields.
+     *
+     * @param reservation the Reservation object containing updated fields
+     */
+    protected void updateReservationInDatabase(Reservation reservation) {
+        String sql =
+            "UPDATE reservations " +
+            "SET spot_id    = ?, " +
+            "    date       = ?, " +
+            "    end_time   = ?, " +
+            "    start_time = ? " +
+            "WHERE subscriber_id = ? ";
+
+        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
+            // 1) Bind the fields we're updating
+            ps.setInt(1, reservation.getSpot());
+            ps.setDate(2, java.sql.Date.valueOf(reservation.getDate()));
+            String endTimeStr = reservation.getEndTime();
+            if (endTimeStr == null || endTimeStr.trim().isEmpty()) {
+                ps.setNull(3, java.sql.Types.TIME);  // Set null if end_time is null or empty
+            } else {
+                // Append :00 for seconds to make the format HH:mm:ss
+            	if (endTimeStr.length() == 5) {  // HH:mm format
+                    endTimeStr += ":00";  // Append :00 for seconds if missing
+                }
+                try {
+                    ps.setTime(3, java.sql.Time.valueOf(endTimeStr));  // Convert to Time
+                } catch (IllegalArgumentException e) {
+                    throw new SQLException("Invalid end_time format: " + endTimeStr, e);
+                }
+            }
+            // 2) Bind the key columns in the WHERE clause
+            ps.setInt(5, reservation.getSubscriberId());
+            // Handle start_time using Time.valueOf() by ensuring the format is HH:mm:ss
+            String startTimeStr = reservation.getStartTime();
+            if (startTimeStr == null || startTimeStr.trim().isEmpty()) {
+            	System.out.println("Late");
+                ps.setNull(4, java.sql.Types.TIME);  // Set null if start_time is null or empty
+            } else {
+                // Append :00 for seconds to make the format HH:mm:ss
+            	 if (startTimeStr.length() == 5) {  // HH:mm format
+                     startTimeStr += ":00";  // Append :00 for seconds if missing
+                 }
+                try {
+                    ps.setTime(4, java.sql.Time.valueOf(startTimeStr));  // Convert to Time
+                } catch (IllegalArgumentException e) {
+                    throw new SQLException("Invalid start_time format: " + startTimeStr, e);
+                }
+            }
+            // 3) Execute
+            ps.executeUpdate();
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
@@ -509,37 +572,6 @@ public class DataBaseQuery extends MySQLConnection {
             e.printStackTrace();
         }
     }
-    /**
-     * Updates an existing reservation in the database.
-     * Since we use subscriber_id + start_time as the key, we cannot update those—
-     * so we only update the other fields.
-     *
-     * @param reservation the Reservation object containing updated fields
-     */
-    protected void updateReservationInDatabase(Reservation reservation) {
-        String sql =
-            "UPDATE reservations " +
-            "SET spot_id    = ?, " +
-            "    date       = ?, " +
-            "    end_time   = ? " +
-            "WHERE subscriber_id = ? " +
-            "  AND start_time    = ?";
-
-        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
-            // 1) Bind the fields we're updating
-            ps.setInt(1, reservation.getSpot());
-            ps.setDate(2, java.sql.Date.valueOf(reservation.getDate()));
-            ps.setTime(3, java.sql.Time.valueOf(reservation.getEndTime()));
-            // 2) Bind the key columns in the WHERE clause
-            ps.setInt(4, reservation.getSubscriberId());
-            ps.setTime(5, java.sql.Time.valueOf(reservation.getStartTime()));
-            // 3) Execute
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
      * Inserts a new Parkingsession into the database and updates its generated sessionId.
      *
@@ -590,6 +622,58 @@ public class DataBaseQuery extends MySQLConnection {
         }
     }
     /**
+     * Returns all parking spots that are not occupied (status = FREE or RESERVED)
+     * and that have no reservation overlapping the given date/time window.
+     *
+     * @param date      the reservation date (java.time.LocalDate)
+     * @param startTime the desired start time as "HH:mm:ss"
+     * @param endTime   the desired end   time as "HH:mm:ss"
+     * @return a list of ParkingSpot objects matching those criteria
+     */
+    protected List<ParkingSpot> getFreeParkingSpotFromDatabase(
+            LocalDate date,
+            String startTime,
+            String endTime
+    ) {
+        List<ParkingSpot> availableSpots = new ArrayList<>();
+
+        String sql =
+            "SELECT ps.spot_id, ps.status " +
+            "FROM parking_spots ps " +
+            "WHERE ps.status IN ('FREE','RESERVED') " +
+            "  AND NOT EXISTS ( " +
+            "    SELECT 1 FROM reservations r " +
+            "    WHERE r.spot_id    = ps.spot_id " +
+            "      AND r.date       = ? " +
+            "      AND r.start_time <= ? " +  // reservation starts before your desired end
+            "      AND r.end_time   >= ? " +  // reservation ends after your desired start
+            "  ) " +
+            "ORDER BY ps.spot_id ASC";
+
+        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
+            // 1) bind the date
+            ps.setDate(1, java.sql.Date.valueOf(date));
+            // 2) bind the desired end-time for the overlap check
+            ps.setTime(2, java.sql.Time.valueOf(endTime + ":00"));
+            // 3) bind the desired start-time for the overlap check
+            ps.setTime(3, java.sql.Time.valueOf(startTime + ":00"));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int spotId    = rs.getInt("spot_id");
+                    SpotStatus st = SpotStatus.valueOf(rs.getString("status"));
+                    availableSpots.add(new ParkingSpot(spotId, st));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return availableSpots;
+    }
+
+
+    /**
      * Inserts a new reservation into the database.
      *
      * @param reservation the Reservation to persist
@@ -608,8 +692,8 @@ public class DataBaseQuery extends MySQLConnection {
             // Convert LocalDate → java.sql.Date for the DATE column
             ps.setDate(3, java.sql.Date.valueOf(reservation.getDate()));
             // Convert String ("HH:mm:ss") → java.sql.Time for the TIME columns
-            ps.setTime(4, java.sql.Time.valueOf(reservation.getStartTime()));
-            ps.setTime(5, java.sql.Time.valueOf(reservation.getEndTime()));
+            ps.setTime(4, java.sql.Time.valueOf(reservation.getStartTime()+ ":00"));
+            ps.setTime(5, java.sql.Time.valueOf(reservation.getEndTime()+ ":00"));
             
             // Execute the INSERT
             ps.executeUpdate();
@@ -618,7 +702,8 @@ public class DataBaseQuery extends MySQLConnection {
             e.printStackTrace();
         }
     }
-    /**
+    
+    /**Add commentMore actions
      * Retrieves a Parkingsession by its session ID.
      *
      * @param sessionId the ID of the parking session to fetch
@@ -700,55 +785,7 @@ public class DataBaseQuery extends MySQLConnection {
         return activeList;
     }
 
-
-
-    /**
-     * Returns all parking spots that are not occupied (status = FREE or RESERVED)
-     * and that have no reservation overlapping the given date/time window.
-     *
-     * @param date      the reservation date (java.time.LocalDate)
-     * @param startTime the desired start time as "HH:mm:ss"
-     * @param endTime   the desired end   time as "HH:mm:ss"
-     * @return a list of ParkingSpot objects matching those criteria
-     */
-    protected List<ParkingSpot> getFreeParkingSpotFromDatabase(LocalDate date,String startTime,String endTime) {
-        List<ParkingSpot> availableSpots = new ArrayList<>();
-
-        String sql =
-            "SELECT ps.spot_id, ps.status " +
-            "FROM parking_spots ps " +
-            "WHERE ps.status IN ('FREE', 'RESERVED') " +
-            "  AND NOT EXISTS ( " +
-            "    SELECT 1 " +
-            "    FROM reservations r " +
-            "    WHERE r.spot_id    = ps.spot_id " +
-            "      AND r.date       = ? " +
-            "      AND r.start_time < ? " +
-            "      AND r.end_time   > ? " +
-            "  )";
-
-        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
-            // bind the date/time parameters
-            ps.setDate(1, java.sql.Date.valueOf(date));
-            ps.setTime(2, java.sql.Time.valueOf(startTime));
-            ps.setTime(3, java.sql.Time.valueOf(endTime));
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    int spotId = rs.getInt("spot_id");
-                    // convert the VARCHAR status into your SpotStatus enum
-                    SpotStatus status = SpotStatus.valueOf(rs.getString("status"));
-                    availableSpots.add(new ParkingSpot(spotId, status));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return availableSpots;
-    }
-
-    /**
+    /**Add commentMore actions
      * Checks whether extending the given parking session’s outTime would conflict
      * with any existing reservation for the same spot on that date.
      *
@@ -791,7 +828,8 @@ public class DataBaseQuery extends MySQLConnection {
 
         return availableOfTimeExtension;
     }
- // 1) Check if a subscriber’s email already exists for a different subscriber
+    
+    // 1) Check if a subscriber’s email already exists for a different subscriberAdd commentMore actions
     protected boolean checkUserEmailDuplicates(subscriber user) {
         boolean duplicate = false;
         String sql =
@@ -837,7 +875,8 @@ public class DataBaseQuery extends MySQLConnection {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
+        System.out.println(tag);
+        System.out.println(unique);
         return unique;
     }
 
@@ -945,6 +984,7 @@ public class DataBaseQuery extends MySQLConnection {
 
         return list;
     }
+    
     /**
      * Retrieves the next upcoming reservation for the given subscriber,
      * based on the current date/time. Returns the reservation whose
@@ -960,14 +1000,17 @@ public class DataBaseQuery extends MySQLConnection {
         // by using DATE > CURDATE() or (DATE = CURDATE() AND start_time >= CURTIME()).
         // Then pick the earliest by date/time.
         String sql =
-            "SELECT subscriber_id, spot_id, date, start_time, end_time " +
-            "FROM reservations " +
-            "WHERE subscriber_id = ? " +
-            "AND (date > CURDATE() " +
-            "OR (date = CURDATE() AND start_time BETWEEN "
-            + "CURTIME() AND ADDTIME(CURTIME(), '00:15:00') " +
-            "ORDER BY date ASC, start_time ASC " +
-            "LIMIT 1";
+        		"SELECT subscriber_id, spot_id, date, start_time, end_time " +
+        		"FROM reservations " +
+        		"WHERE subscriber_id = ? " +
+        		"AND end_time IS NOT NULL " + 
+        		"AND start_time IS NOT NULL " +
+        		"AND ( " +
+        		"    date >= CURDATE() " +  // Future reservations and today's reservations
+        		"    OR (date = CURDATE() AND start_time <= CURTIME()) " + // Reservations today that are in the past or current time
+        		") " +
+        		"ORDER BY date ASC, start_time ASC " +  // Earliest first
+        		"LIMIT 1";
 
         try (PreparedStatement ps = getCon().prepareStatement(sql)) {
             ps.setInt(1, subscriberId);
@@ -980,45 +1023,18 @@ public class DataBaseQuery extends MySQLConnection {
                     String start    = rs.getString("start_time");
                     String end      = rs.getString("end_time");
 
-                    result = new Reservation(subId, spotId, date, start, end);
+                    result = new Reservation(spotId, subId, date, start, end);
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
+        if (result != null) {
+            System.out.println("Reservation found: " + result.getStartTime() + " " + result.getEndTime());
+        } else {
+            System.out.println("No reservation found for subscriber " + subscriberId);
+        }
         return result;
     }
+
 }
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
