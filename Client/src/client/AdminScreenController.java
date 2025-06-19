@@ -25,110 +25,47 @@ public class AdminScreenController extends Controller{
 		this.backHandler = backHandler;
 	}
 	
-    @FXML
-    public void openReservationReport() {
-    	try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("ReportReservationScreenUI.fxml"));
-            Parent root = loader.load();
-            Stage reportStage = new Stage();
-            reportStage.setTitle("Reservations Report");
-            reportStage.setScene(new Scene(root));
-            reportStage.setMaximized(true);
-            reportStage.show();
-            if(client == null) System.out.println("client is null");
-            ReportReservationController controller = loader.getController();
-            controller.setClient(client, sub); // only if you use this
-            Stage attendantStage = (Stage) openReservationReportButton.getScene().getWindow();
-            attendantStage.hide();
-            
-            // Set message listener to the new controller
-            client.setMessageListener(controller::handleServerMessage);
-            
-            controller.setBackHandler(() -> {
-                reportStage.close();
-                attendantStage.show();
-                // Restore attendant as the message listener
-                client.setMessageListener(this::handleServerMessage);
-            });
+	@FXML
+	public void openReservationReport() {
+		try {
+			setscreen("Reservations Report", "ReportReservationScreenUI.fxml", "AdminScreen.fxml", "Admin Menu",
+					openReservationReportButton);
+			// Send request to the server
+			SendObject<String> request = new SendObject<>("Get", "all reservations");
+			client.sendToServerSafely(request);
 
-            // Send request to the server
-            SendObject<String> request = new SendObject<>("Get", "all reservations");
-            client.sendToServerSafely(request);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+	@FXML
+	public void openSubscribersReport() {
+		try {
+			setscreen("Subscribers Report", "ReportSubscriberUI.fxml", "AdminScreen.fxml", "Admin Menu",
+					openSubscribersReportButton);
+			// Send request to the server
+			SendObject<String> request = new SendObject<>("Get", "all subscribers");
+			client.sendToServerSafely(request);
 
-    @FXML
-    public void openSubscribersReport() {
-    	try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("ReportSubscriberUI.fxml"));
-            Parent root = loader.load();
-            Stage reportStage = new Stage();
-            reportStage.setTitle("Subscribers Report");
-            reportStage.setScene(new Scene(root));
-            reportStage.setMaximized(true);
-            reportStage.show();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-            ReportSubscriberController controller = loader.getController();
-            controller.setClient(client, sub); // only if you use this
-            Stage attendantStage = (Stage) openSubscribersReportButton.getScene().getWindow();
-            attendantStage.hide();
-            
-            // Set message listener to the new controller
-            client.setMessageListener(controller::handleServerMessage);
+	@FXML
+	public void openActiveSessionsReport() {
+		try {
+			setscreen("Active Sessions Report", "ReportActiveSessionsUI.fxml", "AdminScreen.fxml", "Admin Menu",
+					openActiveSessionsReportButton);
+			// Send request to the server
+			SendObject<String> request = new SendObject<>("Get", "active parking sessions");
+			client.sendToServerSafely(request);
 
-            controller.setBackHandler(() -> {
-                reportStage.close();
-                attendantStage.show();
-                // Restore attendant as the message listener
-                client.setMessageListener(this::handleServerMessage);
-            });
-
-            // Send request to the server
-            SendObject<String> request = new SendObject<>("Get", "all subscribers");
-            client.sendToServerSafely(request);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    public void openActiveSessionsReport() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("ReportActiveSessionsUI.fxml"));
-            Parent root = loader.load();
-            Stage reportStage = new Stage();
-            reportStage.setTitle("Active Sessions Report");
-            reportStage.setScene(new Scene(root));
-            reportStage.setMaximized(true);
-            reportStage.show();
-
-            ReportActiveSessionsController controller = loader.getController();
-            controller.setClient(client, sub); // only if you use this
-            Stage attendantStage = (Stage) openActiveSessionsReportButton.getScene().getWindow();
-            attendantStage.hide();
-            
-            // Set message listener to the new controller
-            client.setMessageListener(controller::handleServerMessage);
-
-            controller.setBackHandler(() -> {
-                reportStage.close();
-                attendantStage.show();
-                // Restore attendant as the message listener
-                client.setMessageListener(this::handleServerMessage);
-            });
-
-            // Send request to the server
-            SendObject<String> request = new SendObject<>("Get", "active parking sessions");
-            client.sendToServerSafely(request);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
     
     @FXML private void handleBackButton() {
