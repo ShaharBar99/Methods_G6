@@ -79,7 +79,7 @@ public class PickUpScreenController extends Controller{
 					showPickUpSuccess();
 				}
 			} catch (Exception e) {
-				ShowAlert.showAlert("Error", "Server communication failure\n"+e.getMessage(), AlertType.ERROR);
+				ShowAlert.showAlert("Error", e.getMessage(), AlertType.ERROR);
 				serverConnection = false;
 			}
 		}

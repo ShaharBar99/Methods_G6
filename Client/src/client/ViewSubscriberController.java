@@ -1,7 +1,5 @@
 package client;
 
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,12 +12,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.chart.PieChart;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import logic.Role;
 import logic.SendObject;
 import logic.subscriber;
@@ -27,38 +20,38 @@ import logic.subscriber;
 public class ViewSubscriberController extends Controller {
 
 	@FXML
-	private TableView<subscriber> subscriberTable;
+	protected TableView<subscriber> subscriberTable;
 
 	@FXML
-	private TableColumn<subscriber, Integer> colSubscriberId;
+	protected TableColumn<subscriber, Integer> colSubscriberId;
 	@FXML
-	private TableColumn<subscriber, String> colName;
+	protected TableColumn<subscriber, String> colName;
 	@FXML
-	private TableColumn<subscriber, String> colEmail;
+	protected TableColumn<subscriber, String> colEmail;
 	@FXML
-	private TableColumn<subscriber, String> colPhone;
+	protected TableColumn<subscriber, String> colPhone;
 	@FXML
-	private TableColumn<subscriber, String> colTag;
+	protected TableColumn<subscriber, String> colTag;
 	@FXML
-	private TableColumn<subscriber, Role> colRole;
+	protected TableColumn<subscriber, Role> colRole;
 
 	@FXML
-	private ComboBox<String> roleComboBox;
+	protected ComboBox<String> roleComboBox;
 
 	@FXML
-	private Button sortBySubscriberIdButton;
+	protected Button sortBySubscriberIdButton;
 	@FXML
-	private Button backButton;
+	protected Button backButton;
 
-	private List<subscriber> allSubscribers = new ArrayList<>();
-	private List<subscriber> filteredSubscribers = new ArrayList<>();
-	private final List<String> roles = Arrays.asList("All", "MANAGER", "SUBSCRIBER", "ATTENDANT");
+	protected List<subscriber> allSubscribers = new ArrayList<>();
+	protected List<subscriber> filteredSubscribers = new ArrayList<>();
+	protected final List<String> roles = Arrays.asList("All", "MANAGER", "SUBSCRIBER", "ATTENDANT");
 
-	private Runnable backHandler;
+	protected Runnable backHandler;
 
 	@FXML
 	public void initialize() {
-		// Set up table columns
+		// Column setup
 		colSubscriberId
 				.setCellValueFactory(cellData -> new SimpleIntegerProperty(cellData.getValue().getId()).asObject());
 		colName.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getName()));
@@ -67,22 +60,18 @@ public class ViewSubscriberController extends Controller {
 		colTag.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getTag()));
 		colRole.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getRole()));
 
-		// Setup roleComboBox
+		// Combo box
 		roleComboBox.getItems().setAll(roles);
-		roleComboBox.getSelectionModel().selectFirst(); // "All"
+		roleComboBox.getSelectionModel().selectFirst();
 		roleComboBox.setOnAction(e -> filterSubscribers());
+
 		if (sortBySubscriberIdButton != null) {
 			sortBySubscriberIdButton.setOnAction(e -> sortBySubscriberId());
 		}
 	}
 
-	/** Called with all subscribers from server */
-	public void setSubscribers(List<subscriber> subscribers) {
-		this.allSubscribers = subscribers;
-		filterSubscribers(); // Always refresh filter!
-	}
-
-	private void filterSubscribers() {
+	/** Can be reused in subclass */
+	protected void filterSubscribers() {
 		String selectedRole = roleComboBox.getValue();
 
 		filteredSubscribers = allSubscribers.stream().filter(sub -> {
@@ -90,20 +79,25 @@ public class ViewSubscriberController extends Controller {
 				return true;
 			return sub.getRole().name().equals(selectedRole);
 		}).collect(Collectors.toList());
+
 		subscriberTable.getItems().setAll(filteredSubscribers);
-		updatePieChart(); // Update pie chart with filtered data
 	}
 
-	private void sortBySubscriberId() {
+	protected void sortBySubscriberId() {
 		colSubscriberId.setSortType(TableColumn.SortType.ASCENDING);
 		subscriberTable.getSortOrder().setAll(colSubscriberId);
 		subscriberTable.sort();
 	}
 
+	public void setSubscribers(List<subscriber> subscribers) {
+		this.allSubscribers = subscribers;
+		filterSubscribers();
+	}
+
 	public void handleServerMessage(Object msg) {
 		if (msg instanceof SendObject<?>) {
-			if (((SendObject) msg).getObj() instanceof List<?>) {
-				List<?> updated = (List<?>) ((SendObject) msg).getObj();
+			if (((SendObject<?>) msg).getObj() instanceof List<?>) {
+				List<?> updated = (List<?>) ((SendObject<?>) msg).getObj();
 				if (!updated.isEmpty() && updated.get(0) instanceof subscriber) {
 					Platform.runLater(() -> setSubscribers((List<subscriber>) updated));
 				}
@@ -111,29 +105,18 @@ public class ViewSubscriberController extends Controller {
 		}
 	}
 
-	private void updatePieChart() {
-		// Count roles
-		long subscriberCount = filteredSubscribers.stream().filter(sub -> sub.getRole() == Role.SUBSCRIBER).count();
-		long attendantCount = filteredSubscribers.stream().filter(sub -> sub.getRole() == Role.ATTENDANT).count();
-		long managerCount = filteredSubscribers.stream().filter(sub -> sub.getRole() == Role.MANAGER).count();
-
-		ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList(
-				new PieChart.Data("Subscriber", subscriberCount), new PieChart.Data("Attendant", attendantCount),
-				new PieChart.Data("Manager", managerCount));
-	}
-
 	public void setBackHandler(Runnable backHandler) {
 		this.backHandler = backHandler;
 	}
 
 	@FXML
-	private void handleBackButton() {
+	protected void handleBackButton() {
 		if (backHandler != null) {
 			backHandler.run();
 		}
 	}
 
-	private void showAlert(String msg) {
+	protected void showAlert(String msg) {
 		Alert alert = new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK);
 		alert.showAndWait();
 	}

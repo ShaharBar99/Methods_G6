@@ -1,7 +1,5 @@
 package client;
 
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,33 +19,32 @@ import logic.SendObject;
 public class ViewActiveSessionsController extends Controller {
 
 	@FXML
-	private TableView<Parkingsession> sessionTable;
+	protected TableView<Parkingsession> sessionTable;
 
 	@FXML
-	private TableColumn<Parkingsession, Integer> colSessionId;
+	protected TableColumn<Parkingsession, Integer> colSessionId;
 	@FXML
-	private TableColumn<Parkingsession, Integer> colSubscriberId;
+	protected TableColumn<Parkingsession, Integer> colSubscriberId;
 	@FXML
-	private TableColumn<Parkingsession, Integer> colSpotId;
+	protected TableColumn<Parkingsession, Integer> colSpotId;
 	@FXML
-	private TableColumn<Parkingsession, Integer> colParkingCode;
+	protected TableColumn<Parkingsession, Integer> colParkingCode;
 	@FXML
-	private TableColumn<Parkingsession, java.util.Date> colInTime;
+	protected TableColumn<Parkingsession, java.util.Date> colInTime;
 	@FXML
-	private TableColumn<Parkingsession, java.util.Date> colOutTime;
+	protected TableColumn<Parkingsession, java.util.Date> colOutTime;
 	@FXML
-	private TableColumn<Parkingsession, Boolean> colExtended;
+	protected TableColumn<Parkingsession, Boolean> colExtended;
 	@FXML
-	private TableColumn<Parkingsession, Boolean> colLate;
+	protected TableColumn<Parkingsession, Boolean> colLate;
 	@FXML
-	private TableColumn<Parkingsession, Boolean> colActive;
+	protected TableColumn<Parkingsession, Boolean> colActive;
 
 	@FXML
-	private Button backButton;
+	protected Button backButton;
 
-	private List<Parkingsession> allSessions = new ArrayList<>();
-
-	private Runnable backHandler;
+	protected List<Parkingsession> allSessions = new ArrayList<>();
+	protected Runnable backHandler;
 
 	@FXML
 	public void initialize() {
@@ -75,8 +72,8 @@ public class ViewActiveSessionsController extends Controller {
 
 	public void handleServerMessage(Object msg) {
 		if (msg instanceof SendObject<?>) {
-			if (((SendObject) msg).getObj() instanceof List<?>) {
-				List<?> updated = (List<?>) ((SendObject) msg).getObj();
+			if (((SendObject<?>) msg).getObj() instanceof List<?>) {
+				List<?> updated = (List<?>) ((SendObject<?>) msg).getObj();
 				if (!updated.isEmpty() && updated.get(0) instanceof Parkingsession) {
 					Platform.runLater(() -> setSessions((List<Parkingsession>) updated));
 				}
@@ -89,13 +86,13 @@ public class ViewActiveSessionsController extends Controller {
 	}
 
 	@FXML
-	private void handleBackButton() {
+	protected void handleBackButton() {
 		if (backHandler != null) {
 			backHandler.run();
 		}
 	}
 
-	private void showAlert(String msg) {
+	protected void showAlert(String msg) {
 		Alert alert = new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK);
 		alert.showAndWait();
 	}
