@@ -83,10 +83,4 @@ public class MainMenuController extends Controller{
             System.out.println("cant");
         }
     }
-    protected void handleMessageFromServer(Object msg) {
-		
-		
-	}
-
-
 }

@@ -125,8 +125,6 @@ public class ParkingController {
 			Date inTime = new Date();
 			Date outTime = new Date(inTime.getTime() + 4 * 60 * 60 * 1000); // 4 hour later
 			ParkingSpot spot = assignParkingSpot();
-			if (spot != null)
-				System.out.println(spot.getSpotId());
 			int parkingCode = generateParkingCode(); // generate parking code
 			System.out.println("gen");
 			// subscriber1 != null for testing/checking
@@ -183,7 +181,6 @@ public class ParkingController {
 		try {
 			responseReceived = false;
 			sendParkingCode(code);
-			System.out.println(code);
 			// Poll until response is received
 			waitForServerResponse(20000);
 			if (mySession != null) { // this should be retrieved from the database using the parking code
@@ -207,9 +204,8 @@ public class ParkingController {
 				throw new Exception();
 		} catch (Exception e) {
 			// Log or handle exception
-			System.err.println("Error processing parking code: " + e.getMessage());
 			e.printStackTrace();
-			throw new Exception();
+			throw new Exception("Error processing parking code, the code could be wrong.");
 		}
 	}
 
@@ -325,11 +321,6 @@ public class ParkingController {
 			// responseReceived = false;
 			// Check if we've exceeded the timeout
 			if (System.currentTimeMillis() - startTime > timeoutMillis) {
-
-				ShowAlert.showAlert("Timeout Error",
-						"The server did not respond within the expected time. Please try again later.",
-						AlertType.ERROR);
-
 				throw new Exception("Server response timed out after " + timeoutMillis + " milliseconds");
 			}
 		}
@@ -373,8 +364,6 @@ public class ParkingController {
 	        Date inTime = Date.from(inDateTime.atZone(ZoneId.systemDefault()).toInstant());
 	        Date outTime = Date.from(outDateTime.atZone(ZoneId.systemDefault()).toInstant());
 			spot = new ParkingSpot(reservation.getSpot(), SpotStatus.OCCUPIED);
-			if (spot != null)
-				System.out.println(spot.getSpotId()); // for testing
 			int parkingCode = generateParkingCode(); // generate parking code
 			// sub != null for testing/checking
 			if (sub != null) {

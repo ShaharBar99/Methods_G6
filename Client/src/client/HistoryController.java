@@ -24,7 +24,6 @@ public class HistoryController {
 	}
 
 	public void handleServerMessage(Object message) {
-		System.out.println("got in controller");
 		if (message instanceof SendObject<?>) {
 			SendObject<?> sendObject = (SendObject<?>) message;
 			
@@ -41,9 +40,7 @@ public class HistoryController {
 	public List<Parkingsession> getSessions() throws Exception {
 		responseReceived = false;
 		client.sendToServerSafely(new SendObject<Integer>("Get history", subscriber.getId()));
-		System.out.println("waiting for ses");
 		waitForServerResponse(15000);
-		System.out.println("got ses");
 		return sessions;
 	}
 
@@ -56,14 +53,8 @@ public class HistoryController {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			// responseReceived = false;
 			// Check if we've exceeded the timeout
 			if (System.currentTimeMillis() - startTime > timeoutMillis) {
-
-				ShowAlert.showAlert("Timeout Error",
-						"The server did not respond within the expected time. Please try again later.",
-						AlertType.ERROR);
-
 				throw new Exception("Server response timed out after " + timeoutMillis + " milliseconds");
 			}
 		}

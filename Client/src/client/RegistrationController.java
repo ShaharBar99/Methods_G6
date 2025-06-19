@@ -80,8 +80,6 @@ public class RegistrationController extends Controller{
 	}
 
 	public void handleServerMessage(Object msg) {
-		System.out.println("starting handleServerMessage");
-		System.out.println("[Server] " + msg);
 		// If the message is a SendObject, it contains the subscriber object
 		if (msg instanceof SendObject<?>) {
 			SendObject<?> response = (SendObject<?>) msg;

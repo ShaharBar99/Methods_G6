@@ -72,7 +72,6 @@ public class HistoryScreenController extends Controller{
 	 */
 	@FXML
 	public void displayHistory() {
-		System.out.println("display");
 		List<Parkingsession> sessions;
 		try {
 			sessions = controller.getSessions();
@@ -80,13 +79,12 @@ public class HistoryScreenController extends Controller{
 			parkingTable.setItems(data);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			ShowAlert.showAlert("Error", "Error getting history", AlertType.ERROR);
+			ShowAlert.showAlert("Error", "Error getting history:"+e.getMessage(), AlertType.ERROR);
 			e.printStackTrace();
 		}
 	}
 
 	public void handleServerMessage(Object message) {
-		System.out.println("got in controller screen");
 		controller.handleServerMessage(message);
 	}
 

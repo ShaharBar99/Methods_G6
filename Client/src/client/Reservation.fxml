@@ -30,7 +30,7 @@
         </columnConstraints>
 
         <Label styleClass="form-label" text="Date:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-        <DatePicker fx:id="datePicker" promptText="DD.MM.YYYY" styleClass="date-picker" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+        <DatePicker fx:id="datePicker" promptText="dd.MM.yyyy" styleClass="date-picker" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
         <Label styleClass="form-label" text="Start Time:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
         <TextField fx:id="startTimeField" promptText="HH:MM" GridPane.columnIndex="1" GridPane.rowIndex="1" />
