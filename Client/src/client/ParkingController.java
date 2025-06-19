@@ -107,7 +107,7 @@ public class ParkingController {
 		client.sendToServerSafely(new SendObject<String>("Get", "Free spot")); // V
 		// Poll until response is received
 		System.out.println("waiting");
-		waitForServerResponse(20000);
+		Util.waitForServerResponse(20000,()->this.responseReceived);
 		System.out.println("ended waiting from server");
 		return spot;
 	}
@@ -170,7 +170,7 @@ public class ParkingController {
 		client.sendToServerSafely(new SendObject<String>("Check", "Availability")); // V
 
 		// Poll until response is received
-		waitForServerResponse(20000);
+		Util.waitForServerResponse(20000,()->this.responseReceived);
 		// isAvailable = true; // For testing
 		return isAvailable;
 		// TO DO: maybe we should get this information from the server
@@ -182,7 +182,7 @@ public class ParkingController {
 			responseReceived = false;
 			sendParkingCode(code);
 			// Poll until response is received
-			waitForServerResponse(20000);
+			Util.waitForServerResponse(20000,()->this.responseReceived);
 			if (mySession != null) { // this should be retrieved from the database using the parking code
 
 				// TO DO: get session from database using the parking code
@@ -286,7 +286,7 @@ public class ParkingController {
 
 			// Send to server
 			client.sendToServerSafely(new SendObject<Integer>("Check new Parking Code", parkingCode));// V
-			waitForServerResponse(20000);
+			Util.waitForServerResponse(20000,()->this.responseReceived);
 		} while (isUsedCode); // if used, repeat
 		return parkingCode;
 	}
@@ -294,7 +294,7 @@ public class ParkingController {
 	public List<Parkingsession> getActiveParkingSessions() throws Exception {
 		responseReceived = false;
 		client.sendToServerSafely(new SendObject<Integer>("Get Active Parkingsessions", sub.getId()));
-		waitForServerResponse(20000);
+		Util.waitForServerResponse(20000,()->this.responseReceived);
 		List<Parkingsession> activeSessions = new ArrayList<>();
 		activeSessions.addAll(sessions);
 		setSessions(null);
@@ -304,21 +304,17 @@ public class ParkingController {
 	public String ExtendTime(Parkingsession session) throws Exception {
 		responseReceived = false;
 		client.sendToServerSafely(new SendObject<Parkingsession>("Update time in session", session));
-		waitForServerResponse(20000);
+		Util.waitForServerResponse(20000,()->this.responseReceived);
 		String TimeExtensionRespond = respond;
 		respond = null;
 		return TimeExtensionRespond;
-	}
-
-	private boolean waitForServerResponse(long timeoutMillis) throws Exception {
-		return Util.waitForServerResponse(timeoutMillis, responseReceived);
 	}
 
 	public Parkingsession getSessionById(int parkingId) throws Exception {
 		// TODO Auto-generated method stub
 		responseReceived = false;
 		client.sendToServerSafely(new SendObject<Integer>("Get Parkingsession", parkingId));
-		waitForServerResponse(20000);
+		Util.waitForServerResponse(20000,()->this.responseReceived);
 		Parkingsession session = null;
 		if (timeExtendSession != null) {
 			if (timeExtendSession.getSubscriberId() == sub.getId()) {
@@ -386,7 +382,7 @@ public class ParkingController {
 	private Reservation getReservation() throws Exception {
 		responseReceived = false;
 		client.sendToServerSafely(new SendObject("Get close to current time reservation", sub.getId()));
-		waitForServerResponse(20000);
+		Util.waitForServerResponse(20000,()->this.responseReceived);
 		return reservation;
 	}
 	

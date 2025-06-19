@@ -3,6 +3,7 @@ package client;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.util.function.Supplier;
 
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -36,5 +37,14 @@ public class Util {
 		}
 	}
 	
-	
+	public static boolean waitForServerResponse(long timeoutMillis, Supplier<Boolean> responseCondition) throws Exception {
+        long startTime = System.currentTimeMillis();
+        while (!responseCondition.get()) {
+            Thread.sleep(10);
+            if (System.currentTimeMillis() - startTime > timeoutMillis) {
+                throw new Exception("Server response timed out after " + timeoutMillis + " milliseconds");
+            }
+        }
+        return true;
+    }
 }

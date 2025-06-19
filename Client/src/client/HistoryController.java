@@ -40,11 +40,8 @@ public class HistoryController {
 	public List<Parkingsession> getSessions() throws Exception {
 		responseReceived = false;
 		client.sendToServerSafely(new SendObject<Integer>("Get history", subscriber.getId()));
-		waitForServerResponse(15000);
+		Util.waitForServerResponse(15000,()->this.responseReceived);
 		return sessions;
 	}
 
-	private boolean waitForServerResponse(long timeoutMillis) throws Exception {
-		return Util.waitForServerResponse(timeoutMillis, responseReceived);
-	}
 }
