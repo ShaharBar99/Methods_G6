@@ -35,4 +35,21 @@ public class Util {
 			}
 		}
 	}
+	
+	public static boolean waitForServerResponse(long timeoutMillis,boolean responseReceived) throws Exception {
+		long startTime = System.currentTimeMillis();
+		while (!responseReceived) {
+			try {
+				Thread.sleep(10); // sleep briefly to avoid busy-waiting
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			// responseReceived = false;
+			// Check if we've exceeded the timeout
+			if (System.currentTimeMillis() - startTime > timeoutMillis) {
+				throw new Exception("Server response timed out after " + timeoutMillis + " milliseconds");
+			}
+		}
+		return true;
+	}
 }
