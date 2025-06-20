@@ -630,41 +630,45 @@ public class DataBaseQuery extends MySQLConnection {
      * @param endTime   the desired end   time as "HH:mm:ss"
      * @return a list of ParkingSpot objects matching those criteria
      */
-    protected List<ParkingSpot> getFreeParkingSpotFromDatabase(LocalDate date,String startTime,String endTime) {
+    protected List<ParkingSpot> getFreeParkingSpotFromDatabase(
+            LocalDate date,
+            String startTime,
+            String endTime
+    ) {
         List<ParkingSpot> availableSpots = new ArrayList<>();
 
         String sql =
-        		"SELECT ps.spot_id, ps.status " +
-        		        "FROM parking_spots ps " +
-        		        "WHERE ps.status IN ('FREE', 'RESERVED') " +
-        		        "  AND NOT EXISTS ( " +
-        		        "    SELECT 1 " +
-        		        "    FROM reservations r " +
-        		        "    WHERE r.spot_id = ps.spot_id " +
-        		        "      AND r.date = ? " +
-        		        "      AND ( " +
-        		        "        (r.end_time IS NOT NULL AND r.start_time < ? AND r.end_time > ?) " +  // Case 1: Reservation has a set end time
-        		        "        OR (r.end_time IS NULL AND r.start_time < ? ) " +  // Case 2: Reservation has no end time but starts before requested time
-        		        "      )" +
-        		        "  )";
+            "SELECT ps.spot_id, ps.status " +
+            "FROM parking_spots ps " +
+            "WHERE ps.status IN ('FREE','RESERVED') " +
+            "  AND NOT EXISTS ( " +
+            "    SELECT 1 FROM reservations r " +
+            "    WHERE r.spot_id    = ps.spot_id " +
+            "      AND r.date       = ? " +
+            "      AND r.start_time <= ? " +  // reservation starts before your desired end
+            "      AND r.end_time   >= ? " +  // reservation ends after your desired start
+            "  ) " +
+            "ORDER BY ps.spot_id ASC";
+
         try (PreparedStatement ps = getCon().prepareStatement(sql)) {
-            // bind the date/time parameters
-        	ps.setDate(1, java.sql.Date.valueOf(date));  // setting the date (yyyy-MM-dd)
-            ps.setTime(2, java.sql.Time.valueOf(startTime+":00")); // set start time (HH:mm:ss)
-            ps.setTime(3, java.sql.Time.valueOf(endTime+":00"));   // set end time (HH:mm:ss)
-            ps.setTime(4, java.sql.Time.valueOf(startTime+":00")); // set start time (HH:mm:ss) for second condition
-            
+            // 1) bind the date
+            ps.setDate(1, java.sql.Date.valueOf(date));
+            // 2) bind the desired end-time for the overlap check
+            ps.setTime(2, java.sql.Time.valueOf(endTime + ":00"));
+            // 3) bind the desired start-time for the overlap check
+            ps.setTime(3, java.sql.Time.valueOf(startTime + ":00"));
+
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    int spotId = rs.getInt("spot_id");
-                    // convert the VARCHAR status into your SpotStatus enum
-                    SpotStatus status = SpotStatus.valueOf(rs.getString("status"));
-                    availableSpots.add(new ParkingSpot(spotId, status));
+                    int spotId    = rs.getInt("spot_id");
+                    SpotStatus st = SpotStatus.valueOf(rs.getString("status"));
+                    availableSpots.add(new ParkingSpot(spotId, st));
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return availableSpots;
     }
 
