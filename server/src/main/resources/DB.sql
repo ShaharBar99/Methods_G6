@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS `subscribers` (
   `role`          VARCHAR(50)   DEFAULT 'USER',
   `tag`           VARCHAR(50)   DEFAULT NULL,
   `code`          INT           DEFAULT NULL,
-  PRIMARY KEY (`subscriber_id`)
+  PRIMARY KEY (`subscriber_id`),
+  UNIQUE (`email`)
 ) ENGINE=InnoDB 
   DEFAULT CHARSET=utf8mb4 
   COLLATE=utf8mb4_0900_ai_ci;
@@ -29,8 +30,8 @@ INSERT INTO `subscribers`
 VALUES
   (2001,'Alice','050-1234567','alice@example.com','SUBSCRIBER',NULL,111111),
   (2002,'Bob'  ,'050-2345678','bob@example.com'  ,'SUBSCRIBER',NULL,222222),
-  (2003,'Carol','050-3456789','carol@example.com','SUBSCRIBER',NULL,333333),
-  (2004,'Dave' ,'050-4567890','dave@example.com' ,'SUBSCRIBER',NULL,444444),
+  (2003,'Carol','050-3456789','carol@example.com','SUBSCRIBER','E200341201F82031AB12CD3F',333333),
+  (2004,'Dave' ,'050-4567890','dave@example.com' ,'ATTENDANT',NULL,444444),
   (2005,'Eve'  ,'050-5678901','eve@example.com'  ,'MANAGER',NULL,555555);
 UNLOCK TABLES;
 
@@ -104,8 +105,8 @@ CREATE TABLE IF NOT EXISTS `reservations` (
   `subscriber_id`   INT            NOT NULL,
   `spot_id`         INT            NOT NULL,
   `date`            DATE           NOT NULL,
-  `start_time`      TIME           NOT NULL,
-  `end_time`        TIME           NOT NULL,
+  `start_time`      TIME           DEFAULT NULL,
+  `end_time`        TIME           DEFAULT NULL,
   PRIMARY KEY (`reservation_id`),
   FOREIGN KEY (`subscriber_id`) REFERENCES `subscribers`(`subscriber_id`)
     ON UPDATE CASCADE ON DELETE CASCADE,

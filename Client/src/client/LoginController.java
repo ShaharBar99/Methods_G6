@@ -16,14 +16,12 @@ import logic.*;
 
 public class LoginController {
 
+	final int port = 5555;
     @FXML private TextField ipField;
     @FXML private ComboBox<String> loginMethodComboBox;
-    @FXML private ComboBox<String> roleComboBox;
-
     @FXML private TextField nameField;
     @FXML private TextField subscriberIdField;
     @FXML private TextField tagField;
-
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private Button exitButton;
@@ -32,105 +30,61 @@ public class LoginController {
     @FXML
     public void initialize() {
         loginMethodComboBox.setItems(FXCollections.observableArrayList(
-            "Name + Subscriber ID", "Tag"
+            "Name + Subscriber Code", "Tag"
         ));
 
-        roleComboBox.setItems(FXCollections.observableArrayList(
-            "Admin", "Subscriber", "Attendant"
-        ));
 
         // שינוי תצוגת השדות לפי login method
         loginMethodComboBox.setOnAction(event -> updateFieldVisibility());
-        roleComboBox.setOnAction(event -> updateFieldVisibility());
+
     }
 
     private void updateFieldVisibility() {
         String method = loginMethodComboBox.getValue();
-        String role = roleComboBox.getValue();
-
-        boolean isSubscriber = "Subscriber".equals(role);
-        boolean isAdminOrAttendant = "Admin".equals(role) || "Attendant".equals(role);
         boolean isTag = "Tag".equals(method);
 
-        // עבור Admin/Attendant – רק username ו־password
-        usernameField.setVisible(isAdminOrAttendant);
-        usernameField.setManaged(isAdminOrAttendant);
-
-        passwordField.setVisible(isAdminOrAttendant);
-        passwordField.setManaged(isAdminOrAttendant);
-
         // עבור Subscriber – name + id או tag
-        nameField.setVisible(isSubscriber && !isTag);
-        nameField.setManaged(isSubscriber && !isTag);
+        nameField.setVisible(!isTag);
+        nameField.setManaged(!isTag);
 
-        subscriberIdField.setVisible(isSubscriber && !isTag);
-        subscriberIdField.setManaged(isSubscriber && !isTag);
+        subscriberIdField.setVisible(!isTag);
+        subscriberIdField.setManaged(!isTag);
 
-        tagField.setVisible(isSubscriber && isTag);
-        tagField.setManaged(isSubscriber && isTag);
+        tagField.setVisible(isTag);
+        tagField.setManaged(isTag);
     }
 
     @FXML
     private void handleLogin() {
     	String ipAddress = ipField.getText().trim();
-		String portText = "5555";
-		if (ipAddress.isEmpty() || portText.isEmpty()) {
+		if (ipAddress.isEmpty()) {
 			ShowAlert.showAlert("Error", "Please enter both IP and port", Alert.AlertType.ERROR);
 			return;
 		}
-		int port;
-		try {
-			port = Integer.parseInt(portText);
-		} catch (NumberFormatException e) {
-			ShowAlert.showAlert("Error", "Port must be a valid number", Alert.AlertType.ERROR);
-			return;
-		}
-		connectToServer(ipAddress, port);
+		subscriber sub1 = createsubfromlogin();
+		connectToServer(ipAddress, port,sub1);
     }
     
     public subscriber createsubfromlogin() {
-    	String box1 = loginMethodComboBox.getValue();
-		String box2 = roleComboBox.getValue();
 		subscriber sub = null;
+		String passwordText = subscriberIdField.getText().trim();
 		try {
-		if(box2.equals("Admin")) {
-			String passwordText = passwordField.getText().trim();
-			int passwordInt = Integer.parseInt(passwordText);
-			sub = new subscriber(0,usernameField.getText().trim(),null,null,Role.MANAGER,
-					null,null,passwordInt);
-		}
-		else if(box2.equals("Attendant")) {
-			String passwordText = passwordField.getText().trim();
-			int passwordInt = Integer.parseInt(passwordText);
-			sub = new subscriber(0,usernameField.getText().trim(),null,null,Role.ATTENDANT,
-					null,null,passwordInt);
-		}
-		else {
-			if(box1.equals("Tag")) {
-				sub = new subscriber(0,nameField.getText().trim(),null,null,Role.SUBSCRIBER,
-						null,tagField.getText(),0);
-			}
-			else if(box1.equals("Name + Subscriber ID")) {
-				String subid = subscriberIdField.getText().trim();
-				int subint = Integer.parseInt(subid);
-				sub = new subscriber(0,nameField.getText().trim(),null,null,Role.SUBSCRIBER,
-						null,null,subint);
-			}
-		}
+		int passwordInt = Integer.parseInt(passwordText);
+		sub = new subscriber(0,nameField.getText().trim(),null,null,null,
+				null,null,passwordInt);	
 	    } catch (Exception e) {
 			ShowAlert.showAlert("Error", "The type of the fields is wrong", Alert.AlertType.ERROR);
-
 		}
-    	return sub;	
+    	return sub;
     }
     
-    public void connectToServer(String ipAddress, int port) {
+    public void connectToServer(String ipAddress, int port,subscriber sub1) {
 		try {
 			client = new BParkClient(ipAddress, port);
 			//connectButton.setDisable(true);
 			exitButton.setDisable(false);
 			//client.start();
-			subscriber sub1 = createsubfromlogin();
+			
 			client.start(sub1);
 			
 			// Creates the order table 
@@ -147,71 +101,90 @@ public class LoginController {
     		if(msg instanceof SendObject) {
     			SendObject send = (SendObject)msg;
     			if(send.getObj() instanceof subscriber) {
-		//connect to server
+    		//connect to server
+    			subscriber sub = (subscriber) send.getObj();
+    			System.out.println("[Server] " + msg);
+    			if(sub.getRole().equals(Role.SUBSCRIBER)) {
+    				this.connectclient(sub,"MainMenuScreen.fxml","Main Menu",-1);
+    			}
+    			else if(sub.getRole().equals(Role.ATTENDANT)) {
+    				this.connectclient(sub,"AttendantScreen.fxml","Attendant Menu",-1);
+    			}
+    			else if(sub.getRole().equals(Role.MANAGER)) {
+    				this.connectclient(sub,"AdminScreen.fxml","Admin Menu",-1);
+    			}
     			
-			System.out.println("[Server] " + msg);
-
-			// Load next screen (Order Table)
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("MainMenuScreen.fxml"));
-			Parent tableRoot = null;
-			try {
-				tableRoot = loader.load();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				System.out.println("cant load main menu screen");
-				e.printStackTrace();
-			}
-			// After Connection start the order table
-   
-            Stage stage = (Stage) connectButton.getScene().getWindow();
-            Scene scene = new Scene(tableRoot);
-            stage.setScene(scene);
-            stage.sizeToScene();
-            stage.centerOnScreen();
-			stage.setTitle("Main Menu");
-			stage.setMaximized(true);
-
-			// Makes sure when X is pressed it closes the connection to the server
-			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-				@Override
-				public void handle(WindowEvent event) {
-					System.out.println("Closing application...");
-					client.stop();
-					System.gc();
-					System.exit(0);
-				}
-			});
-			MainMenuController controller = loader.getController();
-			//controller.setOrders(orders);
-			//controller.setClient(clientConnection);
-			controller.setClient(client,(subscriber)send.getObj());
-			//controller.setSub(msg);
-			controller.setBackHandler(() -> { // Handle back button action using lambda
-				try { // Stop the client connection
-					client.stop();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				try { // Load the connection screen again
-					FXMLLoader loginLoader = new FXMLLoader(getClass().getResource("login.fxml"));
-					Parent loginRoot = loginLoader.load();
-					stage.setScene(new Scene(loginRoot));
-					stage.setTitle("Connect to Server");
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			});
-			// hand off all future messages to the BParkClientController
-			client.setMessageListener(controller::handleServerMessage);
+    			
 		}
- 
+    			else if(send.getObj() instanceof Double) {
+    				System.out.println(send.getObj());
+    				this.connectclient(null,"GuestScreenUI.fxml","Guest Screen",(double)send.getObj());
+    			}
+    			
 		else{
 		client.stop();
 		ShowAlert.showAlert("Error", "Cant login to server wrong account", Alert.AlertType.ERROR);
 		}
     		}
+    		
 	});
     }
+    private void connectclient(subscriber sub,String fxml,String title,double percent) {
+    	// Load next screen (Order Table)
+		Controller controller = null;
+		FXMLLoader loader = new FXMLLoader(getClass().getResource(fxml));
+		Parent tableRoot = null;
+		
+		try {
+			tableRoot = loader.load();
+			controller = loader.getController();
+			controller.setClient(client,sub);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			System.out.println("cant load main menu screen");
+			e.printStackTrace();
+		}
+		if(percent != -1) {
+			((GuestScreenController)controller).set_percent(percent);
+		}
+		// After Connection start the order table
+		
+        Stage stage = (Stage) connectButton.getScene().getWindow();
+        Scene scene = new Scene(tableRoot);
+        stage.setScene(scene);
+        stage.sizeToScene();
+        stage.centerOnScreen();
+		stage.setTitle(title);
+		stage.setMaximized(true);
+
+		// Makes sure when X is pressed it closes the connection to the server
+		stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+			@Override
+			public void handle(WindowEvent event) {
+				System.out.println("Closing application...");
+				client.stop();
+				System.gc();
+				System.exit(0);
+			}
+		});
+		controller.setBackHandler(() -> { // Handle back button action using lambda
+			try { // Stop the client connection
+				client.stop();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			try { // Load the connection screen again
+				FXMLLoader loginLoader = new FXMLLoader(getClass().getResource("login.fxml"));
+				Parent loginRoot = loginLoader.load();
+				stage.setScene(new Scene(loginRoot));
+				stage.setTitle("Connect to Server");
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		});
+		// hand off all future messages to the BParkClientController
+				client.setMessageListener(controller::handleServerMessage);
+}
     @FXML
 	public void handleExit() {
 		// Exit application
@@ -219,4 +192,15 @@ public class LoginController {
 		Platform.exit();
 
 	}
+    @FXML
+    private void openGuestScreen() {
+    	String ipAddress = ipField.getText().trim();
+		String portText = "5555";
+		if (ipAddress.isEmpty()) {
+			ShowAlert.showAlert("Error", "Please enter both IP and port", Alert.AlertType.ERROR);
+			return;
+		}
+		connectToServer(ipAddress, port,null);
+    }
+
 }

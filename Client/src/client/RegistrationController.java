@@ -1,51 +1,28 @@
 package client;
 
-import logic.*;
-
-import java.io.IOException;
-import java.util.List;
-
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.Labeled;
-import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
-import javafx.stage.Stage;
-
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import logic.Role;
+import logic.SendObject;
+import logic.subscriber;
 
 public class RegistrationController extends Controller{
 	
-	private BParkClient client;
-	protected Runnable backHandler;
 	@FXML
 	private Button backButton;
     @FXML
-    private TextField idField;   // ID field
+    private TextField idField;
     @FXML
-    private TextField nameField;  // Name field
+    private TextField nameField;
     @FXML
-    private TextField phoneField;  // Phone field
+    private TextField phoneField;
     @FXML
-    private TextField emailField;  // Email field
+    private TextField emailField;
 	
-//	private AttendantController attendantController;
-//
-//	public RegistrationController(AttendantController attendantController) {
-//		this.attendantController = attendantController;
-//	}
-	
-//	public RegistrationController(BParkClient client) {
-//		this.client = client;
-//	}
-//	public RegistrationController() {
-//	}
     
     @FXML
     public void registerNewSubscriber() {
@@ -56,15 +33,52 @@ public class RegistrationController extends Controller{
         String phone = phoneField.getText().trim();
         
 		if (name.isEmpty() || email.isEmpty() || idText.isEmpty() || phone.isEmpty()) {
-        	showAlert("One of the fields is empty!.");
+        	ShowAlert.showAlert("Error","One of the fields is empty!.",AlertType.ERROR);
             return;
         }
-        int id;
-        try {id = Integer.parseInt(idText);}
-		catch (NumberFormatException e) {
-			showAlert("ID must be a valid number.");
-			return;
-		}
+		
+        // Validate ID is a 9-digit number
+        if (!idText.matches("\\d{9}")) {
+            ShowAlert.showAlert("Error", "ID must be exactly 9 digits.", AlertType.ERROR);
+            return;
+        }
+        // Store ID as an integer so we can use it in the subscriber constructor
+        int id = Integer.parseInt(idText);
+
+        // Validate name contains only letters and spaces
+        if (!name.matches("[a-zA-Z\\s]+")) {
+            ShowAlert.showAlert("Error", "Name must contain only letters and spaces.", AlertType.ERROR);
+            return;
+        }
+        // Validate phone is a 10-digit number
+        if (!phone.matches("\\d{10}")) {
+            ShowAlert.showAlert("Error", "Phone number must be exactly 10 digits.", AlertType.ERROR);
+            return;
+        }
+        // Validate email format using regex
+        if (!email.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
+            ShowAlert.showAlert("Error",
+            		"Email must be of the format: username@domain.tld\n\n"
+            		+ "Examples of valid email:\n"
+            		+ "definitely.not.a.bot@skynet.ai\n"
+            		+ "nobody@nowhere.org\n"
+            		+ "ilove.spam@gmail.com\n"
+            		+ "nobody.important@e.braude.ac.il\n"
+            		, AlertType.ERROR);
+            return;
+        }
+        /*
+        Explanation of the email format:
+	        ^ 				Start of the string
+	        [\\w.-]+ 		User name matches one or more word characters (a-z, A-Z, 0-9, _), dots ., or dash -
+	        @ 				Must contain a literal @
+	        [\\w.-]+ 		Domain name (e.g., gmail.com) - same as before
+	        \\. 			A literal dot . separating domain and top-level domain
+	        [a-zA-Z]{2,} 	Top-level domain (e.g., com, org) - must be at least 2 characters long
+	        $ 				End of the string
+        */
+        
+        
         
         // create the subscriber locally
         subscriber newSubscriber = new subscriber(id, name, phone, email, Role.SUBSCRIBER, null, "", 0);;
@@ -78,39 +92,17 @@ public class RegistrationController extends Controller{
         emailField.clear();
         idField.clear();
         phoneField.clear();
-        
-        getSubscriberCodeAndRFIDTag(newSubscriber);
     }
 
 	public void sendNewSubscriberToServer(subscriber newSubscriber) {
-		System.out.println("starting sendNewSubscriberToServer");
         try {
             client.sendToServerSafely(new SendObject<subscriber>("Create new Subscriber", newSubscriber));
-            Platform.runLater(() -> showAlert("Subscriber registered successfully!"));
         } catch (Exception e) {
-            Platform.runLater(() -> showAlert("Registration failed: " + e.getMessage()));
+            Platform.runLater(() -> ShowAlert.showAlert("Error","Registration failed: " + e.getMessage(),AlertType.ERROR));
             e.printStackTrace();
         }
     }
-	
-	public void getSubscriberCodeAndRFIDTag(subscriber newSubscriber) {
-		// the server will return the subscriber's code and RFID tag
-		try {
-			SendObject<subscriber> request = new SendObject<>("Get Subscriber Code and RFID Tag", newSubscriber);
-			client.sendToServerSafely(request);
-			Platform.runLater(() -> showAlert(
-					"Subscriber Log In Code: " + newSubscriber.getCode() + "\nRFID Tag: " + newSubscriber.getTag()));
-		} catch (Exception e) {
-			Platform.runLater(() -> showAlert("Failed to retrieve subscriber code and RFID tag: " + e.getMessage()));
-			e.printStackTrace();
-		}	
-	}
-    
-	private void showAlert(String msg) {
-	    Alert alert = new Alert(Alert.AlertType.INFORMATION, msg);
-	    alert.showAndWait();
-	}
-	
+
 	@FXML
 	private void handleBackButton() {
 		if (backHandler != null) {
@@ -119,46 +111,25 @@ public class RegistrationController extends Controller{
 	}
 
 	public void handleServerMessage(Object msg) {
-		System.out.println("starting handleServerMessage");
-		System.out.println("[Server] " + msg);
 		// If the message is a SendObject, it contains the subscriber object
 		if (msg instanceof SendObject<?>) {
 			SendObject<?> response = (SendObject<?>) msg;
-			if ("Subscriber Code and RFID Tag".equals(response.getObjectMessage())) {
-				subscriber sub = (subscriber) response.getObj();
-				Platform.runLater(
-						() -> showAlert("Subscriber Log In Code: " + sub.getCode() + "\nRFID Tag: " + sub.getTag()));
+			if ("Subscriber created".equals(response.getObjectMessage())) {
+				Object codeAndTag[] = (Object[])response.getObj(); 
+				Platform.runLater(() -> {
+					ShowAlert.showAlert("Success","Subscriber registered successfully!",AlertType.INFORMATION);
+					ShowAlert.showAlert("Information","Subscriber Log In Code: " + codeAndTag[0] + "\nRFID Tag: " + codeAndTag[1],AlertType.INFORMATION);});
 				} 
 			else {
-				Platform.runLater(() -> showAlert("Unexpected message type received: " + response.getObjectMessage()));
+				Platform.runLater(() -> ShowAlert.showAlert("Error","Unexpected message type received: " + response.getObjectMessage()+" "+response.getObj(),AlertType.ERROR));
 			}
 			return;
 		}
 		// If the message is a String, it indicates a response message
 		if (msg instanceof String) {
 			String response = (String) msg;
-			Platform.runLater(() -> showAlert(response));
+			Platform.runLater(() -> ShowAlert.showAlert("Error",response,AlertType.ERROR));
 			return;
 		}
 	}
-	
-//	@FXML private void handleBackButton() {
-//		try {
-//			FXMLLoader loader = new FXMLLoader(getClass().getResource("login.fxml"));
-//			Parent root = loader.load();
-//			Stage stage = new Stage();
-//			stage.setTitle("Login");
-//			stage.setScene(new Scene(root));		
-//			stage.show();
-//			// סגור את החלון הנוכחי
-//			Stage currentStage = (Stage) historybutton.getScene().getWindow();
-//			currentStage.close();
-//			client.stop();
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		
-//	}
-
 }

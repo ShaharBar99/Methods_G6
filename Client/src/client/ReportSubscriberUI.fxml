@@ -6,13 +6,15 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.chart.PieChart?>
 
 <AnchorPane xmlns="http://javafx.com/javafx/23.0.1" 
             xmlns:fx="http://javafx.com/fxml"
             styleClass="main-pane"
-            fx:id="mainPane"
             stylesheets="@ReportScreen.css"
-            fx:controller="client.ReportController">
+            fx:controller="client.ReportSubscriberController">
 
     <VBox spacing="20.0" alignment="CENTER"
           AnchorPane.topAnchor="20.0"
@@ -22,21 +24,24 @@
           styleClass="menu-container"
           style="-fx-padding: 20;">
         
-        <TableView fx:id="orderTable" prefHeight="400.0" prefWidth="960.0"
+        <TableView fx:id="subscriberTable" prefHeight="400.0" prefWidth="960.0"
                    styleClass="main-table">
             <columns>
-                <TableColumn fx:id="colOrderId" text="Order ID" prefWidth="100.0"/>
-                <TableColumn fx:id="colDate" text="Order Date" prefWidth="150.0"/>
-                <TableColumn fx:id="colSpot" text="Parking Spot" prefWidth="120.0"/>
-                <TableColumn fx:id="colCode" text="Confirmation Code" prefWidth="150.0"/>
-                <TableColumn fx:id="colSubscriberID" text="Subscriber ID" prefWidth="130.0"/>
-                <TableColumn fx:id="colDatePlacingOrder" text="Date of Placing an Order" prefWidth="210.0"/>
+                <TableColumn fx:id="colSubscriberId" text="Subscriber ID" prefWidth="120.0"/>
+                <TableColumn fx:id="colName" text="Name" prefWidth="140.0"/>
+                <TableColumn fx:id="colEmail" text="Email" prefWidth="180.0"/>
+                <TableColumn fx:id="colPhone" text="Phone" prefWidth="130.0"/>
+                <TableColumn fx:id="colTag" text="Tag" prefWidth="120.0"/>
+                <TableColumn fx:id="colRole" text="Role" prefWidth="100.0"/>
             </columns>
         </TableView>
+        
+        <PieChart fx:id="rolePieChart" prefHeight="240.0" prefWidth="400.0" />
 
         <HBox spacing="15.0" alignment="CENTER">
-            <Button fx:id="sortByIdButton" text="Sort by ID" styleClass="button-blue"/>
-            <Button fx:id="sortByDateButton" text="Sort by Date" styleClass="button-blue"/>
+            <Label text="Role:" />
+            <ComboBox fx:id="roleComboBox" prefWidth="120"/>
+            <Button fx:id="sortBySubscriberIdButton" text="Sort by Subscriber ID" styleClass="button-blue"/>
             <Button fx:id="exportCsvButton" text="Export as CSV" styleClass="button-blue"/>
         </HBox>
 

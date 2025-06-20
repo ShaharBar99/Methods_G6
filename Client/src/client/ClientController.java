@@ -2,6 +2,7 @@ package client;
 
 import java.io.IOException;
 import java.util.List;
+
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -31,8 +32,8 @@ public class ClientController {
 
 	@FXML
 	public void handleConnectButton() {
-		String ipAddress = ipTextField.getText().trim();
-		//String ipAddress = "10.0.0.4"; // TOM'S IP, REMOVE IF YOU SEE THIS, I was just lazy to put it in every time
+		//String ipAddress = ipTextField.getText().trim();
+		String ipAddress = "10.0.0.4"; // TOM'S IP, REMOVE IF YOU SEE THIS
 		String portText = "5555";
 
 		if (ipAddress.isEmpty() || portText.isEmpty()) {
@@ -54,7 +55,6 @@ public class ClientController {
 		// Exit application
 		System.gc();
 		Platform.exit();
-
 	}
 
 	public void connectToServer(String ipAddress, int port) {
@@ -109,7 +109,7 @@ public class ClientController {
 			});
 			MainMenuController controller = loader.getController();
 			//controller.setOrders(orders);
-			//controller.setClient(clientConnection);
+			controller.setClient(clientConnection, null);
 			controller.setBackHandler(() -> { // Handle back button action using lambda
 				try { // Stop the client connection
 					clientConnection.stop();

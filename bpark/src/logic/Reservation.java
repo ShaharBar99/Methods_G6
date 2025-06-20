@@ -10,8 +10,8 @@ public class Reservation implements Serializable{
 	private final int subscriberId;
 	private final int spotId;
 	private final LocalDate date;
-	private final String startTime;
-	private final String endTime;
+	private String startTime;
+	private String endTime;
  
 	public Reservation(int spotId,int subscriber_id , LocalDate date, String startTime, String endTime) {
 		this.subscriberId = subscriber_id;
@@ -21,11 +21,9 @@ public class Reservation implements Serializable{
 		this.endTime = endTime;
 	}
 
-
 	public int getSubscriberId() {
 		return subscriberId;
 	}
-
 
 	public int getSpot() {
 		return spotId;
@@ -41,5 +39,13 @@ public class Reservation implements Serializable{
 
 	public String getEndTime() {
 		return endTime;
+	}
+	
+	public void setStartTime(String startTime) {
+		this.startTime = startTime;
+	}
+	
+	public void setEndTime(String endTime) {
+		this.endTime = endTime;
 	}
 }
