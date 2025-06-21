@@ -2,7 +2,6 @@ package client;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -10,20 +9,18 @@ import logic.Role;
 import logic.SendObject;
 import logic.subscriber;
 
-
 public class RegistrationController extends Controller{
 	
-
 	@FXML
 	private Button backButton;
     @FXML
-    private TextField idField;   // ID field
+    private TextField idField;
     @FXML
-    private TextField nameField;  // Name field
+    private TextField nameField;
     @FXML
-    private TextField phoneField;  // Phone field
+    private TextField phoneField;
     @FXML
-    private TextField emailField;  // Email field
+    private TextField emailField;
 	
     
     @FXML
@@ -38,18 +35,60 @@ public class RegistrationController extends Controller{
         	ShowAlert.showAlert("Error","One of the fields is empty!.",AlertType.ERROR);
             return;
         }
-        int id;
-        try {id = Integer.parseInt(idText);}
-		catch (NumberFormatException e) {
-			ShowAlert.showAlert("Error","ID must be a valid number.",AlertType.ERROR);
-			return;
-		}
+		
+        // Validate ID is a 9-digit number
+        if (!idText.matches("\\d{9}")) {
+            ShowAlert.showAlert("Error", "ID must be exactly 9 digits.", AlertType.ERROR);
+            return;
+        }
+        // Store ID as an integer so we can use it in the subscriber constructor
+        int id = Integer.parseInt(idText);
+
+        // Validate name contains only letters and spaces
+        if (!name.matches("[a-zA-Z\\s]+")) {
+            ShowAlert.showAlert("Error", "Name must contain only letters and spaces.", AlertType.ERROR);
+            return;
+        }
+        // Validate phone is a 10-digit number
+        if (!phone.matches("\\d{10}")) {
+            ShowAlert.showAlert("Error", "Phone number must be exactly 10 digits.", AlertType.ERROR);
+            return;
+        }
+        // Validate email format using regex
+        if (!email.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
+            ShowAlert.showAlert("Error",
+            		"Email must be of the format: username@domain.tld\n\n"
+            		+ "Examples of valid email:\n"
+            		+ "definitely.not.a.bot@skynet.ai\n"
+            		+ "nobody@nowhere.org\n"
+            		+ "ilove.spam@gmail.com\n"
+            		+ "nobody.important@e.braude.ac.il\n"
+            		, AlertType.ERROR);
+            return;
+        }
+        /*
+        Explanation of the email format:
+	        ^ 				Start of the string
+	        [\\w.-]+ 		User name matches one or more word characters (a-z, A-Z, 0-9, _), dots ., or dash -
+	        @ 				Must contain a literal @
+	        [\\w.-]+ 		Domain name (e.g., gmail.com) - same as before
+	        \\. 			A literal dot . separating domain and top-level domain
+	        [a-zA-Z]{2,} 	Top-level domain (e.g., com, org) - must be at least 2 characters long
+	        $ 				End of the string
+        */
+        
+        
         
         // create the subscriber locally
         subscriber newSubscriber = new subscriber(id, name, phone, email, Role.SUBSCRIBER, null, "", 0);;
         // send it to server to check if it already exists
         // if it does, the server will return an error message
         // if it doesn't, the server will create the new subscriber and return success
+        if (!ShowAlert.showConfirmation("Confirm Subscriber Registration",
+				"Are you sure you want to create this subscriber?")) {
+
+			return; // user clicked Cancel
+		}
         sendNewSubscriberToServer(newSubscriber);
         
         // clear the screen fields after sending
@@ -57,21 +96,17 @@ public class RegistrationController extends Controller{
         emailField.clear();
         idField.clear();
         phoneField.clear();
-        
     }
 
 	public void sendNewSubscriberToServer(subscriber newSubscriber) {
-		System.out.println("starting sendNewSubscriberToServer");
         try {
             client.sendToServerSafely(new SendObject<subscriber>("Create new Subscriber", newSubscriber));
-            
         } catch (Exception e) {
             Platform.runLater(() -> ShowAlert.showAlert("Error","Registration failed: " + e.getMessage(),AlertType.ERROR));
             e.printStackTrace();
         }
     }
 
-	
 	@FXML
 	private void handleBackButton() {
 		if (backHandler != null) {
@@ -85,10 +120,9 @@ public class RegistrationController extends Controller{
 			SendObject<?> response = (SendObject<?>) msg;
 			if ("Subscriber created".equals(response.getObjectMessage())) {
 				Object codeAndTag[] = (Object[])response.getObj(); 
-				Platform.runLater(() -> ShowAlert.showAlert("Success","Subscriber registered successfully!",AlertType.INFORMATION));
-				Platform.runLater(
-						() -> {ShowAlert.showAlert("Success","Subscriber registered successfully!",AlertType.INFORMATION);
-						ShowAlert.showAlert("Information","Subscriber Log In Code: " + codeAndTag[0] + "\nRFID Tag: " + codeAndTag[1],AlertType.INFORMATION);});
+				Platform.runLater(() -> {
+					ShowAlert.showAlert("Success","Subscriber registered successfully!",AlertType.INFORMATION);
+					ShowAlert.showAlert("Information","Subscriber Log In Code: " + codeAndTag[0] + "\nRFID Tag: " + codeAndTag[1],AlertType.INFORMATION);});
 				} 
 			else {
 				Platform.runLater(() -> ShowAlert.showAlert("Error","Unexpected message type received: " + response.getObjectMessage()+" "+response.getObj(),AlertType.ERROR));
@@ -102,5 +136,4 @@ public class RegistrationController extends Controller{
 			return;
 		}
 	}
-
 }
