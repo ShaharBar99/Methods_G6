@@ -39,14 +39,15 @@ public class SendObjectHandler {
 			if (action.contains("time in session")) {
 				Parkingsession session = (Parkingsession) obj.getObj();
 				if (con.checkExtendTimeParkingsessionWithAllReservations(session)) {
-					handleUpdateAction(object, con);
+					Object genericObject = handleUpdateAction(object, con);
 					return new SendObject<T1>("Time Extension", (T1) "Accapted");
 				} else {
 					return new SendObject<T1>("Time Extension", (T1) "Not Accapted");
 				}
 
 			} else {
-				handleUpdateAction(object, con);
+				Object genericObject = handleUpdateAction(object, con);
+				return replyDefiner(genericObject);
 			}
 		} else if (action.contains("Create")) {
 			Object genericObject = handleCreateAction(object, con);
@@ -248,12 +249,15 @@ public class SendObjectHandler {
 		}
 	}
 
-	private static <T extends Serializable> void handleUpdateAction(T object, DataBaseQuery con) throws Exception {
+	private static <T extends Serializable, T1 extends Serializable> SendObject<T1> handleUpdateAction(T object, DataBaseQuery con) throws Exception {
 		try {
 			if (object instanceof subscriber) {
 				subscriber user = (subscriber) object;
 				// Update User In the database using received object
 				con.updateUserInDatabase(user);
+				if(user.getEmail().equals(con.getUserUsingTagFromDatabase(user.getTag()).getEmail()))
+					return new SendObject<T1>("Subscriber",(T1)"updated successfully");
+				return new SendObject<T1>("Subscriber",(T1)"could not be updated, another user has this email");
 			} else if (object instanceof Parkingsession) {
 				Parkingsession session = (Parkingsession) object;
 				// Update Parkingsession In the database received object
@@ -270,6 +274,7 @@ public class SendObjectHandler {
 		} catch (Exception e) { // SQLException e
 			throw new Exception("Error updating data to database", e);
 		}
+		return null;
 	}
 
 	private static <T extends Serializable, T1 extends Serializable> SendObject<T1> handleCreateAction(T object,
