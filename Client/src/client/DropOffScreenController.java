@@ -32,23 +32,6 @@ public class DropOffScreenController extends Controller {
 		parkingController.setDropOffScreen(this);
 	}
 
-	/*
-	 * @param backHandler Sets the backHandler
-	 */
-	public void setBackHandler(Runnable backHandler) {
-		this.backHandler = backHandler;
-	}
-
-	/*
-	 * swap the DropOffScreen back to the MainMenuScreen
-	 */
-	@FXML
-	private void handleBackButton() {
-		if (backHandler != null) {
-			backHandler.run();
-		}
-	}
-
 	//////////////////////////////////////////////
 	/*-------------------ACTIONS----------------*/
 	//////////////////////////////////////////////

@@ -49,9 +49,9 @@ public class RegistrationController extends Controller{
             ShowAlert.showAlert("Error", "Name must contain only letters and spaces.", AlertType.ERROR);
             return;
         }
-        // Validate phone is a 10-digit number
-        if (!phone.matches("\\d{10}")) {
-            ShowAlert.showAlert("Error", "Phone number must be exactly 10 digits.", AlertType.ERROR);
+        // Validate phone is a 10-digit number XXX-XXX-XXXX
+        if (!phone.matches("\\d{3}-\\d{3}-\\d{4}")) {
+            ShowAlert.showAlert("Error", "Phone number must be exactly 10 digits, and in this format:XXX-XXX-XXXX", AlertType.ERROR);
             return;
         }
         // Validate email format using regex
@@ -107,12 +107,6 @@ public class RegistrationController extends Controller{
         }
     }
 
-	@FXML
-	private void handleBackButton() {
-		if (backHandler != null) {
-			backHandler.run();
-		}
-	}
 
 	public void handleServerMessage(Object msg) {
 		// If the message is a SendObject, it contains the subscriber object

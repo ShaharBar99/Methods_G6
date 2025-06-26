@@ -26,8 +26,7 @@ public class PickUpScreenController extends Controller{
 	}
 	@Override
 	public void setClient(BParkClient client, subscriber sub) {
-		this.client = client;
-		this.sub = sub;
+		super.setClient(client, sub);
 		parkingController.setClient(client, sub);
 		parkingController.setPickUpScreen(this);
 	}

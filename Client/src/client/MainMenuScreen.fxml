@@ -45,6 +45,10 @@
 		<Button onAction="#openTimeExtensionScreen"
                 styleClass="menu-button"
                 text="⏰ Time Extension Request"/>
+                
+        <Button onAction="#openUpdateUserDetails"
+                styleClass="menu-button"
+                text="📝 Update User Details"/>
     </VBox>
 
     <Button fx:id="disconnectButton"

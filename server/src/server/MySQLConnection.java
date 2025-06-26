@@ -191,7 +191,7 @@ public class MySQLConnection {
 	 * @return ordersList
 	 * The method returns an ArrayList<Order> of all orders in DB
 	 */
-	public ArrayList<Order> getallordersfromDB() {
+/*	public ArrayList<Order> getallordersfromDB() {
 		ArrayList<Order> orderslist = new ArrayList<>();
 		try {
 			con = connectToDB();
@@ -230,13 +230,13 @@ public class MySQLConnection {
 		}
 		return orderslist;
 
-	}
+	}*/
 
 	/**
 	 * @return ordersList
 	 * The method returns an order of a received order number in DB
 	 */
-	public Order getOrderFromDB(String id) {
+/*	public Order getOrderFromDB(String id) {
 		Order temp = null;
 		try {
 			con = connectToDB();
@@ -276,13 +276,13 @@ public class MySQLConnection {
 		}
 		return temp;
 
-	}
+	}*/
 
 	/**
 	 * @param order
 	 * Gets an order and updates it in the DB
 	 */
-	public void updateDB(Order order) {
+	/*public void updateDB(Order order) {
 		try {
 			con = connectToDB();
 			if (con == null)
@@ -303,13 +303,13 @@ public class MySQLConnection {
 			disconnectFromDB(con);
 		}
 	}
-	
+	*/
 	/**
 	 * @param date
 	 * @return java.sql.Date
 	 * Converts java.util.Date to java.sql.Date
 	 */
-	private java.sql.Date realDate(Date date){	
+/*	private java.sql.Date realDate(Date date){	
 		java.util.Date utilDate = new java.util.Date(date.getTime()); 
 
 		// Convert java.util.Date to LocalDate
@@ -318,5 +318,5 @@ public class MySQLConnection {
 		// Add one day using LocalDate
 		LocalDate newLocalDate = localDate.plusDays(1);
 		return java.sql.Date.valueOf(newLocalDate);
-	}
+	}*/
 }

@@ -68,22 +68,9 @@ public class AdminScreenController extends Controller{
 	}
 
     
-    @FXML private void handleBackButton() {
+    @FXML protected void handleBackButton() {
 		// swap the TableView scene back to the connect screen
-		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("login.fxml"));
-			Parent root = loader.load();
-			Stage stage = new Stage();
-			stage.setTitle("Login");
-			stage.setScene(new Scene(root));		
-			stage.show();
-			Stage currentStage = (Stage) openSubscribersReportButton.getScene().getWindow();
-			currentStage.close();
-			client.stop();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}	
+    	handleButtonToLogin(backButton);
 	}
     
 }

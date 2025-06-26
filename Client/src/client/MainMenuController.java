@@ -12,24 +12,10 @@ import logic.*;
 public class MainMenuController extends Controller {
 	@FXML
 	Button historybutton;
-
 	@FXML
-	private void handleBackButton() {
+	protected void handleBackButton() {
 		// swap the TableView scene back to the connect screen
-		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("login.fxml"));
-			Parent root = loader.load();
-			Stage stage = new Stage();
-			stage.setTitle("Login");
-			stage.setScene(new Scene(root));
-			stage.show();
-			Stage currentStage = (Stage) historybutton.getScene().getWindow();
-			currentStage.close();
-			client.stop();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		handleButtonToLogin(historybutton);
 	}
 
 	@FXML
@@ -57,4 +43,8 @@ public class MainMenuController extends Controller {
 		this.setscreen("TimeExtensionScreen", "TimeExtensionScreen.fxml", "MainMenuScreen.fxml", "Main Menu",
 				historybutton);
 	}
+	
+	@FXML public void openUpdateUserDetails() {
+        this.setscreen("UpdateUserDetails", "UpdateUserDetails.fxml","MainMenuScreen.fxml", "Main Menu",historybutton);
+    }
 }

@@ -28,11 +28,11 @@ LOCK TABLES `subscribers` WRITE;
 INSERT INTO `subscribers` 
   (`subscriber_id`,`name`,`phone`,`email`,`role`,`tag`,`code`) 
 VALUES
-  (2001,'Alice','050-1234567','Avigdor.Feldman@e.braude.ac.il','SUBSCRIBER',NULL,111111),
-  (2002,'Bob'  ,'050-2345678','bob@example.com'  ,'SUBSCRIBER',NULL,222222),
-  (2003,'Carol','050-3456789','carol@example.com','SUBSCRIBER','E200341201F82031AB12CD3F',333333),
-  (2004,'Dave' ,'050-4567890','dave@example.com' ,'ATTENDANT',NULL,444444),
-  (2005,'Eve'  ,'050-5678901','eve@example.com'  ,'MANAGER',NULL,555555);
+  (2001,'Alice','050-123-4567','Avigdor.Feldman@e.braude.ac.il','SUBSCRIBER','EAF2D7E142C05C2A1B29F7A4C0F4D3B2',111111),
+  (2002,'Bob'  ,'050-234-5678','bob@example.com'  ,'SUBSCRIBER','E593D02B97A67D2BFC229B4A2A6A4B6A',222222),
+  (2003,'Carol','050-345-6789','carol@example.com','SUBSCRIBER','E35A4B571F1A81F5DC129F004A1F620F',333333),
+  (2004,'Dave' ,'050-456-7890','dave@example.com' ,'ATTENDANT','E89772D5A74B905BD1E4936DE07B2F68',444444),
+  (2005,'Eve'  ,'050-567-8901','eve@example.com'  ,'MANAGER','E453FCE581D2A132FB5C712BE54A5E82',555555);
 UNLOCK TABLES;
 
 

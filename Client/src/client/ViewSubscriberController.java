@@ -102,17 +102,6 @@ public class ViewSubscriberController extends Controller {
 		}
 	}
 
-	public void setBackHandler(Runnable backHandler) {
-		this.backHandler = backHandler;
-	}
-
-	@FXML
-	protected void handleBackButton() {
-		if (backHandler != null) {
-			backHandler.run();
-		}
-	}
-
 	protected void showAlert(String msg) {
 		Alert alert = new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK);
 		alert.showAndWait();

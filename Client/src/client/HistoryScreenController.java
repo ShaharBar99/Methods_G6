@@ -35,8 +35,7 @@ public class HistoryScreenController extends Controller{
 
 
 	public void setClient(BParkClient client, subscriber sub) {
-		this.client = client;
-		this.sub = sub;
+		super.setClient(client, sub);
 		controller.setClient(client, sub);
 		Platform.runLater(() -> {
 			displayHistory();

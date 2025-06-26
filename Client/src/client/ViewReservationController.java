@@ -152,15 +152,4 @@ public class ViewReservationController extends Controller {
 			}
 		}
 	}
-
-	public void setBackHandler(Runnable backHandler) {
-		this.backHandler = backHandler;
-	}
-
-	@FXML
-	protected void handleBackButton() {
-		if (backHandler != null) {
-			backHandler.run();
-		}
-	}
 }

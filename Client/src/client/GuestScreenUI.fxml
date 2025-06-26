@@ -21,7 +21,7 @@
 
         <Label fx:id="freeSpaceLabel" text="Free Space: --%" styleClass="reg-label"/>
 
-        <Button text="Back" onAction="#handleBack" styleClass="small-menu-button"/>
+        <Button fx:id="backButton" text="Back" onAction="#handleBackButton" styleClass="small-menu-button"/>
 
     </VBox>
 </AnchorPane>

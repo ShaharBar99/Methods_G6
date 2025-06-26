@@ -1,11 +1,19 @@
 package client;
 
+import java.io.IOException;
+
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.stage.Stage;
 
 public class GuestScreenController extends Controller {
 	
 	private double percent;
+	@FXML Button backButton;
     @FXML
     private Label freeSpaceLabel;
     
@@ -19,11 +27,10 @@ public class GuestScreenController extends Controller {
     }
 
     @FXML
-    private void handleBack() {
-        if (backHandler != null) {
-            backHandler.run();
-        }
-    }
+	protected void handleBackButton() {
+		// swap the TableView scene back to the connect screen
+    	handleButtonToLogin(backButton);
+	}
     public void set_percent(double num) {
     	percent = num;
     	updateFreeSpace(percent);
