@@ -320,10 +320,10 @@ public class SendObjectHandler {
 				if (spot != null) {
 					spot.setStatus(SpotStatus.RESERVED);
 					con.updateParkingSpotInDatabase(spot);
-					Reservation reservationToBeSent = new Reservation(0,spot.getSpotId(), reservation.getSubscriberId(),
+					Reservation reservationToBeSent = new Reservation(spot.getSpotId(), reservation.getSubscriberId(),
 							reservation.getDate(), reservation.getStartTime(), reservation.getEndTime());
-					Reservation myReservation = con.createReservationInDatabase(reservationToBeSent); // needs to be implemented
-					return new SendObject<T1>("Reservation created", (T1)(Reservation) myReservation);
+					int reservationCode = con.createReservationInDatabase(reservationToBeSent); // needs to be implemented
+					return new SendObject<T1>("Reservation", (T1)(String) String.format("Created with code:%d",reservationCode));
 				} else {
 					return new SendObject<T1>("Reservation", (T1)(String) "Not Created");
 				}

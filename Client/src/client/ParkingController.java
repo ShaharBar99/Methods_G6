@@ -20,10 +20,7 @@ public class ParkingController {
 	private subscriber sub;
 	private PickUpScreenController pickUpScreen;
 	private ParkingSpot spot;
-	// private ParkingSpot spot = new ParkingSpot(0, SpotStatus.FREE, null); //
-	// testin
 	private boolean isAvailable = false;
-	// private boolean isUsedCode = false;
 	private volatile boolean isUsedCode = true;
 	private volatile boolean responseReceived = false;
 	private Parkingsession mySession;

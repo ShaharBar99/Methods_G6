@@ -154,7 +154,7 @@ public class ReservationController extends Controller{
 				Platform.runLater(() -> futureReservationsTable.getItems().setAll(list));
 			}
 		} else {
-			Platform.runLater(() -> showAlert(AlertType.INFORMATION, message.toString()));
+			Platform.runLater(() -> showAlert(AlertType.ERROR, message.toString()));
 		}
 	}
     /** Utility alert pop-up */
