@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 
 <AnchorPane fx:id="mainPane" prefHeight="1080"
-	prefWidth="1920" styleClass="main-pane" stylesheets="@Styles.css"
+	prefWidth="1920" styleClass="main-pane" stylesheets="@styles.css"
 	xmlns="http://javafx.com/javafx/23.0.1"
 	xmlns:fx="http://javafx.com/fxml/1"
 	fx:controller="client.DropOffScreenController">

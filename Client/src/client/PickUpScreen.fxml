@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="mainPane" prefHeight="1080" prefWidth="1920" styleClass="main-pane" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.PickUpScreenController">
+<AnchorPane fx:id="mainPane" prefHeight="1080" prefWidth="1920" styleClass="main-pane" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.PickUpScreenController">
     <children>
         <!-- Main GridPane layout with adjusted spacing -->
         <GridPane alignment="CENTER" hgap="20" vgap="40" AnchorPane.topAnchor="50.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
