@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Alert.AlertType;
 import logic.*;
 
 public class DropOffScreenController extends Controller {
@@ -19,6 +20,9 @@ public class DropOffScreenController extends Controller {
 
 	@FXML
 	private Label parkingCodeLabel;
+	
+	@FXML
+	private TextField reservationCode;
 
 	/////////////////////////////////////////////////
 	/*----------SET AND INITIALIZE THINGS----------*/
@@ -55,12 +59,17 @@ public class DropOffScreenController extends Controller {
 	}
 	
 	public void submitParkingRequestUsingReservation() {
+		if ((reservationCode.getText()).isEmpty()||!reservationCode.getText().matches("\\d{9}")) {
+            ShowAlert.showAlert("Error", "Code must be a number", AlertType.ERROR);
+            return;
+        }
+		int code =Integer.parseInt(reservationCode.getText());
 		try {
 			if (!ShowAlert.showConfirmation("Confirm Vehicle dropoff",
-					"Are you sure you want to dropoff your vehicle using reservation?")) {
+					"Are you sure you want to dropoff your vehicle using reservation: "+reservationCode.getText())) {
 				return; // user clicked Cancel
 			}
-			parkingController.implementDropoffUsingReservation();
+			parkingController.implementDropoffUsingReservation(code);
 		} catch (Exception e) {
 			ShowAlert.showAlert("Error", "An error occurred while processing your request: "+e.getMessage(), Alert.AlertType.ERROR);
 			e.printStackTrace();

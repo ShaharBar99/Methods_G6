@@ -63,7 +63,7 @@ public class ParkingController {
 			} else if (action.equals("Session found")) {
 				if (obj instanceof Parkingsession)
 					timeExtendSession = (Parkingsession) obj;
-			}else if (action.contains("close to current time reservation")) {
+			}else if (action.contains("reservation")) {
 				setReservation((Reservation)obj);
 			}
 			responseReceived = true;
@@ -331,10 +331,10 @@ public class ParkingController {
 		return session;
 	}
 
-	public void implementDropoffUsingReservation() throws Exception {
+	public void implementDropoffUsingReservation(int reservationCode) throws Exception {
 		// TODO Auto-generated method stub
-		reservation = getReservation();
-		if (reservation.getEndTime() != null) {
+		reservation = getReservation(reservationCode);
+		if (reservation.getEndTime() != null && reservation.getSubscriberId()==sub.getId()) {
 			if (!isWithin15Minutes(reservation)) {
 				reservation.setStartTime(null);
 				client.sendToServerSafely(new SendObject<Reservation>("Update",reservation)); // Indicates reservation hasn't been used
@@ -379,9 +379,9 @@ public class ParkingController {
 		}
 	}
 
-	private Reservation getReservation() throws Exception {
+	private Reservation getReservation(int code) throws Exception {
 		responseReceived = false;
-		client.sendToServerSafely(new SendObject("Get close to current time reservation", sub.getId()));
+		client.sendToServerSafely(new SendObject("Get reservation with code", code));
 		Util.waitForServerResponse(20000,()->this.responseReceived);
 		return reservation;
 	}

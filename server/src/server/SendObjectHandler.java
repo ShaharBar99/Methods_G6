@@ -142,15 +142,15 @@ public class SendObjectHandler {
 				} else {
 					return new SendObject<T1>("Session found:", (T1) "False");
 				}
-			} else if (action.contains("close to current time reservation")) {
+			} else if (action.contains("reservation with code")) {
 				Reservation reservation;
-				int subscriberId = intObject;
+				int reservationCode = intObject;
 				// fake
 				// reservation = new Reservation(109, 2001, LocalDate.of(2025, 5, 14),
 				// "10:00:00", "12:00:00");
 				// end fake
-				reservation = con.getReservationCloseToCurrentTimeOfSubscriber(subscriberId);
-				return new SendObject<T1>("Received close to current time reservation", (T1) reservation);
+				reservation = con.getReservationById(reservationCode);
+				return new SendObject<T1>("Received reservation", (T1) reservation);
 			}
 		}
 		return null;
@@ -320,12 +320,12 @@ public class SendObjectHandler {
 				if (spot != null) {
 					spot.setStatus(SpotStatus.RESERVED);
 					con.updateParkingSpotInDatabase(spot);
-					Reservation reservationToBeSent = new Reservation(spot.getSpotId(), reservation.getSubscriberId(),
+					Reservation reservationToBeSent = new Reservation(0,spot.getSpotId(), reservation.getSubscriberId(),
 							reservation.getDate(), reservation.getStartTime(), reservation.getEndTime());
-					con.createReservationInDatabase(reservationToBeSent); // needs to be implemented
-					return new SendObject<T1>("Reservation", (T1) (String) "Created");
+					Reservation myReservation = con.createReservationInDatabase(reservationToBeSent); // needs to be implemented
+					return new SendObject<T1>("Reservation created", (T1)(Reservation) myReservation);
 				} else {
-					return new SendObject<T1>("Reservation", (T1) (String) "Not Created");
+					return new SendObject<T1>("Reservation", (T1)(String) "Not Created");
 				}
 			}
 		} catch (Exception e) {// SQLException e

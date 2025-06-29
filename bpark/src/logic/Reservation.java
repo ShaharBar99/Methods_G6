@@ -7,13 +7,15 @@ import java.time.LocalDate;
  * Simple POJO to hold one reservation record.
  */
 public class Reservation implements Serializable{
+	private final int id;
 	private final int subscriberId;
 	private final int spotId;
 	private final LocalDate date;
 	private String startTime;
 	private String endTime;
  
-	public Reservation(int spotId,int subscriber_id , LocalDate date, String startTime, String endTime) {
+	public Reservation(int id,int spotId,int subscriber_id , LocalDate date, String startTime, String endTime) {
+		this.id = id;
 		this.subscriberId = subscriber_id;
 		this.spotId = spotId;
 		this.date = date;
@@ -22,6 +24,10 @@ public class Reservation implements Serializable{
 	}
 
 
+	public int getId() {
+		return id;
+	}
+	
 	public int getSubscriberId() {
 		return subscriberId;
 	}
