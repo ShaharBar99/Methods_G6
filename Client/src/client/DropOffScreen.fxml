@@ -37,7 +37,7 @@
 					styleClass="menu-button" text="Submit Parking Request"
 					GridPane.columnIndex="1" GridPane.halignment="CENTER"
 					GridPane.rowIndex="3" />
-				<TextField GridPane.columnIndex="1" GridPane.halignment="CENTER"
+				<TextField fx:id="reservationCode" GridPane.columnIndex="1" GridPane.halignment="CENTER"
 					styleClass="text-field" promptText="Enter code numbers only"
 					GridPane.rowIndex="4" />
 				<Button onAction="#submitParkingRequestUsingReservation"

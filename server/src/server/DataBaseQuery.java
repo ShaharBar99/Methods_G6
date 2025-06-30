@@ -483,14 +483,14 @@ public class DataBaseQuery extends MySQLConnection {
      *
      * @param reservation the Reservation object containing updated fields
      */
-    protected void updateReservationInDatabase(Reservation reservation) {
+    protected void updateReservationInDatabase(int reservationNum,Reservation reservation) {
         String sql =
             "UPDATE reservations " +
             "SET spot_id    = ?, " +
             "    date       = ?, " +
             "    end_time   = ?, " +
             "    start_time = ? " +
-            "WHERE subscriber_id = ? ";
+            "WHERE reservation_id = ? ";
 
         try (PreparedStatement ps = getCon().prepareStatement(sql)) {
             // 1) Bind the fields we're updating
@@ -511,7 +511,7 @@ public class DataBaseQuery extends MySQLConnection {
                 }
             }
             // 2) Bind the key columns in the WHERE clause
-            ps.setInt(5, reservation.getSubscriberId());
+            ps.setInt(5, reservationNum);
             // Handle start_time using Time.valueOf() by ensuring the format is HH:mm:ss
             String startTimeStr = reservation.getStartTime();
             if (startTimeStr == null || startTimeStr.trim().isEmpty()) {
@@ -673,33 +673,81 @@ public class DataBaseQuery extends MySQLConnection {
     }
 
     /**
-     * Inserts a new reservation into the database.
+     * Inserts a new reservation into the database and returns its generated ID.
      *
      * @param reservation the Reservation to persist
+     * @return the new reservation_id assigned by the database, or -1 on error
      */
-    protected void createReservationInDatabase(Reservation reservation) {
-        // SQL inserts subscriber_id, spot_id, date, start_time, end_time; reservation_id is AUTO_INCREMENT
+    protected int createReservationInDatabase(Reservation reservation) {
         String sql =
             "INSERT INTO reservations " +
             "  (subscriber_id, spot_id, date, start_time, end_time) " +
             "VALUES (?, ?, ?, ?, ?)";
 
-        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
-            // Bind subscriber_id then spot_id (Reservation.getSpot() returns the spot_id) :contentReference[oaicite:0]{index=0}
+        int generatedId = -1;
+
+        try (PreparedStatement ps = getCon().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, reservation.getSubscriberId());
             ps.setInt(2, reservation.getSpot());
-            // Convert LocalDate → java.sql.Date for the DATE column
             ps.setDate(3, java.sql.Date.valueOf(reservation.getDate()));
-            // Convert String ("HH:mm:ss") → java.sql.Time for the TIME columns
-            ps.setTime(4, java.sql.Time.valueOf(reservation.getStartTime()+ ":00"));
-            ps.setTime(5, java.sql.Time.valueOf(reservation.getEndTime()+ ":00"));
-            
-            // Execute the INSERT
-            ps.executeUpdate();
-        }
-        catch (SQLException e) {
+            ps.setTime(4, java.sql.Time.valueOf(reservation.getStartTime() + ":00"));
+            ps.setTime(5, java.sql.Time.valueOf(reservation.getEndTime() + ":00"));
+
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                try (ResultSet keys = ps.getGeneratedKeys()) {
+                    if (keys.next()) {
+                        generatedId = keys.getInt(1);
+                        // if your Reservation class has a setter:
+                        // reservation.setReservationId(generatedId);
+                    }
+                }
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        return generatedId;
+    }
+
+    /**
+     * Retrieves a reservation by its reservation_id.
+     *
+     * @param reservationId the ID of the reservation to fetch
+     * @return the Reservation object, or null if not found / on error
+     */
+    protected Reservation getReservationById(int reservationId) {
+        Reservation reservation = null;
+        String sql = 
+            "SELECT * " +
+            "FROM reservations " +
+            "WHERE reservation_id = ?";
+
+        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
+            ps.setInt(1, reservationId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int subId   = rs.getInt("subscriber_id");
+                    int spotId  = rs.getInt("spot_id");
+                    LocalDate date      = rs.getDate("date").toLocalDate();
+                    String startTime = rs.getString("start_time");
+                    String endTime   = rs.getString("end_time");
+
+                    reservation = new Reservation(
+                    	spotId,
+                        subId,
+                        date,
+                        startTime,
+                        endTime
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return reservation;
     }
     
     /**Add commentMore actions

@@ -266,10 +266,14 @@ public class SendObjectHandler {
 				ParkingSpot spot = (ParkingSpot) object;
 				// Update ParkingSpot In the database received object
 				con.updateParkingSpotInDatabase(spot);
-			} else if (object instanceof Reservation) {
-				Reservation reservation = (Reservation) object;
-				// Update Reservation In the database received object
-				con.updateReservationInDatabase(reservation);
+			} else if (object instanceof Object[]) {
+				if(((Object[])object)[1] instanceof Reservation) {
+					Object objectArr[] = (Object[])object;
+					int reservationNum = (Integer) objectArr[0];
+					Reservation reservation = (Reservation) objectArr[1];
+					// Update Reservation In the database received object
+					con.updateReservationInDatabase(reservationNum,reservation);
+				}
 			}
 		} catch (Exception e) { // SQLException e
 			throw new Exception("Error updating data to database", e);
@@ -322,10 +326,12 @@ public class SendObjectHandler {
 					con.updateParkingSpotInDatabase(spot);
 					Reservation reservationToBeSent = new Reservation(spot.getSpotId(), reservation.getSubscriberId(),
 							reservation.getDate(), reservation.getStartTime(), reservation.getEndTime());
-					int reservationCode = con.createReservationInDatabase(reservationToBeSent); // needs to be implemented
-					return new SendObject<T1>("Reservation", (T1)(String) String.format("Created with code:%d",reservationCode));
+					int reservationCode = con.createReservationInDatabase(reservationToBeSent); // needs to be
+																								// implemented
+					return new SendObject<T1>("Reservation",
+							(T1) (String) String.format("Created with code:%d", reservationCode));
 				} else {
-					return new SendObject<T1>("Reservation", (T1)(String) "Not Created");
+					return new SendObject<T1>("Reservation", (T1) (String) "Not Created");
 				}
 			}
 		} catch (Exception e) {// SQLException e

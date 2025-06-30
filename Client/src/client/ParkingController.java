@@ -330,11 +330,20 @@ public class ParkingController {
 
 	public void implementDropoffUsingReservation(int reservationCode) throws Exception {
 		// TODO Auto-generated method stub
+		Object reservationAndCode[] = new Object[2];
 		reservation = getReservation(reservationCode);
 		if (reservation.getEndTime() != null && reservation.getSubscriberId()==sub.getId()) {
-			if (!isWithin15Minutes(reservation)) {
-				reservation.setStartTime(null);
-				client.sendToServerSafely(new SendObject<Reservation>("Update",reservation)); // Indicates reservation hasn't been used
+			if (!isWithinAcceptableTime(reservation)) {
+				if (LocalDateTime.now().isAfter(
+			            reservation.getDate().atTime(
+			                LocalTime.parse(reservation.getStartTime())
+			            ).plusMinutes(15))
+			        ) {
+					reservation.setStartTime(null);
+					reservationAndCode[0] = reservationCode;
+					reservationAndCode[1] = reservation;
+					client.sendToServerSafely(new SendObject<Object[]>("Update",reservationAndCode)); // Indicates reservation hasn't been used			
+				}
 				throw new Exception("subscriber didn't come in the right time, cannot create parking session through reservation. Try Submit Parking Request.");
 			}
 			LocalDateTime inDateTime = LocalDateTime.of(reservation.getDate(), LocalTime.parse(reservation.getStartTime()));
@@ -352,7 +361,9 @@ public class ParkingController {
 				// TO DO: send session to database
 				client.sendToServerSafely(new SendObject<Parkingsession>("Create new", session));// V
 				reservation.setEndTime(null);
-				client.sendToServer(new SendObject<Reservation>("Update",reservation)); // Indicates reservation has been used
+				reservationAndCode[0] = reservationCode;
+				reservationAndCode[1] = reservation;
+				client.sendToServerSafely(new SendObject<Object[]>("Update",reservationAndCode)); // Indicates reservation has been used
 				int spotId = spot.getSpotId();
 				Platform.runLater(() -> {
 					System.out.println(spotId + ", " + parkingCode);
@@ -383,18 +394,20 @@ public class ParkingController {
 		return reservation;
 	}
 	
-	private boolean isWithin15Minutes(Reservation reservation) {
-        // Get the current date and time
-        LocalDateTime now = LocalDateTime.now();
-
-        // Combine reservation date and start time (parsing time from String)
-        LocalDateTime reservationDateTime = reservation.getDate()
-                .atTime(LocalTime.parse(reservation.getStartTime(), DateTimeFormatter.ofPattern("HH:mm:ss")));
-
-        // Check if the reservation is within 15 minutes (before or after) from the current time
-        long minutesDifference = Duration.between(reservationDateTime,now).toMinutes();
-
-        return minutesDifference >= 0 && minutesDifference <= 15;
-    }
-
+	private boolean isWithinAcceptableTime(Reservation reservation) {
+	    LocalDateTime now = LocalDateTime.now();
+	    LocalDateTime reservationDateTime = reservation.getDate()
+	            .atTime(LocalTime.parse(reservation.getStartTime()));
+	    // Check if same day
+	    if (!now.toLocalDate().equals(reservation.getDate())) {
+	        return false; // Entirely different day - reject
+	    }
+	    // For same day:
+	    if (now.isBefore(reservationDateTime)) {
+	        return true; // Early arrival - allow but don't nullify
+	    } else {
+	        long minutesLate = Duration.between(reservationDateTime, now).toMinutes();
+	        return minutesLate <= 15; // Allow if <=15min late
+	    }
+	}
 }

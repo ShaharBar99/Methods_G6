@@ -59,14 +59,15 @@ public class DropOffScreenController extends Controller {
 	}
 	
 	public void submitParkingRequestUsingReservation() {
-		if ((reservationCode.getText()).isEmpty()||!reservationCode.getText().matches("\\d{9}")) {
+		String reservationCodeTrimmed = reservationCode.getText().trim();
+		if (reservationCodeTrimmed.isEmpty()||!reservationCodeTrimmed.matches("\\d+")) {
             ShowAlert.showAlert("Error", "Code must be a number", AlertType.ERROR);
             return;
         }
-		int code =Integer.parseInt(reservationCode.getText());
+		int code =Integer.parseInt(reservationCodeTrimmed);
 		try {
 			if (!ShowAlert.showConfirmation("Confirm Vehicle dropoff",
-					"Are you sure you want to dropoff your vehicle using reservation: "+reservationCode.getText())) {
+					"Are you sure you want to dropoff your vehicle using reservation: "+reservationCodeTrimmed)) {
 				return; // user clicked Cancel
 			}
 			parkingController.implementDropoffUsingReservation(code);
