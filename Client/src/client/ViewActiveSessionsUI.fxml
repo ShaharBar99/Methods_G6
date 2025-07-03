@@ -37,5 +37,16 @@
         </TableView>
 
         <Button fx:id="backButton" text="Back" styleClass="button-blue" onAction="#handleBackButton"/>
+        
+        <LineChart fx:id="activeSessionLineChart" title="Active Sessions per Hour"
+           prefHeight="300.0" prefWidth="1050.0">
+    <xAxis>
+        <NumberAxis fx:id="xAxis" label="Hour of Day" tickUnit="1" lowerBound="0" upperBound="23"/>
+    </xAxis>
+    <yAxis>
+        <NumberAxis fx:id="yAxis" label="Session Count"/>
+    </yAxis>
+</LineChart>
+        
     </VBox>
 </AnchorPane>

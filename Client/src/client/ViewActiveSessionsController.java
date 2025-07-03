@@ -1,5 +1,8 @@
+// === ViewActiveSessionsController with LineChart ===
 package client;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +11,9 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -20,7 +26,6 @@ public class ViewActiveSessionsController extends Controller {
 
 	@FXML
 	protected TableView<Parkingsession> sessionTable;
-
 	@FXML
 	protected TableColumn<Parkingsession, Integer> colSessionId;
 	@FXML
@@ -39,9 +44,14 @@ public class ViewActiveSessionsController extends Controller {
 	protected TableColumn<Parkingsession, Boolean> colLate;
 	@FXML
 	protected TableColumn<Parkingsession, Boolean> colActive;
-
 	@FXML
 	protected Button backButton;
+	@FXML
+	private LineChart<Number, Number> activeSessionLineChart;
+	@FXML
+	private NumberAxis xAxis;
+	@FXML
+	private NumberAxis yAxis;
 
 	protected List<Parkingsession> allSessions = new ArrayList<>();
 	protected Runnable backHandler;
@@ -68,6 +78,24 @@ public class ViewActiveSessionsController extends Controller {
 	public void setSessions(List<Parkingsession> sessions) {
 		this.allSessions = sessions;
 		sessionTable.getItems().setAll(allSessions);
+		updateLineChart();
+	}
+
+	private void updateLineChart() {
+		int[] hourlyCounts = new int[24];
+		for (Parkingsession session : allSessions) {
+			if (session.getActive()) {
+				LocalDateTime in = session.getInTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+				int hour = in.getHour();
+				hourlyCounts[hour]++;
+			}
+		}
+		XYChart.Series<Number, Number> series = new XYChart.Series<>();
+		for (int hour = 0; hour < 24; hour++) {
+			series.getData().add(new XYChart.Data<>(hour, hourlyCounts[hour]));
+		}
+		activeSessionLineChart.getData().clear();
+		activeSessionLineChart.getData().add(series);
 	}
 
 	public void handleServerMessage(Object msg) {
