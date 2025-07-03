@@ -7,46 +7,54 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/23.0.1" 
-            xmlns:fx="http://javafx.com/fxml"
-            styleClass="main-pane"
-            stylesheets="@ReportScreen.css"
-            fx:controller="client.ViewActiveSessionsController">
+<AnchorPane xmlns="http://javafx.com/javafx/23.0.1"
+	xmlns:fx="http://javafx.com/fxml" styleClass="main-pane"
+	stylesheets="@ReportScreen.css"
+	fx:controller="client.ViewActiveSessionsController">
 
-    <VBox spacing="20.0" alignment="CENTER"
-          AnchorPane.topAnchor="20.0"
-          AnchorPane.leftAnchor="20.0"
-          AnchorPane.rightAnchor="20.0"
-          AnchorPane.bottomAnchor="20.0"
-          styleClass="menu-container"
-          style="-fx-padding: 20;">
-        
-        <TableView fx:id="sessionTable" prefHeight="400.0" prefWidth="1050.0"
-                   styleClass="main-table">
-            <columns>
-                <TableColumn fx:id="colSessionId" text="Session ID" prefWidth="200.0"/>
-                <TableColumn fx:id="colSubscriberId" text="Subscriber ID" prefWidth="200.0"/>
-                <TableColumn fx:id="colSpotId" text="Spot ID" prefWidth="200.0"/>
-                <TableColumn fx:id="colParkingCode" text="Parking Code" prefWidth="200.0"/>
-                <TableColumn fx:id="colInTime" text="In Time" prefWidth="200.0"/>
-                <TableColumn fx:id="colOutTime" text="Out Time" prefWidth="200.0"/>
-                <TableColumn fx:id="colExtended" text="Extended" prefWidth="200.0"/>
-                <TableColumn fx:id="colLate" text="Late" prefWidth="200.0"/>
-                <TableColumn fx:id="colActive" text="Active" prefWidth="200.0"/>
-            </columns>
-        </TableView>
+	<VBox spacing="20.0" alignment="CENTER"
+		AnchorPane.topAnchor="20.0" AnchorPane.leftAnchor="20.0"
+		AnchorPane.rightAnchor="20.0" AnchorPane.bottomAnchor="20.0"
+		styleClass="menu-container" style="-fx-padding: 20;">
 
-        <Button fx:id="backButton" text="Back" styleClass="button-blue" onAction="#handleBackButton"/>
-        
-        <LineChart fx:id="activeSessionLineChart" title="Active Sessions per Hour"
-           prefHeight="300.0" prefWidth="1050.0">
-    <xAxis>
-        <NumberAxis fx:id="xAxis" label="Hour of Day" tickUnit="1" lowerBound="0" upperBound="23"/>
-    </xAxis>
-    <yAxis>
-        <NumberAxis fx:id="yAxis" label="Session Count"/>
-    </yAxis>
-</LineChart>
-        
-    </VBox>
+		<TableView fx:id="sessionTable" prefHeight="400.0"
+			prefWidth="1050.0" styleClass="main-table">
+			<columns>
+				<TableColumn fx:id="colSessionId" text="Session ID"
+					prefWidth="200.0" />
+				<TableColumn fx:id="colSubscriberId"
+					text="Subscriber ID" prefWidth="200.0" />
+				<TableColumn fx:id="colSpotId" text="Spot ID"
+					prefWidth="200.0" />
+				<TableColumn fx:id="colParkingCode" text="Parking Code"
+					prefWidth="200.0" />
+				<TableColumn fx:id="colInTime" text="In Time"
+					prefWidth="200.0" />
+				<TableColumn fx:id="colOutTime" text="Out Time"
+					prefWidth="200.0" />
+				<TableColumn fx:id="colExtended" text="Extended"
+					prefWidth="200.0" />
+				<TableColumn fx:id="colLate" text="Late"
+					prefWidth="200.0" />
+				<TableColumn fx:id="colActive" text="Active"
+					prefWidth="200.0" />
+			</columns>
+		</TableView>
+
+		<Button fx:id="backButton" text="Back" styleClass="button-blue"
+			onAction="#handleBackButton" />
+
+		<LineChart fx:id="activeSessionLineChart"
+			title="Active Sessions per Hour" prefHeight="300.0"
+			prefWidth="1050.0">
+			<xAxis>
+				<NumberAxis fx:id="xAxis" label="Hour of Day"
+					tickUnit="1" lowerBound="0" upperBound="23" />
+			</xAxis>
+			<yAxis>
+				<NumberAxis fx:id="yAxis" label="Session Count" />
+			</yAxis>
+		</LineChart>
+
+	</VBox>
 </AnchorPane>
