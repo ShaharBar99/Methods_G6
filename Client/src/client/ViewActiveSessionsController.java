@@ -46,14 +46,6 @@ public class ViewActiveSessionsController extends Controller {
 	protected TableColumn<Parkingsession, Boolean> colActive;
 	@FXML
 	protected Button backButton;
-	@FXML
-	private LineChart<Number, Number> activeSessionLineChart;
-	@FXML
-	private NumberAxis xAxis;
-	@FXML
-	private NumberAxis yAxis;
-
-	private XYChart.Series<Number, Number> hourlySeries = new XYChart.Series<>();
 
 	protected List<Parkingsession> allSessions = new ArrayList<>();
 	protected Runnable backHandler;
@@ -75,41 +67,11 @@ public class ViewActiveSessionsController extends Controller {
 		colLate.setCellValueFactory(cellData -> new SimpleBooleanProperty(cellData.getValue().isLate()).asObject());
 		colActive
 				.setCellValueFactory(cellData -> new SimpleBooleanProperty(cellData.getValue().getActive()).asObject());
-
-		// Chart setup
-		hourlySeries.setName("Active Sessions");
-		activeSessionLineChart.getData().add(hourlySeries);
-
-		xAxis.setAutoRanging(false);
-		xAxis.setLowerBound(0);
-		xAxis.setUpperBound(23);
-		xAxis.setTickUnit(1);
 	}
 
 	public void setSessions(List<Parkingsession> sessions) {
 		this.allSessions = sessions;
 		sessionTable.getItems().setAll(allSessions);
-		sessionTable.refresh();
-		updateLineChart();
-	}
-
-	private void updateLineChart() {
-		int[] hourlyCounts = new int[24];
-		for (Parkingsession session : allSessions) {
-			if (session.getActive()) {
-				LocalDateTime in = session.getInTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-				int hour = in.getHour();
-				hourlyCounts[hour]++;
-			}
-		}
-
-		// Update series data directly
-		Platform.runLater(() -> {
-			hourlySeries.getData().clear();
-			for (int hour = 0; hour < 24; hour++) {
-				hourlySeries.getData().add(new XYChart.Data<>(hour, hourlyCounts[hour]));
-			}
-		});
 	}
 
 	public void handleServerMessage(Object msg) {

@@ -84,13 +84,6 @@ public class ViewSubscriberController extends Controller {
 	@FXML
 	private TableColumn<Parkingsession, String> colLate;
 
-	@FXML
-	private BarChart<String, Number> barChart;
-	@FXML
-	private CategoryAxis xAxis;
-	@FXML
-	private NumberAxis yAxis;
-
 	private List<Parkingsession> historySessions;
 
 	@FXML
@@ -145,24 +138,7 @@ public class ViewSubscriberController extends Controller {
 		historyTable.setItems(data);
 	}
 
-	private void populateBarChart(List<Parkingsession> sessions) {
-		int[] monthly = new int[12];
-		int currentYear = LocalDate.now().getYear();
 
-		for (Parkingsession s : sessions) {
-			LocalDate date = s.getInTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-			if (date.getYear() == currentYear) {
-				monthly[date.getMonthValue() - 1]++;
-			}
-		}
-
-		XYChart.Series<String, Number> series = new XYChart.Series<>();
-		for (int i = 0; i < 12; i++) {
-			series.getData().add(new XYChart.Data<>(Month.of(i + 1).name(), monthly[i]));
-		}
-		barChart.getData().clear();
-		barChart.getData().add(series);
-	}
 
 	/** Can be reused in subclass */
 	protected void filterSubscribers() {
@@ -194,6 +170,7 @@ public class ViewSubscriberController extends Controller {
 		} else {
 			this.historySessions = new ArrayList<Parkingsession>();
 		}
+		populateHistoryTable(history);
 	}
 
 	@Override
@@ -216,18 +193,10 @@ public class ViewSubscriberController extends Controller {
 					List<?> list = (List<?>) obj;
 					if (!list.isEmpty() && list.get(0) instanceof Parkingsession) {
 						setHistorySessions((List<Parkingsession>) list);
-						Platform.runLater(() -> {
-							populateHistoryTable(this.historySessions);
-							populateBarChart(this.historySessions);
-						});
 					}
 					else {
 						// empty the table and chart if no sessions found
 						setHistorySessions(new ArrayList<>());
-						Platform.runLater(() -> {
-							populateHistoryTable(this.historySessions);
-							populateBarChart(this.historySessions);
-						});
 					}
 				}
 			}

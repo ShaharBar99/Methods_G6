@@ -1,9 +1,8 @@
 package client;
 
-
-
 import java.io.IOException;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,19 +11,23 @@ import javafx.scene.control.Button;
 import javafx.stage.Stage;
 import logic.SendObject;
 
-public class AdminScreenController extends Controller{
-	
-	//private BParkClient client;
+public class AdminScreenController extends Controller {
 
-	@FXML Button openReservationReportButton;
-	@FXML Button openSubscribersReportButton;
-	@FXML Button openActiveSessionsReportButton;
-	@FXML Button backButton;
-    
+	// private BParkClient client;
+
+	@FXML
+	Button openReservationReportButton;
+	@FXML
+	Button openSubscribersReportButton;
+	@FXML
+	Button openActiveSessionsReportButton;
+	@FXML
+	Button backButton;
+
 	public void setBackHandler(Runnable backHandler) {
 		this.backHandler = backHandler;
 	}
-	
+
 	@FXML
 	public void openReservationReport() {
 		try {
@@ -61,16 +64,15 @@ public class AdminScreenController extends Controller{
 			// Send request to the server
 			SendObject<String> request = new SendObject<>("Get", "active parking sessions");
 			client.sendToServerSafely(request);
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-    
-    @FXML protected void handleBackButton() {
+	@FXML
+	protected void handleBackButton() {
 		// swap the TableView scene back to the connect screen
-    	handleButtonToLogin(backButton);
+		handleButtonToLogin(backButton);
 	}
-    
+
 }
