@@ -59,8 +59,4 @@ public class SendEmail {
             e.printStackTrace();
         }
     }
-    /*
-    public static void main(String[] args) {
-    	SendEmail.sendMail("alexkoganwork@gmail.com","Late pick up notice","Hello, we notify you that you picked up the vehicle later than requested,\n Eat nuts and chew gum!");
-	}*/
 }

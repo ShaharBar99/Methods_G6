@@ -13,20 +13,23 @@ public class BParkClient extends ObservableClient {
 
 	/**
 	 * @param host
-	 * @param port sets the host and port for the connection
+	 * @param port 
+	 * sets the host and port for the connection
 	 */
 	public BParkClient(String host, int port) {
 		super(host, port); // This sets the host and port to be used in openConnection()
 	}
 
 	/**
-	 * @param listener Sets the listener for incoming messages from the server
+	 * @param listener 
+	 * Sets the listener for incoming messages from the server
 	 */
 	public void setMessageListener(MessageListener listener) {
 		this.messageListener = listener;
 	}
 
 	/**
+	 * @param msg
 	 * Handles messages received from the server
 	 */
 	@Override
@@ -37,7 +40,8 @@ public class BParkClient extends ObservableClient {
 	}
 
 	/**
-	 * @param msg Safely sends a message to the server with error handling
+	 * @param msg 
+	 * Safely sends a message to the server with error handling
 	 */
 	public void sendToServerSafely(Object msg) {
 		try {
@@ -48,10 +52,10 @@ public class BParkClient extends ObservableClient {
 	}
 
 	/**
-	 * Starts the client connection
+	 * @param subscriber sub
 	 * @throws Exception 
+	 * start connection getting sub
 	 */
-	//start getting subs public void start(subscriber sub) throws Exception {
 	public void start(subscriber sub) throws Exception {
 		try {
 			openConnection();
