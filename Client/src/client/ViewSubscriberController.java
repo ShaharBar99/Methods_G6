@@ -91,10 +91,7 @@ public class ViewSubscriberController extends Controller {
 	@FXML
 	private NumberAxis yAxis;
 
-	private boolean responseReceived = false;
 	private List<Parkingsession> historySessions;
-
-	private final HistoryController controller = new HistoryController();
 
 	@FXML
 	public void initialize() {
@@ -137,25 +134,7 @@ public class ViewSubscriberController extends Controller {
 
 		try {
 			int subscriberId = Integer.parseInt(idText);
-			responseReceived = false;
 			client.sendToServerSafely(new SendObject<Integer>("Get history", subscriberId));
-
-			new Thread(() -> {
-				try {
-					Util.waitForServerResponse(10000, () -> responseReceived);
-					List<Parkingsession> result = historySessions;
-					if (result != null) {
-						Platform.runLater(() -> {
-							populateHistoryTable(result);
-							populateBarChart(result);
-						});
-					} else {
-						Platform.runLater(() -> showAlert("No session data received."));
-					}
-				} catch (Exception ex) {
-					Platform.runLater(() -> showAlert("Error: " + ex.getMessage()));
-				}
-			}).start();
 		} catch (NumberFormatException e) {
 			showAlert("Subscriber ID must be a number.");
 		}
@@ -209,6 +188,14 @@ public class ViewSubscriberController extends Controller {
 		filterSubscribers();
 	}
 
+	public void setHistorySessions(List<Parkingsession> history) {
+		if (history != null) {
+			this.historySessions = history;
+		} else {
+			this.historySessions = new ArrayList<Parkingsession>();
+		}
+	}
+
 	@Override
 	public void handleServerMessage(Object msg) {
 		if (msg instanceof SendObject<?>) {
@@ -227,9 +214,20 @@ public class ViewSubscriberController extends Controller {
 				Object obj = so.getObj();
 				if (obj instanceof List<?>) {
 					List<?> list = (List<?>) obj;
-					if (!list.isEmpty() || list.get(0) instanceof Parkingsession) {
-						historySessions = (List<Parkingsession>) list;
-						responseReceived = true;
+					if (!list.isEmpty() && list.get(0) instanceof Parkingsession) {
+						setHistorySessions((List<Parkingsession>) list);
+						Platform.runLater(() -> {
+							populateHistoryTable(this.historySessions);
+							populateBarChart(this.historySessions);
+						});
+					}
+					else {
+						// empty the table and chart if no sessions found
+						setHistorySessions(new ArrayList<>());
+						Platform.runLater(() -> {
+							populateHistoryTable(this.historySessions);
+							populateBarChart(this.historySessions);
+						});
 					}
 				}
 			}

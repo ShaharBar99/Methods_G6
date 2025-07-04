@@ -53,6 +53,8 @@ public class ViewActiveSessionsController extends Controller {
 	@FXML
 	private NumberAxis yAxis;
 
+	private XYChart.Series<Number, Number> hourlySeries = new XYChart.Series<>();
+
 	protected List<Parkingsession> allSessions = new ArrayList<>();
 	protected Runnable backHandler;
 
@@ -73,11 +75,21 @@ public class ViewActiveSessionsController extends Controller {
 		colLate.setCellValueFactory(cellData -> new SimpleBooleanProperty(cellData.getValue().isLate()).asObject());
 		colActive
 				.setCellValueFactory(cellData -> new SimpleBooleanProperty(cellData.getValue().getActive()).asObject());
+
+		// Chart setup
+		hourlySeries.setName("Active Sessions");
+		activeSessionLineChart.getData().add(hourlySeries);
+
+		xAxis.setAutoRanging(false);
+		xAxis.setLowerBound(0);
+		xAxis.setUpperBound(23);
+		xAxis.setTickUnit(1);
 	}
 
 	public void setSessions(List<Parkingsession> sessions) {
 		this.allSessions = sessions;
 		sessionTable.getItems().setAll(allSessions);
+		sessionTable.refresh();
 		updateLineChart();
 	}
 
@@ -90,12 +102,14 @@ public class ViewActiveSessionsController extends Controller {
 				hourlyCounts[hour]++;
 			}
 		}
-		XYChart.Series<Number, Number> series = new XYChart.Series<>();
-		for (int hour = 0; hour < 24; hour++) {
-			series.getData().add(new XYChart.Data<>(hour, hourlyCounts[hour]));
-		}
-		activeSessionLineChart.getData().clear();
-		activeSessionLineChart.getData().add(series);
+
+		// Update series data directly
+		Platform.runLater(() -> {
+			hourlySeries.getData().clear();
+			for (int hour = 0; hour < 24; hour++) {
+				hourlySeries.getData().add(new XYChart.Data<>(hour, hourlyCounts[hour]));
+			}
+		});
 	}
 
 	public void handleServerMessage(Object msg) {
