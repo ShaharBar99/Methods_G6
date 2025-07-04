@@ -13,6 +13,16 @@ public class MainMenuController extends Controller {
 	@FXML
 	Button historybutton;
 	@FXML
+	Button dropoff;
+	@FXML
+	Button Pickup;
+	@FXML
+	Button Reservation;
+	@FXML
+	Button Extension;
+	@FXML
+	Button Update;
+	@FXML
 	protected void handleBackButton() {
 		// swap the TableView scene back to the connect screen
 		handleButtonToLogin(historybutton);
@@ -47,4 +57,20 @@ public class MainMenuController extends Controller {
 	@FXML public void openUpdateUserDetails() {
         this.setscreen("UpdateUserDetails", "UpdateUserDetails.fxml","MainMenuScreen.fxml", "Main Menu",historybutton);
     }
+	public void hidebuttons(boolean terminal) {
+	    if(terminal) {
+	    	historybutton.setVisible(false);
+	    	historybutton.setManaged(false);
+	    	Reservation.setVisible(false);
+	    	Reservation.setManaged(false);
+	    	Update.setVisible(false);
+	    	Update.setManaged(false);
+	    }
+	    else {
+	    	dropoff.setVisible(false);
+	    	dropoff.setManaged(false);
+	    	Pickup.setVisible(false);
+	    	Pickup.setManaged(false);
+	    }
+	}
 }
