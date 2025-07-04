@@ -1,5 +1,8 @@
+// === ViewActiveSessionsController with LineChart ===
 package client;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +11,9 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -20,7 +26,6 @@ public class ViewActiveSessionsController extends Controller {
 
 	@FXML
 	protected TableView<Parkingsession> sessionTable;
-
 	@FXML
 	protected TableColumn<Parkingsession, Integer> colSessionId;
 	@FXML
@@ -39,7 +44,6 @@ public class ViewActiveSessionsController extends Controller {
 	protected TableColumn<Parkingsession, Boolean> colLate;
 	@FXML
 	protected TableColumn<Parkingsession, Boolean> colActive;
-
 	@FXML
 	protected Button backButton;
 

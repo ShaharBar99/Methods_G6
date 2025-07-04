@@ -9,7 +9,6 @@
 }
 
 .main-table .column-header-background {
-    -fx-background-color: linear-gradient(to right, #2196f3, #1e88e5);
     -fx-background-radius: 20 20 0 0;
 }
 
