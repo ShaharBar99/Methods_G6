@@ -78,4 +78,23 @@ public abstract class Controller {
             System.out.println("cant");
         }
     }
+	
+	@FXML
+    protected void handleButtonToLogin(Button node) {
+        // swap the TableView scene back to the connect screen
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("login.fxml"));
+            Parent root = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("Login");
+            stage.setScene(new Scene(root));
+            stage.show();
+            Stage currentStage = (Stage) node.getScene().getWindow();
+            currentStage.close();
+            client.stop();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 }
