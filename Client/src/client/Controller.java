@@ -14,7 +14,7 @@ public abstract class Controller {
     protected Runnable backHandler;
     protected subscriber sub;
     protected BParkClient client;
-    protected Boolean isConsole;
+    protected Boolean isConsole = false;
     public void setBackHandler(Runnable backHandler) {
         this.backHandler = backHandler;
     }
