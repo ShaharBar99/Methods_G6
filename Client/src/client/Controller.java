@@ -14,6 +14,7 @@ public abstract class Controller {
     protected Runnable backHandler;
     protected subscriber sub;
     protected BParkClient client;
+    protected Boolean isConsole;
     public void setBackHandler(Runnable backHandler) {
         this.backHandler = backHandler;
     }
@@ -25,6 +26,10 @@ public abstract class Controller {
 	public void setClient(BParkClient client,subscriber sub) {
 		this.sub = sub;
 		this.client = client;
+	}
+	
+	public void setIsConsole(boolean bool) {
+		isConsole = bool;
 	}
 
 	public subscriber getSub() {
@@ -42,7 +47,7 @@ public abstract class Controller {
 		System.err.println("test");
 	}
 	
-	protected void setscreen(String screen_name,String fxml,String retunFxml,String return_name, Button sourceButton) {
+	protected void setscreen(String screen_name,String fxml,String returnFxml,String return_name, Button sourceButton) {
 		try {
             // reload next screen
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxml));
@@ -58,16 +63,22 @@ public abstract class Controller {
             Controller c = null;
             c = loader.getController();
             c.setClient(client,sub);
+            c.setIsConsole(this.isConsole);
             client.setMessageListener(c::handleServerMessage);
             c.setBackHandler(() -> {
                 try {    
-                    FXMLLoader loginLoader = new FXMLLoader(getClass().getResource(retunFxml));
+                    FXMLLoader loginLoader = new FXMLLoader(getClass().getResource(returnFxml));
                     Parent loginRoot = loginLoader.load();
                     currentStage.setScene(new Scene(loginRoot));
                     currentStage.setTitle(return_name);
-                    currentStage.show();
+                         
                     Controller backC = loginLoader.getController();
                     backC.setClient(client,sub);
+                    backC.setIsConsole(this.isConsole);
+                    if(backC instanceof MainMenuController) {
+                    	((MainMenuController)backC).hidebuttons(this.isConsole);
+                    }
+                    currentStage.show();
                     stage.close();
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -96,5 +107,5 @@ public abstract class Controller {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-    }
+    }//
 }

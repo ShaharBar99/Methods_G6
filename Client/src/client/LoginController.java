@@ -160,6 +160,7 @@ public class LoginController {
 
 		if (fxml.equals("MainMenuScreen.fxml") && controller instanceof MainMenuController mainMenuController) {
 			boolean useConsole = consoleCheckBox.isSelected();
+			mainMenuController.setIsConsole(useConsole);
 			mainMenuController.hidebuttons(useConsole);
 		}
 
