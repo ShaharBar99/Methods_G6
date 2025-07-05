@@ -105,7 +105,14 @@ public class DataBaseQuery extends MySQLConnection {
 
         return parking;
     }
-
+    /**
+     * Marks the specified parking spot as free in the database.
+     * <p>
+     * Executes an SQL UPDATE statement to set the spot's status to inactive (free)
+     * based on its parking code.
+     *
+     * @param spotId The ID or parking code of the spot to update.
+     */
     protected void updateSpotToFreeInDatabase(int spotId) {
         //boolean exists = false;
         String sql =
@@ -221,6 +228,15 @@ public class DataBaseQuery extends MySQLConnection {
 
         return spot;
     }
+    /**
+     * Retrieves the list of past (inactive) parking sessions for a given subscriber from the database.
+     * <p>
+     * Executes a SQL SELECT query to fetch all parking sessions where the subscriber ID matches
+     * and the session is marked as inactive (active = FALSE).
+     *
+     * @param subscriber_id The ID of the subscriber whose parking history is to be retrieved.
+     * @return A list of Parkingsession objects representing the subscriber's parking history.
+     */
     protected List<Parkingsession> gethistoryParkingsessionsListOfSubscriberbyIdFromDatabase(int subscriber_id)
     {
     	List<Parkingsession> historyList  = new ArrayList<>();
@@ -876,7 +892,14 @@ public class DataBaseQuery extends MySQLConnection {
         return availableOfTimeExtension;
     }
     
-    // 1) Check if a subscriber’s email already exists for a different subscriberAdd commentMore actions
+    /**
+     * Checks if a given subscriber's email is already used by another subscriber in the system.
+     * <p>
+     * Executes a SQL SELECT query to detect duplicate emails (excluding the current subscriber ID).
+     *
+     * @param user The subscriber whose email is to be checked.
+     * @return true if a duplicate email exists; false otherwise.
+     */ 
     protected boolean checkUserEmailDuplicates(subscriber user) {
         boolean duplicate = false;
         String sql =
@@ -902,7 +925,14 @@ public class DataBaseQuery extends MySQLConnection {
         return duplicate;
     }
 
-    // 2) Check that an RFID tag is unique among all subscribers
+    /**
+     * Checks whether a given RFID tag is unique among all subscribers in the system.
+     * <p>
+     * Executes a SQL SELECT query to see if any subscriber has the same tag.
+     *
+     * @param tag The RFID tag to check.
+     * @return true if the tag is unique; false if it already exists.
+     */
     protected boolean checkRFIDTagDifferentFromAllSubscribers(String tag) {
         boolean unique = true;
         String sql =
@@ -927,7 +957,14 @@ public class DataBaseQuery extends MySQLConnection {
         return unique;
     }
 
-    // 3) Check that a numeric code is unique among all subscribers
+    /**
+     * Checks whether a given numeric code is unique among all subscribers.
+     * <p>
+     * Executes a SQL SELECT query to ensure no other subscriber has the same code.
+     *
+     * @param code The numeric code to check.
+     * @return true if the code is unique; false if it already exists.
+     */
     protected boolean checkCodeDifferentFromAllSubscribers(int code) {
         boolean unique = true;
         String sql =
@@ -951,7 +988,13 @@ public class DataBaseQuery extends MySQLConnection {
         return unique;
     }
 
-    // 4) Fetch every reservation in the system
+    /**
+     * Retrieves a list of all reservations stored in the system.
+     * <p>
+     * Executes a SQL SELECT query to fetch all records from the reservations table.
+     *
+     * @return A list of Reservation objects representing all reservations.
+     */
     protected List<Reservation> getAllReservationList() {
         List<Reservation> list = new ArrayList<>();
         String sql = "SELECT * FROM reservations";
@@ -974,7 +1017,13 @@ public class DataBaseQuery extends MySQLConnection {
         return list;
     }
 
-    // 5) Fetch every subscriber in the system
+    /**
+     * Retrieves a list of all subscribers stored in the system.
+     * <p>
+     * Executes a SQL SELECT query to fetch all records from the subscribers table.
+     *
+     * @return A list of subscriber objects representing all subscribers.
+     */
     protected List<subscriber> getAllSubscribersList() {
         List<subscriber> list = new ArrayList<>();
         String sql = "SELECT * FROM subscribers";
@@ -1002,7 +1051,14 @@ public class DataBaseQuery extends MySQLConnection {
         return list;
     }
 
-    // 6) Fetch all active parking sessions in the system
+    /**
+     * Retrieves a list of all active parking sessions currently in the system.
+     * <p>
+     * Executes a SQL SELECT query to fetch all records from the parking_sessions table
+     * where active = TRUE.
+     *
+     * @return A list of Parkingsession objects representing active sessions.
+     */
     protected List<Parkingsession> getAllActiveParkingsession() {
         List<Parkingsession> list = new ArrayList<>();
         String sql =
