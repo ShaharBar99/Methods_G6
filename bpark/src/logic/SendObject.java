@@ -12,20 +12,46 @@ import java.io.Serializable;
 public class SendObject<T extends Serializable> implements Serializable {
     private T obj;
     private String objectMessage;
+    
+    /**
+     * @param objectMessage
+     * @param obj
+     * Constructor of the class
+     */
     public SendObject(String objectMessage, T obj) {
         super();
         this.obj = obj;
         this.objectMessage = objectMessage;
     }  
+    
+    /**
+     * Getter of obj field
+     * @return obj
+     */
     public T getObj() {
         return obj;
     }
+    
+    /**
+     * Setter for obj field
+     * @param obj
+     */
     public void setObj(T obj) {
         this.obj = obj;
     }
+    
+    /**
+     * Getter of objectMessage field
+     * @return objectMessage
+     */
     public String getObjectMessage() {
         return objectMessage;
     }
+    
+    /**
+     * Setter for objectMessage field
+     * @param objectMessage
+     */
     public void setObjectMessage(String objectMessage) {
         this.objectMessage = objectMessage;
     }

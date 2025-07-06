@@ -3,20 +3,10 @@ package server;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.Scanner;
-
-import javax.swing.text.html.HTML.Tag;
-
-import logic.ParkingSpot;
-import logic.Role;
-import logic.subscriber;
 
 /**
  * The class handles any SQL query needed
@@ -33,18 +23,18 @@ public class MySQLConnection {
 	}
 
 	/**
+	 * Getter of con
 	 * @return con
 	 */
 	public Connection getCon() {
-		// Getter of con
 		return con ;
 	}
 
 	/**
+	 * // Start a connection to DB bpark returns con
 	 * @return con
 	 */
-	private Connection connectToDB() {
-		// Start a connection to DB bpark returns con
+	private Connection connectToDB() {	
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
 			System.out.println("Driver definition succeed");

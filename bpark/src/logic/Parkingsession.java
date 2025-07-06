@@ -212,6 +212,4 @@ public class Parkingsession implements Serializable{
 	    public void setLate(boolean late) {
 	        this.late = late;
 	    }
-	
-
 }
