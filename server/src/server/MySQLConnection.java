@@ -14,7 +14,6 @@ import java.util.Scanner;
 
 import javax.swing.text.html.HTML.Tag;
 
-import logic.Order;
 import logic.ParkingSpot;
 import logic.Role;
 import logic.subscriber;
