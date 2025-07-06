@@ -1,8 +1,5 @@
-// === ViewActiveSessionsController with LineChart ===
 package client;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,9 +8,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
-import javafx.scene.chart.LineChart;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -22,6 +16,19 @@ import javafx.scene.control.TableView;
 import logic.Parkingsession;
 import logic.SendObject;
 
+/**
+ * Controller for the "View Active Sessions" screen in the client application.
+ * <p>
+ * This class views the display of active parking sessions in a table view,
+ * allowing users to view session details such as session ID, subscriber ID,
+ * parking spot ID, and more. It also handles server messages to update the
+ * session data dynamically.
+ * </p>
+ * <p>
+ * Note: This controller is designed to work with JavaFX and assumes proper
+ * initialization of FXML components.
+ * </p>
+ */
 public class ViewActiveSessionsController extends Controller {
 
 	@FXML
@@ -46,16 +53,17 @@ public class ViewActiveSessionsController extends Controller {
 	protected TableColumn<Parkingsession, Boolean> colActive;
 	@FXML
 	protected Button backButton;
-	@FXML
-	private LineChart<Number, Number> activeSessionLineChart;
-	@FXML
-	private NumberAxis xAxis;
-	@FXML
-	private NumberAxis yAxis;
 
 	protected List<Parkingsession> allSessions = new ArrayList<>();
 	protected Runnable backHandler;
 
+    /**
+     * Initializes the table view and its columns.
+     * <p>
+     * This method sets up the cell value factories for each column to bind
+     * parking session properties to the table view.
+     * </p>
+     */
 	@FXML
 	public void initialize() {
 		colSessionId.setCellValueFactory(
@@ -75,29 +83,25 @@ public class ViewActiveSessionsController extends Controller {
 				.setCellValueFactory(cellData -> new SimpleBooleanProperty(cellData.getValue().getActive()).asObject());
 	}
 
+    /**
+     * Sets the parking sessions to be displayed in the table view.
+     *
+     * @param sessions List of parking sessions to display.
+     */
 	public void setSessions(List<Parkingsession> sessions) {
 		this.allSessions = sessions;
 		sessionTable.getItems().setAll(allSessions);
-		updateLineChart();
 	}
 
-	private void updateLineChart() {
-		int[] hourlyCounts = new int[24];
-		for (Parkingsession session : allSessions) {
-			if (session.getActive()) {
-				LocalDateTime in = session.getInTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-				int hour = in.getHour();
-				hourlyCounts[hour]++;
-			}
-		}
-		XYChart.Series<Number, Number> series = new XYChart.Series<>();
-		for (int hour = 0; hour < 24; hour++) {
-			series.getData().add(new XYChart.Data<>(hour, hourlyCounts[hour]));
-		}
-		activeSessionLineChart.getData().clear();
-		activeSessionLineChart.getData().add(series);
-	}
-
+    /**
+     * Handles incoming server messages to update the parking session data.
+     * <p>
+     * If the message contains a list of parking sessions, the table view is
+     * updated with the new data.
+     * </p>
+     *
+     * @param msg The server message containing session data.
+     */
 	public void handleServerMessage(Object msg) {
 		if (msg instanceof SendObject<?>) {
 			if (((SendObject<?>) msg).getObj() instanceof List<?>) {

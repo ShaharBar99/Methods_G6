@@ -1,20 +1,31 @@
 package client;
 
 import java.io.File;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+
 import javafx.fxml.FXML;
-import javafx.scene.chart.PieChart;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.stage.FileChooser;
-import logic.Role;
+import logic.Parkingsession;
 
 public class ReportSubscriberController extends ViewSubscriberController {
-
-	@FXML
-	private PieChart rolePieChart;
 	@FXML
 	private Button exportCsvButton;
+
+	@FXML
+	private BarChart<String, Number> barChart;
+	@FXML
+	private CategoryAxis xAxis;
+	@FXML
+	private NumberAxis yAxis;
 
 	@Override
 	public void initialize() {
@@ -26,8 +37,10 @@ public class ReportSubscriberController extends ViewSubscriberController {
 					FileChooser fileChooser = new FileChooser();
 					fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
 					File file = fileChooser.showSaveDialog(exportCsvButton.getScene().getWindow());
-					Util.exportToCSV(subscriberTable, file);
-					showAlert("Exported table to subscribers.csv!");
+					if (file != null) {
+						Util.exportToCSV(subscriberTable, file);
+						showAlert("Exported table to subscribers.csv!");
+					}
 				} catch (Exception ex) {
 					showAlert("Failed to export CSV: " + ex.getMessage());
 				}
@@ -35,22 +48,39 @@ public class ReportSubscriberController extends ViewSubscriberController {
 		}
 	}
 
+    /**
+     * Sets the list of historical sessions and updates the bar chart with subscriber activity data.
+     *
+     * @param history The list of parking sessions to display.
+     */
 	@Override
-	protected void filterSubscribers() {
-		super.filterSubscribers(); // run the default filter logic
-		updatePieChart(); // then update the pie chart
+	public void setHistorySessions(List<Parkingsession> history) {
+		super.setHistorySessions(history);
+		populateBarChart(history);
 	}
 
-	private void updatePieChart() {
-		long subscriberCount = filteredSubscribers.stream().filter(sub -> sub.getRole() == Role.SUBSCRIBER).count();
-		long attendantCount = filteredSubscribers.stream().filter(sub -> sub.getRole() == Role.ATTENDANT).count();
-		long managerCount = filteredSubscribers.stream().filter(sub -> sub.getRole() == Role.MANAGER).count();
+    /**
+     * Populates the bar chart to display subscriber activity by month.
+     *
+     * @param sessions The list of parking sessions to analyze.
+     */
+	private void populateBarChart(List<Parkingsession> sessions) {
+		int[] monthly = new int[12];
+		int currentYear = LocalDate.now().getYear();
 
-		ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList(
-				new PieChart.Data("Subscriber", subscriberCount), new PieChart.Data("Attendant", attendantCount),
-				new PieChart.Data("Manager", managerCount));
-		rolePieChart.setData(pieChartData);
-		rolePieChart.setTitle("Subscribers by Role");
+		for (Parkingsession s : sessions) {
+			LocalDate date = s.getInTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			if (date.getYear() == currentYear) {
+				monthly[date.getMonthValue() - 1]++;
+			}
+		}
+
+		XYChart.Series<String, Number> series = new XYChart.Series<>();
+		for (int i = 0; i < 12; i++) {
+			series.getData().add(new XYChart.Data<>(Month.of(i + 1).name(), monthly[i]));
+		}
+		barChart.getData().clear();
+		barChart.getData().add(series);
 	}
 
 }
