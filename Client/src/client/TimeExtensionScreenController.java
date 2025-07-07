@@ -1,7 +1,6 @@
 package client;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -20,6 +19,12 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import logic.*;
 
+/**
+ * Controller class for the time extension screen in the client-side parking management system.
+ *
+ * Allows users to extend their parking sessions, load existing sessions by ID, and view all active sessions.
+ * Integrates with {@link ParkingController} for back-end communication and updates.
+ */
 public class TimeExtensionScreenController extends Controller {
 
 	@FXML
@@ -46,12 +51,27 @@ public class TimeExtensionScreenController extends Controller {
 	@FXML
 	private TableColumn<Parkingsession, Date> colOutTime;
 
+	/**
+	 *  Parking controller used to handle logic for this screen.
+	 */
 	private ParkingController parkingController = new ParkingController();
 
+	/**
+	 * Currently selected session for extension.
+	 */
 	private Parkingsession session;
 
+	/**
+	 * Flag indicating if a session was recently extended.
+	 */
 	private boolean extendedSessionId = false;
 
+	/**
+	 * Initializes the screen with client and subscriber, sets up message listener and loads session data.
+     *
+     * @param client the client used to communicate with the server
+     * @param sub    the current subscriber using the system
+	 */
 	public void setClient(BParkClient client, subscriber sub) {
 		this.client = client;
 		this.sub = sub;
@@ -63,6 +83,11 @@ public class TimeExtensionScreenController extends Controller {
 		});
 	}
 
+	/**
+	 * Initializes all UI components, including spinners, table columns, and listeners.
+     * 
+     * Automatically called by the JavaFX framework.
+	 */
 	@FXML
 	private void initialize() {
 		// Initialize Spinner for Hours
@@ -71,6 +96,7 @@ public class TimeExtensionScreenController extends Controller {
 		// Initialize Spinner for Minutes
 		SpinnerValueFactory<Integer> minuteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 59, 0);
 		minuteSpinner.setValueFactory(minuteValueFactory);
+		// Restrict session ID field to digits only
 		ParkingsessionIdField.textProperty().addListener((observable, oldValue, newValue) -> {
 			if (!newValue.matches("\\d*")) {
 				ParkingsessionIdField.setText(oldValue); // Revert to old value if invalid
@@ -96,7 +122,7 @@ public class TimeExtensionScreenController extends Controller {
 				}
 			};
 		});
-
+		// Format and style out-time column
 		colOutTime.setCellValueFactory(new PropertyValueFactory<>("outTime"));
 		colOutTime.setCellFactory(column -> new TableCell<Parkingsession, Date>() {
 			@Override
@@ -127,7 +153,7 @@ public class TimeExtensionScreenController extends Controller {
 				}
 			}
 		});
-
+		// Row styling based on selection
 		currentParkingSessionTable.setRowFactory(tv -> new TableRow<Parkingsession>() {
 			@Override
 			protected void updateItem(Parkingsession item, boolean empty) {
@@ -145,6 +171,9 @@ public class TimeExtensionScreenController extends Controller {
 		});
 	}
 
+	/**
+	 * Displays all active parking sessions in the table view.
+	 */
 	public void displayActiveSessions() {
 		List<Parkingsession> sessions;
 		try {
@@ -152,15 +181,20 @@ public class TimeExtensionScreenController extends Controller {
 			ObservableList<Parkingsession> data = FXCollections.observableArrayList(sessions);
 			currentParkingSessionTable.setItems(data);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			ShowFail("Error getting Active sessions");
 			e.printStackTrace();
 		}
 	}
 
+	/**
+	 * Handles user action to load a session by ID.
+     * 
+     * Highlights the session in the table if found.
+	 * @throws Exception if something unexpected happend
+	 * and shows alert based on the the exception
+	 */
 	@FXML
 	private void handleLoadSession() throws Exception {
-		// Handle load session logic
 		try {
 			String parkingsessionId = ParkingsessionIdField.getText();
 			int parkingId = Integer.parseInt(parkingsessionId);
@@ -178,12 +212,16 @@ public class TimeExtensionScreenController extends Controller {
 		}
 	}
 
+	/**
+	 * Handles the extension of time for a selected parking session.
+     * 
+     * Validates the input, applies the new time, and updates the session via server.
+	 */
 	@FXML
 	private void handleExtendTime() {
-		// Handle time extension logic
-
 		long hour = hourSpinner.getValue();
 		long minute = minuteSpinner.getValue();
+		// Input validation
 		if (hour > 3 && minute > 0 || hour == 0 && minute == 0 || session == null) {
 			if (hour > 3 && minute > 0)
 				ShowFail("Time Extension must be up to 4 hours!");
@@ -205,6 +243,7 @@ public class TimeExtensionScreenController extends Controller {
 
 					return; // user clicked Cancel
 				}
+				// Updates the session
 				parkingController.ExtendTime(session);
 				ShowAlert.showAlert("Extended Time", "Time was successfully extended", AlertType.INFORMATION);
 				Platform.runLater(() -> {
@@ -214,22 +253,34 @@ public class TimeExtensionScreenController extends Controller {
 				currentParkingSessionTable.refresh();
 				extendedSessionId = true;
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				ShowFail("Time hasn't extended");
 				e.printStackTrace();
 			}
 		}
 	}
 
+	/**
+	 * Clears the input form and resets the UI.
+	 */
 	private void clearForm() {
 		ParkingsessionIdField.setText("");
 		initialize();
 	}
 
+	/**
+	 * Handles incoming messages from the server and delegates to the {@link ParkingController}.
+     *
+     * @param message the incoming server message
+	 */
 	public void handleServerMessage(Object message) {
 		parkingController.handleServerResponse(message);
 	}
 
+	/**
+	 * Displays a failure popup with the given message.
+     *
+     * @param string the error message to display
+	 */
 	public void ShowFail(String string) {
 		ShowAlert.showAlert("Error", string, AlertType.ERROR);
 	}

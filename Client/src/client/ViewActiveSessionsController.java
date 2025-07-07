@@ -16,11 +16,21 @@ import javafx.scene.control.TableView;
 import logic.Parkingsession;
 import logic.SendObject;
 
+/**
+ * Controller for the "View Active Sessions" screen in the client application.
+ *
+ * This class views the display of active parking sessions in a table view,
+ * allowing users to view session details such as session ID, subscriber ID,
+ * parking spot ID, and more. It also handles server messages to update the
+ * session data dynamically.
+ * 
+ * Note: This controller is designed to work with JavaFX and assumes proper
+ * initialization of FXML components.
+ */
 public class ViewActiveSessionsController extends Controller {
 
 	@FXML
 	protected TableView<Parkingsession> sessionTable;
-
 	@FXML
 	protected TableColumn<Parkingsession, Integer> colSessionId;
 	@FXML
@@ -39,13 +49,18 @@ public class ViewActiveSessionsController extends Controller {
 	protected TableColumn<Parkingsession, Boolean> colLate;
 	@FXML
 	protected TableColumn<Parkingsession, Boolean> colActive;
-
 	@FXML
 	protected Button backButton;
 
 	protected List<Parkingsession> allSessions = new ArrayList<>();
 	protected Runnable backHandler;
 
+    /**
+     * Initializes the table view and its columns.
+     *
+     * This method sets up the cell value factories for each column to bind
+     * parking session properties to the table view.
+     */
 	@FXML
 	public void initialize() {
 		colSessionId.setCellValueFactory(
@@ -65,11 +80,25 @@ public class ViewActiveSessionsController extends Controller {
 				.setCellValueFactory(cellData -> new SimpleBooleanProperty(cellData.getValue().getActive()).asObject());
 	}
 
+    /**
+     * Sets the parking sessions to be displayed in the table view.
+     *
+     * @param sessions List of parking sessions to display.
+     */
 	public void setSessions(List<Parkingsession> sessions) {
 		this.allSessions = sessions;
 		sessionTable.getItems().setAll(allSessions);
 	}
 
+    /**
+     * Handles incoming server messages to update the parking session data.
+     *
+     * If the message contains a list of parking sessions, the table view is
+     * updated with the new data.
+     *
+     *
+     * @param msg The server message containing session data.
+     */
 	public void handleServerMessage(Object msg) {
 		if (msg instanceof SendObject<?>) {
 			if (((SendObject<?>) msg).getObj() instanceof List<?>) {
@@ -78,17 +107,6 @@ public class ViewActiveSessionsController extends Controller {
 					Platform.runLater(() -> setSessions((List<Parkingsession>) updated));
 				}
 			}
-		}
-	}
-
-	public void setBackHandler(Runnable backHandler) {
-		this.backHandler = backHandler;
-	}
-
-	@FXML
-	protected void handleBackButton() {
-		if (backHandler != null) {
-			backHandler.run();
 		}
 	}
 

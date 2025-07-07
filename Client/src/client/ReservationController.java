@@ -19,6 +19,12 @@ import logic.Reservation;
 import logic.SendObject;
 import logic.subscriber;
 
+/**
+ * Controller class for handling reservation operations in the client application.
+ * 
+ * Manages the UI interactions for creating, validating, submitting, and displaying
+ * parking spot reservations.
+ */
 public class ReservationController extends Controller{
 
     // *** FXML-injected fields (no spot field any more) ***
@@ -32,6 +38,11 @@ public class ReservationController extends Controller{
     @FXML private TableColumn<Reservation,String> colStart;
     @FXML private TableColumn<Reservation,String> colEnd;
 
+    /**
+     * Initializes the controller.
+     * Configures the table columns for displaying future reservations.
+     * Called automatically by the JavaFX runtime after FXML loading.
+     */
     @FXML
     public void initialize() {
         // configure table columns
@@ -39,9 +50,17 @@ public class ReservationController extends Controller{
         colDate .setCellValueFactory(new PropertyValueFactory<>("date"));
         colStart.setCellValueFactory(new PropertyValueFactory<>("startTime"));
         colEnd  .setCellValueFactory(new PropertyValueFactory<>("endTime"));
-        // DON'T call getFutureReservationsFor() here, client is still null
     }
-    /** Validate date, times (HH:MM), start < end, and booking window 24 h – 7 days out */
+
+    /**
+     * Validates the reservation form input.
+     * 
+     * Checks that the date is set, times are in HH:MM format,
+     * start time is before end time, and the reservation is between
+     * 24 hours and 7 days in the future.
+     *
+     * @return true if the reservation is valid; false otherwise
+     */
     protected boolean validateReservation() {
         LocalDate date = datePicker.getValue();
         String start = startTimeField.getText().trim();
@@ -87,86 +106,127 @@ public class ReservationController extends Controller{
         return true;
     }
 
-	/** Called by ReservationScreenController#submitReservationRequest() */
-	/** Called when the user clicks “Reserve”. */
-	protected void onReserve() {
-		if (!validateReservation())
-			return;
-		
-		// Build a simple payload like "2025-06-10 09:00 11:00"
+    /**
+     * Handles the reserve button action.
+     * 
+     * Validates the reservation, confirms with the user, sends the reservation request
+     * to the server, and refreshes the future reservations table.
+     * 
+     * 
+     * Called by ReservationScreenController#submitReservationRequest()
+     */
+    protected void onReserve() {
+        if (!validateReservation())
+            return;
+        
+        // Build a simple payload like "2025-06-10 09:00 11:00"
 
-		Reservation reservation = new Reservation(0, sub.getId(), datePicker.getValue(),
-				startTimeField.getText().trim(), endTimeField.getText().trim());
-		String payload = String.format("Create Reservation: %s %s %s", datePicker.getValue(),
-				startTimeField.getText().trim(), endTimeField.getText().trim());
-		if (!ShowAlert.showConfirmation("Confirm Reservation",
-				"Are you sure you want to " +payload+" ?")) {
-			clearForm();
-			return; // user clicked Cancel
-		}
-		// Wrap <payload, subscriberId> in a SendObject<Integer>
-		SendObject<Reservation> req = new SendObject<>(payload, reservation
-		// subscribe.getId()
-		);
-		client.sendToServerSafely(req);
+        Reservation reservation = new Reservation(0, sub.getId(), datePicker.getValue(),
+                startTimeField.getText().trim(), endTimeField.getText().trim());
+        String payload = String.format("Create Reservation: %s %s %s", datePicker.getValue(),
+                startTimeField.getText().trim(), endTimeField.getText().trim());
+        if (!ShowAlert.showConfirmation("Confirm Reservation",
+                "Are you sure you want to " +payload+" ?")) {
+            clearForm();
+            return; // user clicked Cancel
+        }
+        // Wrap <payload, subscriberId> in a SendObject<Integer>
+        SendObject<Reservation> req = new SendObject<>(payload, reservation);
+        client.sendToServerSafely(req);
 
-		showAlert(AlertType.INFORMATION,
-				"Reservation request sent for subscriber #" + sub.getId() + ":\n" + payload);
+        showAlert(AlertType.INFORMATION,
+                "Reservation request sent for subscriber #" + sub.getId() + ":\n" + payload);
 
-		clearForm();
-		getFutureReservationsFor(); // Immediately refresh the table
-	}
+        clearForm();
+        getFutureReservationsFor(); // Immediately refresh the table
+    }
 
-	/** Called by ReservationScreenController#submitCancellation() */
-	protected void onCancel() {
-		clearForm();
-	}
+    /**
+     * Handles the cancel button action.
+     * 
+     * Clears the form input fields.
+     * 
+     * Called by ReservationScreenController#submitCancellation()
+     */
+    protected void onCancel() {
+        clearForm();
+    }
 
-	private void clearForm() {
-		datePicker.setValue(LocalDate.now());
-		startTimeField.clear();
-		endTimeField.clear();
-	}
+    /**
+     * Clears the reservation form fields.
+     * Sets the date to today and empties the time fields.
+     */
+    private void clearForm() {
+        datePicker.setValue(LocalDate.now());
+        startTimeField.clear();
+        endTimeField.clear();
+    }
 
-	/** Ask the server for this subscriber’s future reservations. */
-	protected void getFutureReservationsFor() {
-		// The “command” string can be anything your server expects, for example:
-		String command = "GetSubscribersResesrvations";
+    /**
+     * Requests future reservations for the current subscriber from the server.
+     * 
+     * Sends a command message wrapped in a SendObject.
+     * The server is expected to respond with a list of reservations.
+     */
+    protected void getFutureReservationsFor() {
+        // The “command” string can be anything your server expects, for example:
+        String command = "GetSubscribersResesrvations";
 
-		// Wrap <command, subscriberId> in a SendObject<Integer>
-		SendObject<Integer> req = new SendObject<>(command, sub.getId());
-		client.sendToServerSafely(req);
-	}
+        // Wrap <command, subscriberId> in a SendObject<Integer>
+        SendObject<Integer> req = new SendObject<>(command, sub.getId());
+        client.sendToServerSafely(req);
+    }
 
-	/** Entry point for all messages from the server */
-	public void handleServerMessage(Object message) {
-		if (message instanceof List<?>) {
-			@SuppressWarnings("unchecked")
-			List<Reservation> list = (List<Reservation>) message;
-			Platform.runLater(() -> futureReservationsTable.getItems().setAll(list));
-		} else if (message instanceof SendObject<?>) {
-			SendObject<?> sendObject = (SendObject<?>)message;
-			if(sendObject.getObj() instanceof String)
-				Platform.runLater(() -> showAlert(AlertType.INFORMATION, sendObject.getObjectMessage()+" "+sendObject.getObj()));
-			else if(sendObject.getObj() instanceof List<?>) {
-				@SuppressWarnings("unchecked")
-				List<Reservation> list = (List<Reservation>) sendObject.getObj();
-				Platform.runLater(() -> futureReservationsTable.getItems().setAll(list));
-			}
-		} else {
-			Platform.runLater(() -> showAlert(AlertType.INFORMATION, message.toString()));
-		}
-	}
-    /** Utility alert pop-up */
+    /**
+     * Entry point for handling all messages received from the server.
+     *
+     * Processes lists of reservations or server notifications and updates the UI accordingly.
+     *
+     * @param message The message object received from the server
+     */
+    public void handleServerMessage(Object message) {
+        if (message instanceof List<?>) {
+            @SuppressWarnings("unchecked")
+            List<Reservation> list = (List<Reservation>) message;
+            Platform.runLater(() -> futureReservationsTable.getItems().setAll(list));
+        } else if (message instanceof SendObject<?>) {
+            SendObject<?> sendObject = (SendObject<?>)message;
+            if(sendObject.getObj() instanceof String)
+                Platform.runLater(() -> showAlert(AlertType.INFORMATION, sendObject.getObjectMessage()+" "+sendObject.getObj()));
+            else if(sendObject.getObj() instanceof List<?>) {
+                @SuppressWarnings("unchecked")
+                List<Reservation> list = (List<Reservation>) sendObject.getObj();
+                Platform.runLater(() -> futureReservationsTable.getItems().setAll(list));
+            }
+        } else {
+            Platform.runLater(() -> showAlert(AlertType.ERROR, message.toString()));
+        }
+    }
+
+    /**
+     * Displays an alert pop-up to the user.
+     *
+     * @param type The type of alert (e.g., INFORMATION, ERROR)
+     * @param text The message text to display
+     */
     protected void showAlert(AlertType type, String text) {
         Alert a = new Alert(type);
         a.setHeaderText(null);
         a.setContentText(text);
         a.showAndWait();
     }
+
+    /**
+     * Sets the client and subscriber objects for this controller.
+     *
+     * Also immediately requests the future reservations for this subscriber.
+     *
+     * @param client The BParkClient instance
+     * @param sub The subscriber object
+     */
     @Override
     public void setClient(BParkClient client, subscriber sub) {
-        super.setClient(client, sub); // 
+        super.setClient(client, sub); 
         getFutureReservationsFor();
     }
 }

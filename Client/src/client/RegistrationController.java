@@ -2,7 +2,6 @@ package client;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -10,6 +9,12 @@ import logic.Role;
 import logic.SendObject;
 import logic.subscriber;
 
+/**
+ * Controller class for the subscriber registration screen.
+ * Handles subscriber input validation, local creation of subscriber objects, and communication with the server
+ * to register new subscribers.
+ * Displays feedback messages based on server responses.
+ */
 public class RegistrationController extends Controller{
 	
 	@FXML
@@ -24,6 +29,11 @@ public class RegistrationController extends Controller{
     private TextField emailField;
 	
     
+    /**
+     * Handles the action of registering a new subscriber.
+     * Collects user input, validates fields (ID, name, phone, email), creates a {@code subscriber} object,
+     * and sends it to the server for registration. Shows alerts for validation errors or confirmation dialogs.
+     */
     @FXML
     public void registerNewSubscriber() {
 		// Get subscriber details from the screen
@@ -50,9 +60,9 @@ public class RegistrationController extends Controller{
             ShowAlert.showAlert("Error", "Name must contain only letters and spaces.", AlertType.ERROR);
             return;
         }
-        // Validate phone is a 10-digit number
-        if (!phone.matches("\\d{10}")) {
-            ShowAlert.showAlert("Error", "Phone number must be exactly 10 digits.", AlertType.ERROR);
+        // Validate phone is a 10-digit number XXX-XXX-XXXX
+        if (!phone.matches("\\d{3}-\\d{3}-\\d{4}")) {
+            ShowAlert.showAlert("Error", "Phone number must be exactly 10 digits, and in this format:XXX-XXX-XXXX", AlertType.ERROR);
             return;
         }
         // Validate email format using regex
@@ -85,6 +95,11 @@ public class RegistrationController extends Controller{
         // send it to server to check if it already exists
         // if it does, the server will return an error message
         // if it doesn't, the server will create the new subscriber and return success
+        if (!ShowAlert.showConfirmation("Confirm Subscriber Registration",
+				"Are you sure you want to create this subscriber?")) {
+
+			return; // user clicked Cancel
+		}
         sendNewSubscriberToServer(newSubscriber);
         
         // clear the screen fields after sending
@@ -94,6 +109,11 @@ public class RegistrationController extends Controller{
         phoneField.clear();
     }
 
+    
+    /**
+     * Sends a new subscriber object to the server for registration.
+     * @param newSubscriber the {@code subscriber} object to send to the server
+     */
 	public void sendNewSubscriberToServer(subscriber newSubscriber) {
         try {
             client.sendToServerSafely(new SendObject<subscriber>("Create new Subscriber", newSubscriber));
@@ -103,13 +123,12 @@ public class RegistrationController extends Controller{
         }
     }
 
-	@FXML
-	private void handleBackButton() {
-		if (backHandler != null) {
-			backHandler.run();
-		}
-	}
 
+	/**
+     * Handles messages received from the server in response to subscriber registration.
+     * Displays success or error alerts depending on the server's response content.
+     * @param msg the message object received from the server; can be a {@code SendObject} or {@code String}
+     */
 	public void handleServerMessage(Object msg) {
 		// If the message is a SendObject, it contains the subscriber object
 		if (msg instanceof SendObject<?>) {

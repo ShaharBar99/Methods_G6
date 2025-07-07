@@ -25,14 +25,17 @@
         <Label styleClass="title-label" text="🚘 Parking System" />
 
         <Button onAction="#parkingRequest"
+        		fx:id="dropoff"
                 styleClass="menu-button"
                 text="🚗 Drop off"/>
 
         <Button onAction="#retrieveRequest"
+        		fx:id="Pickup"
                 styleClass="menu-button"
                 text="🎁 Pickup"/>
 
         <Button onAction="#reservationRequest"
+        		fx:id="Reservation"
                 styleClass="menu-button"
                 text="📅 Reservation Request"/>
 
@@ -41,17 +44,16 @@
                 styleClass="menu-button"
                 text="📖 History Request"/>
 
-        <Button onAction="#admin"
-                fx:id="adminbutton"
-                styleClass="menu-button"
-                text="🛠️ Admin Panel"/>
-                
-               
-        <Button onAction="#attendant"
-                fx:id="attendantbutton"
-                styleClass="menu-button"
-                text="🛠️ Attendant Panel"/>
 
+		<Button onAction="#openTimeExtensionScreen"
+				fx:id="Extension"
+                styleClass="menu-button"
+                text="⏰ Time Extension Request"/>
+                
+        <Button onAction="#openUpdateUserDetails"
+       			fx:id="Update"
+                styleClass="menu-button"
+                text="📝 Update User Details"/>
     </VBox>
 
     <Button fx:id="disconnectButton"

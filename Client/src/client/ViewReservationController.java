@@ -19,6 +19,14 @@ import javafx.scene.control.TableView;
 import logic.Reservation;
 import logic.SendObject;
 
+/**
+ * Controller for viewing parking reservations in a client-server parking management system.
+ * This class provides functionality to display, filter, and sort reservations in a table view,
+ * as well as handle server messages containing updated reservation data.
+ * 
+ * The table displays detailed information about each reservation, and filtering options
+ * allow users to view reservations by month and year.
+ */
 public class ViewReservationController extends Controller {
 
 	@FXML
@@ -61,6 +69,10 @@ public class ViewReservationController extends Controller {
 
 	private Runnable backHandler;
 
+	/**
+     * Initializes the table columns, ComboBoxes, and event handlers.
+     * This method is automatically called after the FXML file is loaded.
+     */
 	@FXML
 	public void initialize() {
 		years.add(0, 0); // Add "All" as first year
@@ -88,6 +100,9 @@ public class ViewReservationController extends Controller {
 			sortBySubscriberIdButton.setOnAction(e -> sortBySubscriberId());
 	}
 
+    /**
+     * Configures the year ComboBox to display "All" for the first item.
+     */
 	protected void setupYearComboBox() {
 		yearComboBox.setCellFactory(cb -> new ListCell<Integer>() {
 			@Override
@@ -106,11 +121,20 @@ public class ViewReservationController extends Controller {
 		yearComboBox.getSelectionModel().selectFirst(); // 0 = All
 	}
 
+    /**
+     * Sets the list of reservations and applies filtering based on the selected month and year.
+     *
+     * @param reservations The list of reservations to display.
+     */
 	public void setReservations(List<Reservation> reservations) {
 		this.allReservations = reservations;
 		filterReservations();
 	}
 
+    /**
+     * Filters the reservations based on the selected month and year.
+     * Updates the table view with the filtered reservations.
+     */
 	protected void filterReservations() {
 		String selectedMonth = monthComboBox.getValue();
 		Integer selectedYear = yearComboBox.getValue();
@@ -130,18 +154,32 @@ public class ViewReservationController extends Controller {
 		reservationTable.getItems().setAll(filteredReservations);
 	}
 
+    /**
+     * Sorts the reservations by date in ascending order.
+     */
 	private void sortByDate() {
 		colDate.setSortType(TableColumn.SortType.ASCENDING);
 		reservationTable.getSortOrder().setAll(colDate);
 		reservationTable.sort();
 	}
 
+	/**
+	 * Sorts the reservations by subscriber ID in ascending order.
+	 */
 	private void sortBySubscriberId() {
 		colSubscriberId.setSortType(TableColumn.SortType.ASCENDING);
 		reservationTable.getSortOrder().setAll(colSubscriberId);
 		reservationTable.sort();
 	}
 
+    /**
+     * Handles incoming server messages and updates the reservation data accordingly.
+     * This method processes messages containing updated reservation lists and refreshes
+     * the table view.
+     *
+     * @param msg The server message containing updated reservation data.
+     */
+	@Override
 	public void handleServerMessage(Object msg) {
 		if (msg instanceof SendObject<?>) {
 			if (((SendObject<?>) msg).getObj() instanceof List<?>) {
@@ -150,17 +188,6 @@ public class ViewReservationController extends Controller {
 					Platform.runLater(() -> setReservations((List<Reservation>) updated));
 				}
 			}
-		}
-	}
-
-	public void setBackHandler(Runnable backHandler) {
-		this.backHandler = backHandler;
-	}
-
-	@FXML
-	protected void handleBackButton() {
-		if (backHandler != null) {
-			backHandler.run();
 		}
 	}
 }

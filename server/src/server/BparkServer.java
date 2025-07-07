@@ -20,20 +20,20 @@ public class BparkServer extends AbstractServer {
 	private ServerController serverController;
 
 	/**
+	 * Constructor for the class
 	 * @param port
-	 * @param controller Constructor for the class, gets ServerController
+	 * @param controller 
 	 */
 	public BparkServer(ServerController controller) {
-
 		super(DEFAULT_PORT);
 		this.serverController = controller;
 		con = new DataBaseQuery();
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
+	 * Handles objects that are sent to the server
 	 * @param msg
-	 * @param client Handles objects that are sent to the server
+	 * @param client
 	 */
 	public void handleMessageFromClient(Object msg, ConnectionToClient client) {
 
@@ -63,9 +63,10 @@ public class BparkServer extends AbstractServer {
 	}
 
 	/**
+	 * Sends a object msg to a client
 	 * @param msg
-	 * @param client Sends a object msg to a client
-	 * @return
+	 * @param client 
+	 * @return Object
 	 */
 	public void sendToSingleClient(Object msg, ConnectionToClient client) {
 		try {
@@ -97,9 +98,9 @@ public class BparkServer extends AbstractServer {
 	}
 
 	/**
-	 * @param client Add the client to the list of connected clients Each client
-	 *               has: id, IP, hostName, status{"Connected","Disconnected"} (all
-	 *               strings)
+	 * @param client 
+	 * Add the client to the list of connected clients Each client
+	 * has: id, IP, hostName, status{"Connected","Disconnected"} (all strings)
 	 */
 	@Override
 	public void clientConnected(ConnectionToClient client) {
@@ -112,9 +113,6 @@ public class BparkServer extends AbstractServer {
 			clientInfo.add("Connected");
 			requiredList.add(clientInfo);
 			serverController.recievedServerUpdate(requiredList);
-			// sendToSingleClient(new
-			// SendObject<ArrayList<Order>>("check",con.getallordersfromDB()), client);
-			// Log the connection
 			System.out.println(String.format("Client:%s IP:%s HostName:%s %s", clientInfo.get(0), clientInfo.get(1),
 					clientInfo.get(2), clientInfo.get(3)));
 
@@ -130,8 +128,9 @@ public class BparkServer extends AbstractServer {
 	}
 
 	/**
-	 * @param client This method is called whenever a client disconnects Remove the
-	 *               client from the list when they disconnect
+	 * This method is called whenever a client disconnects Remove the
+	 * client from the list when they disconnect
+	 * @param client 
 	 */
 	@Override
 	public void clientDisconnected(ConnectionToClient client) {
@@ -145,10 +144,10 @@ public class BparkServer extends AbstractServer {
 	}
 
 	/**
+	 * Updates the status of a client to either "Connected"/"Disconnected"
 	 * @param client
 	 * @param status
-	 * @throws Exception Updates the status of a client to either
-	 *                   "Connected"/"Disconnected"
+	 * @throws Exception
 	 */
 	private void clientSetStatus(ConnectionToClient client, String status) throws Exception {
 		for (List<String> string : requiredList) {

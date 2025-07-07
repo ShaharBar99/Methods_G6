@@ -6,6 +6,13 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import logic.*;
 
+/**
+ * Controller class for the pickup screen in the client-side parking management system.
+ *
+ * Handles user interactions for vehicle pickup using a parking code and coordinates
+ * with the {@link ParkingController} to verify codes, handle lost code recovery,
+ * and provide feedback through the UI.
+ */
 public class PickUpScreenController extends Controller{
 
 	private boolean serverConnection = true;
@@ -14,7 +21,9 @@ public class PickUpScreenController extends Controller{
 	TextField parkingCode;
 
 	/**
-	 * Allow only digits and limit to 6 characters to the textbox
+	 * Initializes the text field to allow only numeric input of up to 6 digits.
+     * 
+     * Called automatically by the JavaFX framework after the FXML is loaded.
 	 */
 	@FXML
 	public void initialize() {
@@ -24,18 +33,27 @@ public class PickUpScreenController extends Controller{
 			}
 		});
 	}
+	
+	/**
+	 * Initializes this controller with the specified client and subscriber.
+     * 
+     * Also sets the context for the internal {@link ParkingController}.
+     *
+     * @param client the client instance connected to the server
+     * @param sub the subscriber using the application
+	 */
 	@Override
 	public void setClient(BParkClient client, subscriber sub) {
-		this.client = client;
-		this.sub = sub;
+		super.setClient(client, sub);
 		parkingController.setClient(client, sub);
 		parkingController.setPickUpScreen(this);
 	}
 
-
 	/**
-	 * Sends a message to server to send Email and sms to the , shows a
-	 * popup
+     * Handles the "Lost Code" request by sending the parking code to the user's
+     * email and phone via the server.
+     * 
+     * Displays confirmation and success/error popups based on the result.
 	 */
 	@FXML
 	public void handleLostCodeRequest() {
@@ -57,7 +75,10 @@ public class PickUpScreenController extends Controller{
 	}
 
 	/**
-	 * Sends the code to the ParkingController verifies it and shows a popup
+	 * Submits the entered parking code to the server for verification.
+     * 
+     * Validates the input and confirms submission. Displays appropriate
+     * popups for success or error.
 	 */
 	@FXML
 	public void submitParkingCode() {
@@ -86,7 +107,7 @@ public class PickUpScreenController extends Controller{
 	}
 
 	/**
-	 * Shows success popup
+	 * Displays a success popup indicating that the vehicle is being prepared for pickup.
 	 */
 	public void showPickUpSuccess() {
 		ShowAlert.showAlert("Success",
@@ -95,16 +116,17 @@ public class PickUpScreenController extends Controller{
 	}
 
 	/**
-	 * Shows late pickup popup
+	 * Displays a warning popup indicating that the user was late to pick up their vehicle.
 	 */
 	public void showLateArrivalMessage() {
 		ShowAlert.showAlert("Late!", "You were late to pick up your vehicle", Alert.AlertType.WARNING);
 	}
 
 	/**
-	 * swap the PickUpScreen back to the MainMenuScreen
+	 * Handles incoming messages from the server and delegates processing to the {@link ParkingController}.
+     *
+     * @param message the message received from the server
 	 */
-
 	public void handleServerMessage(Object message) {
 		parkingController.handleServerResponse(message);
 	}

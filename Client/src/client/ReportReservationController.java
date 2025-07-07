@@ -11,6 +11,15 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.stage.FileChooser;
 
+/**
+ * Controller for exporting parking reservations to a CSV file in a client-server parking management system.
+ * This class extends the functionality of `ViewReservationController` by adding the ability to export
+ * the table data to a CSV file and visualize daily reservation counts in a line chart.
+ * 
+ * The table displays detailed information about each reservation, and users can save this data
+ * to a CSV file using the export button. The line chart visualizes daily reservation counts
+ * for a specific month and year.
+ */
 public class ReportReservationController extends ViewReservationController {
 
 	@FXML
@@ -37,12 +46,19 @@ public class ReportReservationController extends ViewReservationController {
 		}
 	}
 
+    /**
+     * Filters the reservations and updates the line chart with daily reservation counts.
+     */
 	@Override
 	protected void filterReservations() {
 		super.filterReservations(); // Call base logic
 		updateLineChart(); // Add chart functionality
 	}
 
+	
+    /**
+     * Updates the line chart to display daily reservation counts for the selected month and year.
+     */
 	private void updateLineChart() {
 		reservationsLineChart.getData().clear();
 

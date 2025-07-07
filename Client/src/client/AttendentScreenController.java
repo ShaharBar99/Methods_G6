@@ -1,6 +1,7 @@
 package client;
 
 import java.io.IOException;
+
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -9,6 +10,10 @@ import javafx.scene.control.Button;
 import javafx.stage.Stage;
 import logic.SendObject;
 
+/**
+ * Controller class for the attendant screen in the parking.
+ * Provides navigation to reports and subscriber registration screens.
+ */
 public class AttendentScreenController extends Controller {
 
 	@FXML
@@ -22,10 +27,18 @@ public class AttendentScreenController extends Controller {
 	@FXML
 	Button backButton;
 
+	/**
+     * Sets a handler to be executed when the back button is pressed
+     * @param backHandler a {@code Runnable} defining the action to perform when navigating back
+     */
 	public void setBackHandler(Runnable backHandler) {
 		this.backHandler = backHandler;
 	}
 
+	/**
+     * Handles the action of opening the reservation report screen.
+     * Loads the corresponding UI and sends a request to the server to fetch all reservations.
+     */
 	@FXML
 	public void openReservationReport() {
 		try {
@@ -40,6 +53,10 @@ public class AttendentScreenController extends Controller {
 		}
 	}
 
+	/**
+     * Handles the action of opening the subscribers report screen.
+     * Loads the corresponding UI and sends a request to the server to fetch all subscribers.
+     */
 	@FXML
 	public void openSubscribersReport() {
 		try {
@@ -54,6 +71,10 @@ public class AttendentScreenController extends Controller {
 		}
 	}
 
+	/**
+     * Handles the action of opening the active parking sessions report screen.
+     * Loads the corresponding UI and sends a request to the server to fetch all active sessions.
+     */
 	@FXML
 	public void openActiveSessionsReport() {
 		try {
@@ -68,6 +89,10 @@ public class AttendentScreenController extends Controller {
 		}
 	}
 
+	/**
+     * Handles the action of opening the new subscriber registration screen.
+     * Loads the corresponding UI to allow the attendant to register a new subscriber.
+     */
 	@FXML
 	public void registerNewSubscriber() {
 		try {
@@ -78,22 +103,12 @@ public class AttendentScreenController extends Controller {
 		}
 	}
 
+	/**
+     * Handles the back button action to navigate back to the login screen.
+     */
 	@FXML
-	private void handleBackButton() {
-		try {
-			//FXMLLoader loader = new FXMLLoader(getClass().getResource("login.fxml"));
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("MainMenuScreen.fxml"));
-			Parent root = loader.load();
-			Stage stage = new Stage();
-			stage.setTitle("Login");
-			stage.setScene(new Scene(root));
-			stage.setMaximized(true);
-			stage.show();
-			Stage currentStage = (Stage) registerNewSubscriberButton.getScene().getWindow();
-			currentStage.close();
-			client.stop();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	protected void handleBackButton() {
+		// swap the TableView scene back to the connect screen
+		handleButtonToLogin(backButton);
 	}
 }
