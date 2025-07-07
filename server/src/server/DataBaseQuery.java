@@ -30,6 +30,7 @@ public class DataBaseQuery extends MySQLConnection {
     public DataBaseQuery() {
         super();
     }
+    
     /**
      * Checks if the given parking code is currently in use by any active parking session.
      *
@@ -64,6 +65,7 @@ public class DataBaseQuery extends MySQLConnection {
         }
         return exists;
     }
+    
     /**
      * Retrieves the active parking session for the given parking code,
      * or null if no such active session exists.
@@ -106,20 +108,6 @@ public class DataBaseQuery extends MySQLConnection {
         return parking;
     }
 
-    protected void updateSpotToFreeInDatabase(int spotId) {
-        //boolean exists = false;
-        String sql =
-        	"UPDATE parking_spots " +
-            "SET active=FALSE" +
-            "WHERE parking_code = ? ";
-        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
-            ps.setInt(1, spotId);
-            int rowsUpdated = ps.executeUpdate();
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
     /**
      * Fetches all reservations for the given subscriber ID.
      *
@@ -158,6 +146,7 @@ public class DataBaseQuery extends MySQLConnection {
             }
     	return reservationListOfSubscriber;
     }
+    
     /**
      * Retrieves the most recent parking_code for the given subscriber, based on the latest in_time.
      *
@@ -190,6 +179,7 @@ public class DataBaseQuery extends MySQLConnection {
 
         return code;
     }
+    
     /**
      * Finds and returns one free parking‐spot ID, or -1 if none available.
      *
@@ -221,6 +211,16 @@ public class DataBaseQuery extends MySQLConnection {
 
         return spot;
     }
+    
+    /**
+     * Retrieves the list of past (inactive) parking sessions for a given subscriber from the database.
+     * 
+     * Executes a SQL SELECT query to fetch all parking sessions where the subscriber ID matches
+     * and the session is marked as inactive (active = FALSE).
+     *
+     * @param subscriber_id The ID of the subscriber whose parking history is to be retrieved.
+     * @return A list of Parkingsession objects representing the subscriber's parking history.
+     */
     protected List<Parkingsession> gethistoryParkingsessionsListOfSubscriberbyIdFromDatabase(int subscriber_id)
     {
     	List<Parkingsession> historyList  = new ArrayList<>();
@@ -255,6 +255,7 @@ public class DataBaseQuery extends MySQLConnection {
 
         return historyList ;
     }
+    
     /**
      * Calculates the percentage of parking spots that are currently free.
      *
@@ -293,6 +294,7 @@ public class DataBaseQuery extends MySQLConnection {
             return 0.0;
         }
     }
+    
     /**
      * Looks up a subscriber by their (numeric) code and name.
      *
@@ -335,6 +337,7 @@ public class DataBaseQuery extends MySQLConnection {
 
         return subscribe;
     }
+    
     /**
      * Looks up a subscriber by their unique tag.
      *
@@ -374,6 +377,7 @@ public class DataBaseQuery extends MySQLConnection {
 
         return subscribe;
     }
+    
     /**
      * Updates the given parking session in the database.
      *
@@ -476,6 +480,7 @@ public class DataBaseQuery extends MySQLConnection {
             e.printStackTrace();
         }
     }
+    
     /**
      * Updates an existing reservation in the database.
      * Since we use subscriber_id + start_time as the key, we cannot update those—
@@ -534,6 +539,7 @@ public class DataBaseQuery extends MySQLConnection {
             e.printStackTrace();
         }
     }
+    
     /**
      * Inserts a new subscriber into the database and updates its generated ID.
      *
@@ -572,6 +578,7 @@ public class DataBaseQuery extends MySQLConnection {
             e.printStackTrace();
         }
     }
+    
     /**
      * Inserts a new Parkingsession into the database and updates its generated sessionId.
      *
@@ -621,6 +628,7 @@ public class DataBaseQuery extends MySQLConnection {
             e.printStackTrace();
         }
     }
+    
     /**
      * Returns all parking spots that are not occupied (status = FREE or RESERVED)
      * and that have no reservation overlapping the given date/time window.
@@ -790,6 +798,7 @@ public class DataBaseQuery extends MySQLConnection {
 
         return parking;
     }
+    
     /**
      * Retrieves all active parking sessions for the given subscriber.
      *
@@ -876,7 +885,14 @@ public class DataBaseQuery extends MySQLConnection {
         return availableOfTimeExtension;
     }
     
-    // 1) Check if a subscriber’s email already exists for a different subscriberAdd commentMore actions
+    /**
+     * Checks if a given subscriber's email is already used by another subscriber in the system.
+     * 
+     * Executes a SQL SELECT query to detect duplicate emails (excluding the current subscriber ID).
+     *
+     * @param user The subscriber whose email is to be checked.
+     * @return true if a duplicate email exists; false otherwise.
+     */
     protected boolean checkUserEmailDuplicates(subscriber user) {
         boolean duplicate = false;
         String sql =
@@ -902,7 +918,14 @@ public class DataBaseQuery extends MySQLConnection {
         return duplicate;
     }
 
-    // 2) Check that an RFID tag is unique among all subscribers
+    /**
+     * Checks whether a given RFID tag is unique among all subscribers in the system.
+     * 
+     * Executes a SQL SELECT query to see if any subscriber has the same tag.
+     *
+     * @param tag The RFID tag to check.
+     * @return true if the tag is unique; false if it already exists.
+     */
     protected boolean checkRFIDTagDifferentFromAllSubscribers(String tag) {
         boolean unique = true;
         String sql =
@@ -927,7 +950,14 @@ public class DataBaseQuery extends MySQLConnection {
         return unique;
     }
 
-    // 3) Check that a numeric code is unique among all subscribers
+    /**
+     * Checks whether a given numeric code is unique among all subscribers.
+     * 
+     * Executes a SQL SELECT query to ensure no other subscriber has the same code.
+     *
+     * @param code The numeric code to check.
+     * @return true if the code is unique; false if it already exists.
+     */
     protected boolean checkCodeDifferentFromAllSubscribers(int code) {
         boolean unique = true;
         String sql =
@@ -951,7 +981,13 @@ public class DataBaseQuery extends MySQLConnection {
         return unique;
     }
 
-    // 4) Fetch every reservation in the system
+    /**
+     * Retrieves a list of all reservations stored in the system.
+     * 
+     * Executes a SQL SELECT query to fetch all records from the reservations table.
+     *
+     * @return A list of Reservation objects representing all reservations.
+     */
     protected List<Reservation> getAllReservationList() {
         List<Reservation> list = new ArrayList<>();
         String sql = "SELECT * FROM reservations";
@@ -974,7 +1010,13 @@ public class DataBaseQuery extends MySQLConnection {
         return list;
     }
 
-    // 5) Fetch every subscriber in the system
+    /**
+     * Retrieves a list of all subscribers stored in the system.
+     * 
+     * Executes a SQL SELECT query to fetch all records from the subscribers table.
+     *
+     * @return A list of subscriber objects representing all subscribers.
+     */
     protected List<subscriber> getAllSubscribersList() {
         List<subscriber> list = new ArrayList<>();
         String sql = "SELECT * FROM subscribers";
@@ -1002,7 +1044,14 @@ public class DataBaseQuery extends MySQLConnection {
         return list;
     }
 
-    // 6) Fetch all active parking sessions in the system
+    /**
+     * Retrieves a list of all active parking sessions currently in the system.
+     * 
+     * Executes a SQL SELECT query to fetch all records from the parking_sessions table
+     * where active = TRUE.
+     *
+     * @return A list of Parkingsession objects representing active sessions.
+     */
     protected List<Parkingsession> getAllActiveParkingsession() {
         List<Parkingsession> list = new ArrayList<>();
         String sql =
@@ -1030,58 +1079,6 @@ public class DataBaseQuery extends MySQLConnection {
         }
 
         return list;
-    }
-    
-    /**
-     * Retrieves the next upcoming reservation for the given subscriber,
-     * based on the current date/time. Returns the reservation whose
-     * date/time is the soonest but not earlier than "now".
-     *
-     * @param subscriberId the ID of the subscriber
-     * @return the closest Reservation on or after now, or null if none
-     */
-    protected Reservation getReservationCloseToCurrentTimeOfSubscriber(int subscriberId) {
-        Reservation result = null;
-
-        // We compare reservation.date and reservation.start_time to NOW()
-        // by using DATE > CURDATE() or (DATE = CURDATE() AND start_time >= CURTIME()).
-        // Then pick the earliest by date/time.
-        String sql =
-        		"SELECT subscriber_id, spot_id, date, start_time, end_time " +
-        		"FROM reservations " +
-        		"WHERE subscriber_id = ? " +
-        		"AND end_time IS NOT NULL " + 
-        		"AND start_time IS NOT NULL " +
-        		"AND ( " +
-        		"    date >= CURDATE() " +  // Future reservations and today's reservations
-        		"    OR (date = CURDATE() AND start_time <= CURTIME()) " + // Reservations today that are in the past or current time
-        		") " +
-        		"ORDER BY date ASC, start_time ASC " +  // Earliest first
-        		"LIMIT 1";
-
-        try (PreparedStatement ps = getCon().prepareStatement(sql)) {
-            ps.setInt(1, subscriberId);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    int    subId      = rs.getInt("subscriber_id");
-                    int    spotId     = rs.getInt("spot_id");
-                    LocalDate date     = rs.getDate("date").toLocalDate();
-                    String start    = rs.getString("start_time");
-                    String end      = rs.getString("end_time");
-
-                    result = new Reservation(spotId, subId, date, start, end);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        if (result != null) {
-            System.out.println("Reservation found: " + result.getStartTime() + " " + result.getEndTime());
-        } else {
-            System.out.println("No reservation found for subscriber " + subscriberId);
-        }
-        return result;
     }
 
 }

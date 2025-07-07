@@ -123,7 +123,6 @@ public class SendObjectHandler {
 	 */
 	private static <T extends Serializable, T1 extends Serializable> SendObject<T1> handleIntegerType(String action,
 			Integer intObject, DataBaseQuery con) {
-		System.out.println(action);
 		if (action.contains("Check")) {
 			if (action.equals("Check new Parking Code")) {
 				// Returns boolean if the code is being used

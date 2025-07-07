@@ -31,7 +31,7 @@ public class MySQLConnection {
 	}
 
 	/**
-	 * // Start a connection to DB bpark returns con
+	 * Start a connection to DB bpark returns con
 	 * @return con
 	 */
 	private Connection connectToDB() {	
