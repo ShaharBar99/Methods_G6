@@ -1,9 +1,6 @@
 package client;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,10 +12,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.chart.BarChart;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -32,6 +25,15 @@ import logic.Role;
 import logic.SendObject;
 import logic.subscriber;
 
+/**
+ * Controller for viewing subscribers and their parking session history in a
+ * client-server parking management system. This class provides functionality
+ * for filtering, sorting, and viewing subscriber data, as well as displaying
+ * parking session history for individual subscribers.
+ * 
+ * The controller interacts with the server to fetch subscriber and parking
+ * session data, and updates the UI components accordingly.
+ */
 public class ViewSubscriberController extends Controller {
 
 	@FXML
@@ -84,18 +86,16 @@ public class ViewSubscriberController extends Controller {
 	@FXML
 	private TableColumn<Parkingsession, String> colLate;
 
-	@FXML
-	private BarChart<String, Number> barChart;
-	@FXML
-	private CategoryAxis xAxis;
-	@FXML
-	private NumberAxis yAxis;
-
 	private List<Parkingsession> historySessions;
 
+	/**
+	 * Initializes the UI components and sets up event handlers for buttons and
+	 * combo boxes. This method is automatically called after the FXML file is
+	 * loaded.
+	 */
 	@FXML
 	public void initialize() {
-// Column setup
+		// Column setup
 		colSubscriberId
 				.setCellValueFactory(cellData -> new SimpleIntegerProperty(cellData.getValue().getId()).asObject());
 		colName.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getName()));
@@ -104,7 +104,7 @@ public class ViewSubscriberController extends Controller {
 		colTag.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getTag()));
 		colRole.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getRole()));
 
-// Combo box
+		// Combo box
 		roleComboBox.getItems().setAll(roles);
 		roleComboBox.getSelectionModel().selectFirst();
 		roleComboBox.setOnAction(e -> filterSubscribers());
@@ -113,7 +113,7 @@ public class ViewSubscriberController extends Controller {
 			sortBySubscriberIdButton.setOnAction(e -> sortBySubscriberId());
 		}
 
-// History table setup
+		// History table setup
 		colSessionId.setCellValueFactory(new PropertyValueFactory<>("sessionId"));
 		colSpotId.setCellValueFactory(new PropertyValueFactory<>("spotId"));
 		colInTime.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(
@@ -125,6 +125,13 @@ public class ViewSubscriberController extends Controller {
 		viewHistoryButton.setOnAction(e -> fetchHistory());
 	}
 
+	/**
+	 * Fetches the parking session history for the subscriber with the entered ID.
+	 * Sends a request to the server to retrieve the history data.
+	 * 
+	 * @throws NumberFormatException if the entered subscriber ID is not a valid
+	 *                               number.
+	 */
 	private void fetchHistory() {
 		String idText = subscriberIdField.getText().trim();
 		if (idText.isEmpty()) {
@@ -140,31 +147,21 @@ public class ViewSubscriberController extends Controller {
 		}
 	}
 
+	/**
+	 * Populates the history table with the provided list of parking sessions.
+	 * 
+	 * @param sessions The list of parking sessions to display in the history table.
+	 */
 	private void populateHistoryTable(List<Parkingsession> sessions) {
 		ObservableList<Parkingsession> data = FXCollections.observableArrayList(sessions);
 		historyTable.setItems(data);
 	}
 
-	private void populateBarChart(List<Parkingsession> sessions) {
-		int[] monthly = new int[12];
-		int currentYear = LocalDate.now().getYear();
-
-		for (Parkingsession s : sessions) {
-			LocalDate date = s.getInTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-			if (date.getYear() == currentYear) {
-				monthly[date.getMonthValue() - 1]++;
-			}
-		}
-
-		XYChart.Series<String, Number> series = new XYChart.Series<>();
-		for (int i = 0; i < 12; i++) {
-			series.getData().add(new XYChart.Data<>(Month.of(i + 1).name(), monthly[i]));
-		}
-		barChart.getData().clear();
-		barChart.getData().add(series);
-	}
-
-	/** Can be reused in subclass */
+	/**
+	 * Can be reused in subclass. 
+	 * Filters the subscriber list based on the selected
+	 * role in the combo box. Updates the table view with the filtered list.
+	 */
 	protected void filterSubscribers() {
 		String selectedRole = roleComboBox.getValue();
 
@@ -177,17 +174,30 @@ public class ViewSubscriberController extends Controller {
 		subscriberTable.getItems().setAll(filteredSubscribers);
 	}
 
+    /**
+     * Sorts the subscriber table by subscriber ID in ascending order.
+     */
 	protected void sortBySubscriberId() {
 		colSubscriberId.setSortType(TableColumn.SortType.ASCENDING);
 		subscriberTable.getSortOrder().setAll(colSubscriberId);
 		subscriberTable.sort();
 	}
 
+    /**
+     * Sets the list of subscribers and updates the table view.
+     * 
+     * @param subscribers The list of subscribers to display in the table view.
+     */
 	public void setSubscribers(List<subscriber> subscribers) {
 		this.allSubscribers = subscribers;
 		filterSubscribers();
 	}
 
+    /**
+     * Sets the list of parking session history and updates the history table.
+     * 
+     * @param history The list of parking sessions to display in the history table.
+     */
 	public void setHistorySessions(List<Parkingsession> history) {
 		if (history != null) {
 			this.historySessions = history;
@@ -197,12 +207,17 @@ public class ViewSubscriberController extends Controller {
 		populateHistoryTable(history);
 	}
 
+    /**
+     * Handles server messages and updates the UI components based on the received data.
+     * 
+     * @param msg The message received from the server.
+     */
 	@Override
 	public void handleServerMessage(Object msg) {
 		if (msg instanceof SendObject<?>) {
 			SendObject<?> so = (SendObject<?>) msg;
 
-// Handle subscriber list updates
+			// Handle subscriber list updates
 			if (so.getObj() instanceof List<?>) {
 				List<?> updated = (List<?>) so.getObj();
 				if (!updated.isEmpty() && updated.get(0) instanceof subscriber) {
@@ -210,24 +225,16 @@ public class ViewSubscriberController extends Controller {
 				}
 			}
 
-// Handle history data per specific subscriber
+			// Handle history data per specific subscriber
 			if ("Parkingsession list of subscriber".equals(so.getObjectMessage())) {
 				Object obj = so.getObj();
 				if (obj instanceof List<?>) {
 					List<?> list = (List<?>) obj;
 					if (!list.isEmpty() && list.get(0) instanceof Parkingsession) {
 						setHistorySessions((List<Parkingsession>) list);
-						Platform.runLater(() -> {
-							populateHistoryTable(this.historySessions);
-							populateBarChart(this.historySessions);
-						});
 					} else {
-// empty the table and chart if no sessions found
+						// empty the table and chart if no sessions found
 						setHistorySessions(new ArrayList<>());
-						Platform.runLater(() -> {
-							populateHistoryTable(this.historySessions);
-							populateBarChart(this.historySessions);
-						});
 					}
 				}
 			}
