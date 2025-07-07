@@ -213,9 +213,6 @@ public class BparkServer extends AbstractServer {
                     calendar.set(Calendar.MILLISECOND, 0);
                     long delay = calendar.getTimeInMillis() - currentTime; // Milliseconds until midnight
                     if (delay < 0) {
-                        // If the delay is negative, it means we are past midnight
-                        // You can either skip sleeping or set a default sleep time
-                        System.out.println("Current time is past midnight. Skipping sleep.");
                         delay = dailyMillis; // Set to 24 hours to wait for the next midnight
                     }
                     Thread.sleep(delay); // Sleep exactly until midnight
