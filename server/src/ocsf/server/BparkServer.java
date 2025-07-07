@@ -2,6 +2,8 @@ package ocsf.server;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import serverControllers.*;
@@ -18,7 +20,7 @@ public class BparkServer extends AbstractServer {
 	private List<ConnectionToClient> clientConnections = new ArrayList<>(); // Current connections
 	private List<List<String>> requiredList = new ArrayList<>(); // Log of current and former connections
 	private ServerController serverController;
-
+	private DatabaseDailyUpdater dailyUpdater;
 	/**
 	 * Constructor for the class
 	 * @param port
@@ -87,13 +89,22 @@ public class BparkServer extends AbstractServer {
 
 	/**
 	 * Prints to console that the server started
+	 * Starts DatabaseDailyUpdater
 	 */
 	protected void serverStarted() {
 		System.out.println(("Server listening for connections on port " + getPort()));
+		dailyUpdater = new DatabaseDailyUpdater();
+        dailyUpdater.start();
 	}
 
+	/**
+	 * Stops DatabaseDailyUpdater
+	 */
 	protected void serverStopped() {
 		// Honestly never used it...
+		if (dailyUpdater != null) {
+            dailyUpdater.stopUpdater(); // Graceful shutdown
+        }
 		System.out.println("Server has stopped listening for connections.");
 	}
 
@@ -169,5 +180,87 @@ public class BparkServer extends AbstractServer {
 			}
 		}
 	}
+	
+	
+    /**
+     * The DatabaseDailyUpdater class is responsible for performing daily updates
+     * on parking session records in the database. It runs in a separate thread,
+     * sleeping until midnight each day to execute its update logic.
+     * 
+     * Important Note: This class should be used within the context of the BparkServer
+     * to ensure proper access to the database connection and other server resources.
+     */
+    private class DatabaseDailyUpdater extends Thread {
+        private final long dailyMillis = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+        private volatile boolean running = true;
+        
+        /**
+         * The main execution method of the thread. It calculates the time until
+         * the next midnight and sleeps until that time. Upon waking, it performs
+         * the daily reset of parking session values.
+         */
+        @Override
+        public void run() {
+            while (running) {
+                try {
+                    long currentTime = System.currentTimeMillis();
+                    // Calculate the next midnight (00:00) time
+                    var calendar = Calendar.getInstance();
+                    calendar.add(Calendar.DAY_OF_MONTH, 1); // Move to tomorrow
+                    calendar.set(Calendar.HOUR_OF_DAY, 0); 
+                    calendar.set(Calendar.MINUTE, 0);
+                    calendar.set(Calendar.SECOND, 0);
+                    calendar.set(Calendar.MILLISECOND, 0);
+                    long delay = calendar.getTimeInMillis() - currentTime; // Milliseconds until midnight
+                    if (delay < 0) {
+                        // If the delay is negative, it means we are past midnight
+                        // You can either skip sleeping or set a default sleep time
+                        System.out.println("Current time is past midnight. Skipping sleep.");
+                        delay = dailyMillis; // Set to 24 hours to wait for the next midnight
+                    }
+                    Thread.sleep(delay); // Sleep exactly until midnight
+                    // Perform the operation
+                    resetDailyValues();
+                } catch (InterruptedException e) {
+                    System.out.println("Daily updater interrupted gracefully.");
+                    break;
+                } catch (Exception e) {
+                    System.err.println("Error in daily updater: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        }
+        
+        /**
+         * Resets the status of all active parking sessions in the database.
+         * This method checks each active parking session and marks it as inactive
+         * and late if its out time has passed the current time.
+         * 
+         * @throws Exception if an error occurs while accessing the database or updating records.
+         */
+        private void resetDailyValues() {
+            try {
+                List<Parkingsession> parkingsessionList = con.getAllActiveParkingsession();
+                for (Parkingsession parkingsession : parkingsessionList) {
+					if (parkingsession.getOutTime()!=null&&parkingsession.getOutTime().before(new Date())) {
+						parkingsession.setActive(false);
+						parkingsession.setLate(true);
+						con.updateParkingsessionInDatabase(parkingsession);
+					}
+				}
+            } catch (Exception e) {
+                System.err.println("Failed to reset daily values: " + e.getMessage());
+            }
+        }
+        
+        /**
+         * Stops the daily updater thread gracefully. This method sets the running
+         * flag to false and interrupts the thread if it is currently sleeping.
+         */
+        public void stopUpdater() {
+            running = false;
+            interrupt(); // Wake up if sleeping
+        }
+    }
 
 }
