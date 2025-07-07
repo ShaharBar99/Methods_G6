@@ -18,7 +18,7 @@ public class Util {
 
     /**
      * Exports the contents of a JavaFX TableView to a CSV file.
-     * <p>
+     * 
      * Writes the table headers and all data rows to the specified file,
      * escaping quotes and commas as needed.
      *
@@ -56,7 +56,7 @@ public class Util {
 
     /**
      * Waits for a server response condition to become true, with a timeout.
-     * <p>
+     * 
      * Periodically checks the provided Supplier<Boolean> until it returns true
      * or the timeout expires.
      *
