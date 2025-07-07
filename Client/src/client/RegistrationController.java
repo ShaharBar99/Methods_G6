@@ -9,6 +9,12 @@ import logic.Role;
 import logic.SendObject;
 import logic.subscriber;
 
+/**
+ * Controller class for the subscriber registration screen.
+ * Handles subscriber input validation, local creation of subscriber objects, and communication with the server
+ * to register new subscribers.
+ * Displays feedback messages based on server responses.
+ */
 public class RegistrationController extends Controller{
 	
 	@FXML
@@ -23,6 +29,11 @@ public class RegistrationController extends Controller{
     private TextField emailField;
 	
     
+    /**
+     * Handles the action of registering a new subscriber.
+     * Collects user input, validates fields (ID, name, phone, email), creates a {@code subscriber} object,
+     * and sends it to the server for registration. Shows alerts for validation errors or confirmation dialogs.
+     */
     @FXML
     public void registerNewSubscriber() {
 		// Get subscriber details from the screen
@@ -75,9 +86,7 @@ public class RegistrationController extends Controller{
 	        \\. 			A literal dot . separating domain and top-level domain
 	        [a-zA-Z]{2,} 	Top-level domain (e.g., com, org) - must be at least 2 characters long
 	        $ 				End of the string
-        */
-        
-        
+        */             
         
         // create the subscriber locally
         subscriber newSubscriber = new subscriber(id, name, phone, email, Role.SUBSCRIBER, null, "", 0);;
@@ -98,6 +107,11 @@ public class RegistrationController extends Controller{
         phoneField.clear();
     }
 
+    
+    /**
+     * Sends a new subscriber object to the server for registration.
+     * @param newSubscriber the {@code subscriber} object to send to the server
+     */
 	public void sendNewSubscriberToServer(subscriber newSubscriber) {
         try {
             client.sendToServerSafely(new SendObject<subscriber>("Create new Subscriber", newSubscriber));
@@ -108,6 +122,11 @@ public class RegistrationController extends Controller{
     }
 
 
+	/**
+     * Handles messages received from the server in response to subscriber registration.
+     * Displays success or error alerts depending on the server's response content.
+     * @param msg the message object received from the server; can be a {@code SendObject} or {@code String}
+     */
 	public void handleServerMessage(Object msg) {
 		// If the message is a SendObject, it contains the subscriber object
 		if (msg instanceof SendObject<?>) {

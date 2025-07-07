@@ -1,7 +1,5 @@
 package client;
 
-import java.lang.management.PlatformLoggingMXBean;
-
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
@@ -9,17 +7,27 @@ import logic.*;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 
+
+/**
+ * Controller class for updating subscriber details.
+ * Handles form validation, updates subscriber information locally, and sends updated data to the server.
+ * Displays feedback to the user based on the server's response.
+ */
 public class UpdateUserDetailsController extends Controller {
 
 	@FXML
 	private TextField nameField;
-
 	@FXML
 	private TextField phoneField;
-
 	@FXML
 	private TextField emailField;
 
+	/**
+     * Handles the update action triggered from the UI.
+     * Validates name, phone, and email fields.
+     * If validation succeeds, updates the local subscriber object
+     * and sends the updated data to the server.
+     */
 	@FXML
 	private void handleUpdate() {
 		String name = nameField.getText();
@@ -56,12 +64,25 @@ public class UpdateUserDetailsController extends Controller {
 		}
 	}
 
+	
+	/**
+     * Populates the text fields with the current subscriber's details.
+     * @param sub the {@code subscriber} whose details will be displayed for editing
+     */
 	public void update(subscriber sub) {
 		nameField.setText(sub.getName());
 		phoneField.setText(sub.getPhone());
 		emailField.setText(sub.getEmail());
 	}
 
+	
+	/**
+     * Displays an alert dialog with the specified type, title, and message.
+     *
+     * @param type    the {@code AlertType} to display (e.g., ERROR, INFORMATION)
+     * @param title   the title of the alert dialog
+     * @param message the message content of the alert dialog
+     */
 	private void showAlert(AlertType type, String title, String message) {
 		Alert alert = new Alert(type);
 		alert.setTitle(title);
@@ -70,12 +91,25 @@ public class UpdateUserDetailsController extends Controller {
 		alert.showAndWait();
 	}
 
+	/**
+     * Sets the client and subscriber instance, and populates the fields with subscriber data.
+     *
+     * @param client the {@code BParkClient} instance used for server communication
+     * @param sub    the {@code subscriber} to update
+     */
 	@Override
 	public void setClient(BParkClient client, subscriber sub) {
 		super.setClient(client, sub);
 		update(sub);
 	}
 	
+	
+	 /**
+     * Handles messages received from the server after an update request.
+     * Displays success or error alerts based on the server's response.
+     *
+     * @param msg the message object received from the server; expected to be a {@code SendObject}
+     */
 	public void handleServerMessage(Object msg) {
 		// If the message is a SendObject, it contains the subscriber object
 		if (msg instanceof SendObject<?>) {

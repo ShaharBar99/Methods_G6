@@ -1,30 +1,34 @@
 package client;
 
-
-
-import java.io.IOException;
-
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.stage.Stage;
 import logic.SendObject;
 
+/**
+ * Controller class for the admin screen.
+ * Allows administrators to navigate to different reports, including reservation, subscriber, and active session reports.
+ */
 public class AdminScreenController extends Controller{
 	
-	//private BParkClient client;
-
 	@FXML Button openReservationReportButton;
 	@FXML Button openSubscribersReportButton;
 	@FXML Button openActiveSessionsReportButton;
 	@FXML Button backButton;
     
+	
+	/**
+     * Sets a handler to execute when the back button is pressed.
+     * @param backHandler a {@code Runnable} specifying the action to perform when navigating back
+     */
 	public void setBackHandler(Runnable backHandler) {
 		this.backHandler = backHandler;
 	}
 	
+	
+	/**
+     * Handles the action of opening the reservation report screen.
+     * Loads the corresponding UI and sends a request to the server to retrieve all reservations.
+     */
 	@FXML
 	public void openReservationReport() {
 		try {
@@ -39,6 +43,10 @@ public class AdminScreenController extends Controller{
 		}
 	}
 
+	/**
+     * Handles the action of opening the subscribers report screen.
+     * Loads the corresponding UI and sends a request to the server to retrieve all subscribers.
+     */
 	@FXML
 	public void openSubscribersReport() {
 		try {
@@ -53,6 +61,10 @@ public class AdminScreenController extends Controller{
 		}
 	}
 
+	/**
+     * Handles the action of opening the active sessions report screen.
+     * Loads the corresponding UI and sends a request to the server to retrieve all active parking sessions.
+     */
 	@FXML
 	public void openActiveSessionsReport() {
 		try {
@@ -67,7 +79,9 @@ public class AdminScreenController extends Controller{
 		}
 	}
 
-    
+	/**
+     * Handles the back button action to navigate back to the login screen.
+     */
     @FXML protected void handleBackButton() {
 		// swap the TableView scene back to the connect screen
     	handleButtonToLogin(backButton);
