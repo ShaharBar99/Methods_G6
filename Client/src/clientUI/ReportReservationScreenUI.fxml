@@ -57,6 +57,11 @@
         </HBox>
         
 
-        <Button fx:id="backButton" text="Back" styleClass="button-blue" onAction="#handleBackButton"/>
+        <HBox spacing="15.0" alignment="CENTER">
+		<Button text="Refresh" styleClass="button-blue" />
+		<!-- Back Button -->
+		<Button fx:id="backButton" text="Back" styleClass="button-blue"
+			onAction="#handleBackButton" />
+		</HBox>
     </VBox>
 </AnchorPane>
