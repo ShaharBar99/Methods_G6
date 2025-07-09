@@ -6,6 +6,7 @@ import java.time.Month;
 import java.time.ZoneId;
 import java.util.List;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -67,7 +68,7 @@ public class ReportSubscriberController extends ViewSubscriberController {
 	@Override
 	public void setHistorySessions(List<Parkingsession> history) {
 		super.setHistorySessions(history);
-		populateBarChart(history);
+		Platform.runLater(() -> populateBarChart(history));
 	}
 
     /**
