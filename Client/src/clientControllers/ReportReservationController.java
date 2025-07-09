@@ -53,7 +53,7 @@ public class ReportReservationController extends ViewReservationController {
 	@Override
 	protected void filterReservations() {
 		super.filterReservations(); // Call base logic
-		Platform.runLater(()->updateLineChart()); // Add chart functionality
+		updateLineChart(); // Add chart functionality
 	}
 
 	
