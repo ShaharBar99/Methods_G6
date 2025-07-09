@@ -125,7 +125,9 @@ public class LoginController {
 
         try {
             if (isTag && isConsoleChecked) {
-                return null;
+            	String tag = tagField.getText().trim();
+                return new subscriber(0, null, null, null, null, null, tag, 0);
+                
             } else {
                 int passwordInt = Integer.parseInt(subscriberIdField.getText().trim());
                 return new subscriber(0, nameField.getText().trim(), null, null, null,
