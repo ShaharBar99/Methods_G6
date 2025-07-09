@@ -3,6 +3,7 @@ package clientControllers;
 import java.io.File;
 import java.time.Year;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
@@ -52,7 +53,7 @@ public class ReportReservationController extends ViewReservationController {
 	@Override
 	protected void filterReservations() {
 		super.filterReservations(); // Call base logic
-		updateLineChart(); // Add chart functionality
+		Platform.runLater(()->updateLineChart()); // Add chart functionality
 	}
 
 	
