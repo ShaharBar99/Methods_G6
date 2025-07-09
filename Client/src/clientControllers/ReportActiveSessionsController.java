@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -66,8 +65,8 @@ public class ReportActiveSessionsController extends ViewActiveSessionsController
 	@Override
 	public void setSessions(List<Parkingsession> sessions) {
 		super.setSessions(sessions);
-		
-		Platform.runLater(()->{sessionTable.refresh(); updateLineChart();});
+		sessionTable.refresh();
+		updateLineChart();
 	}
 
     /**
